@@ -1,0 +1,275 @@
+import { useState } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/authStore';
+import { authApi } from '@/api';
+import { toast } from 'sonner';
+import { useTheme } from '@/contexts/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import { setLanguage } from '../../i18n';
+import {
+  BarChart2,
+  BarChart3,
+  List,
+  Shield,
+  ArrowLeftRight,
+  Laptop,
+  FileText,
+  Settings,
+  Users,
+  Menu,
+  X,
+  LogOut,
+  CheckCircle,
+  Sun,
+  Moon,
+  Monitor,
+  Server,
+  FolderTree,
+  KeyRound,
+  ClipboardList,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface NavItem {
+  path: string;
+  title: string;
+  icon: React.ReactNode;
+  adminOnly?: boolean;
+}
+
+const NAV_KEYS = [
+  { path: '/',              key: 'nav.dashboard',    icon: <BarChart3 size={16} /> },
+  { path: '/rules',        key: 'nav.rules',         icon: <List size={16} /> },
+  { path: '/filters',      key: 'nav.filters',       icon: <Shield size={16} /> },
+  { path: '/rewrites',     key: 'nav.rewrites',      icon: <ArrowLeftRight size={16} /> },
+  { path: '/clients',      key: 'nav.clients',       icon: <Laptop size={16} /> },
+  { path: '/client-groups',key: 'nav.clientGroups',  icon: <FolderTree size={16} /> },
+  { path: '/upstreams',    key: 'nav.upstreams',     icon: <Server size={16} /> },
+  { path: '/logs',         key: 'nav.queryLogs',     icon: <FileText size={16} /> },
+  { path: '/insights',     key: 'nav.insights',      icon: <BarChart2 size={16} /> },
+  { path: '/settings',     key: 'nav.settings',      icon: <Settings size={16} /> },
+  { path: '/users',        key: 'nav.users',         icon: <Users size={16} />, adminOnly: true },
+  { path: '/audit-log',   key: 'nav.auditLog',      icon: <ClipboardList size={16} />, adminOnly: true },
+];
+
+interface DashboardLayoutProps {
+  title: string;
+  children?: React.ReactNode;
+}
+
+export function DashboardLayout({ title }: DashboardLayoutProps) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, clearAuth } = useAuthStore();
+  const { theme, setTheme, actualTheme } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t, i18n } = useTranslation();
+
+  const navItems: NavItem[] = NAV_KEYS.map((item) => ({
+    path: item.path,
+    title: t(item.key),
+    icon: item.icon,
+    adminOnly: item.adminOnly,
+  }));
+
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+    } catch {
+      // ignore
+    } finally {
+      clearAuth();
+      navigate('/login');
+      toast.success(t('nav.loggedOut'));
+    }
+  };
+
+  const handleLanguageToggle = () => {
+    const next = i18n.language === 'zh-CN' ? 'en-US' : 'zh-CN';
+    setLanguage(next);
+  };
+
+  const langLabel = i18n.language === 'zh-CN' ? 'EN' : '中';
+
+  const filteredNavItems = navItems.filter(
+    (item) => !item.adminOnly || user?.role === 'admin' || user?.role === 'super_admin'
+  );
+
+  const getCurrentTitle = () => {
+    const current = navItems.find((item) => item.path === location.pathname);
+    return current?.title || title;
+  };
+
+  const avatarLetter = user?.username?.[0]?.toUpperCase() ?? 'U';
+
+  return (
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar ── */}
+      <aside
+        className={cn(
+          'sidebar fixed left-0 top-0 z-50 flex h-screen w-60 flex-col',
+          '-translate-x-full transition-transform duration-300 ease-in-out',
+          'lg:static lg:translate-x-0 lg:transition-none',
+          sidebarOpen && 'translate-x-0'
+        )}
+      >
+        {/* Logo */}
+        <div className="sidebar-logo-area flex h-14 items-center justify-between px-5">
+          <Link to="/" className="flex items-center gap-2.5 text-white">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+              <Shield className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-sm font-semibold tracking-wide">Ent-DNS</span>
+          </Link>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="rounded-md p-1 text-white/50 hover:text-white lg:hidden"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto p-3">
+          <ul className="space-y-0.5">
+            {filteredNavItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <li key={item.path}>
+                  <Link
+                    to={item.path}
+                    onClick={() => setSidebarOpen(false)}
+                    className={cn('sidebar-nav-item', isActive && 'active')}
+                  >
+                    {item.icon}
+                    <span>{item.title}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* User */}
+        <div className="sidebar-footer p-3">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
+              {avatarLetter}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {user?.username ?? 'User'}
+              </p>
+              <p className="truncate text-xs capitalize" style={{ color: 'hsl(var(--sidebar-text))' }}>
+                {user?.role ?? 'user'}
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => navigate('/change-password')}
+                title={t('nav.changePassword')}
+                className="shrink-0 rounded-md p-1 text-white/40 transition-colors hover:text-white"
+              >
+                <KeyRound size={15} />
+              </button>
+              <button
+                onClick={handleLogout}
+                title={t('nav.logout')}
+                className="shrink-0 rounded-md p-1 text-white/40 transition-colors hover:text-white"
+              >
+                <LogOut size={15} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Main ── */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Top bar */}
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-4 sm:px-6">
+          {/* Mobile menu */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden"
+          >
+            <Menu size={20} />
+          </button>
+
+          {/* Page title */}
+          <h1 className="text-sm font-semibold text-foreground lg:text-base">
+            {getCurrentTitle()}
+          </h1>
+
+          {/* Status & Theme Toggle */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <CheckCircle size={14} className="text-success" />
+              <span className="hidden sm:inline">{t('nav.dnsRunning')}</span>
+            </div>
+            {/* Theme Toggle */}
+            <div className="flex items-center gap-1 border-l pl-3">
+              <button
+                onClick={() => setTheme('light')}
+                className={cn(
+                  'p-1.5 rounded-md transition-colors',
+                  actualTheme === 'light' && theme !== 'dark'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+                title={t('nav.lightTheme')}
+              >
+                <Sun size={16} />
+              </button>
+              <button
+                onClick={() => setTheme('dark')}
+                className={cn(
+                  'p-1.5 rounded-md transition-colors',
+                  actualTheme === 'dark' && theme !== 'light'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+                title={t('nav.darkTheme')}
+              >
+                <Moon size={16} />
+              </button>
+              <button
+                onClick={() => setTheme('system')}
+                className={cn(
+                  'p-1.5 rounded-md transition-colors',
+                  theme === 'system'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+                title={t('nav.systemTheme')}
+              >
+                <Monitor size={16} />
+              </button>
+              {/* Language Toggle */}
+              <button
+                onClick={handleLanguageToggle}
+                className="p-1.5 rounded-md transition-colors text-muted-foreground hover:text-foreground hover:bg-muted text-xs font-medium min-w-[28px]"
+                title={t('nav.language')}
+              >
+                {langLabel}
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
