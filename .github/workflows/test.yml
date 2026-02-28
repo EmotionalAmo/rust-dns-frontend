@@ -1,0 +1,42 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test_and_lint:
+    name: Lint, Typecheck and Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './projects/rust-dns-frontend/package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./projects/rust-dns-frontend
+
+      - name: Security audit
+        run: npm audit --audit-level=high
+        working-directory: ./projects/rust-dns-frontend
+
+      - name: Run ESLint
+        run: npm run lint
+        working-directory: ./projects/rust-dns-frontend
+
+      - name: Check TypeScript types
+        run: npx tsc --noEmit
+        working-directory: ./projects/rust-dns-frontend
+
+      - name: Test Production Build
+        run: npm run build
+        working-directory: ./projects/rust-dns-frontend
