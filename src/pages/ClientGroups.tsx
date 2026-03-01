@@ -89,8 +89,9 @@ export default function ClientGroupsPage() {
         return await clientGroupsApi.getMembers(selectedGroupId);
       } else {
         const allClients: ClientRecord[] = await clientsApi.list();
+        const staticClients = allClients.filter(c => c.is_static);
         return {
-          data: allClients.map((c) => {
+          data: staticClients.map((c) => {
             const { ip, mac } = parseIdentifiers(c.identifiers);
             // 查找客户端所属的分组
             // 由于分组数据中不直接包含成员列表，这里暂时返回空数组
@@ -107,7 +108,7 @@ export default function ClientGroupsPage() {
               group_names: clientGroups.map(g => g.name),
             };
           }),
-          total: allClients.length,
+          total: staticClients.length,
         };
       }
     },
@@ -330,7 +331,7 @@ export default function ClientGroupsPage() {
       )}
       <div className="flex flex-1 min-h-0">
         {/* 左侧分组树 */}
-        <div className="w-80 border-r">
+        <div className="w-80 border-r flex flex-col h-full overflow-hidden">
           <GroupTree
             groups={groups}
             selectedGroupId={selectedGroupId}
@@ -342,10 +343,10 @@ export default function ClientGroupsPage() {
         </div>
 
         {/* 右侧内容区 */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {selectedGroup ? (
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'clients' | 'rules')} className="flex-1 flex flex-col">
-              <div className="border-b px-6 py-4">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'clients' | 'rules')} className="flex-1 flex flex-col min-h-0">
+              <div className="border-b px-6 py-4 shrink-0">
                 <h1 className="text-2xl font-bold">{selectedGroup.name}</h1>
                 <p className="text-muted-foreground">{selectedGroup.description}</p>
                 <div className="flex items-center gap-4 mt-2">
@@ -359,7 +360,7 @@ export default function ClientGroupsPage() {
                 <TabsTrigger value="rules">{t('clientGroups.tabRules')}</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="clients" className="flex-1 mt-0">
+              <TabsContent value="clients" className="flex-1 mt-0 min-h-0 data-[state=active]:flex flex-col overflow-hidden">
                 <ClientList
                   clients={clients}
                   selectedClientIds={selectedClientIds}
@@ -371,7 +372,7 @@ export default function ClientGroupsPage() {
                 />
               </TabsContent>
 
-              <TabsContent value="rules" className="flex-1 mt-0">
+              <TabsContent value="rules" className="flex-1 mt-0 min-h-0 data-[state=active]:flex flex-col overflow-hidden">
                 <GroupRulesPanel
                   group={selectedGroup}
                   rules={rules}
@@ -387,22 +388,24 @@ export default function ClientGroupsPage() {
               </TabsContent>
             </Tabs>
           ) : (
-            <div className="flex-1 flex flex-col">
-              <div className="border-b px-6 py-4">
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="border-b px-6 py-4 shrink-0">
                 <h1 className="text-2xl font-bold">{t('clientGroups.allClients')}</h1>
                 <p className="text-muted-foreground">{t('clientGroups.allClientsDesc')}</p>
                 <div className="mt-2">
                   <Badge variant="secondary">{t('clientGroups.deviceCount', { count: clients.length })}</Badge>
                 </div>
               </div>
-              <ClientList
-                clients={clients}
-                selectedClientIds={selectedClientIds}
-                loading={clientsLoading}
-                onToggleClient={handleSelectClient}
-                onToggleAll={handleToggleAll}
-                onMoveToGroup={handleMoveToGroup}
-              />
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ClientList
+                  clients={clients}
+                  selectedClientIds={selectedClientIds}
+                  loading={clientsLoading}
+                  onToggleClient={handleSelectClient}
+                  onToggleAll={handleToggleAll}
+                  onMoveToGroup={handleMoveToGroup}
+                />
+              </div>
             </div>
           )}
         </div>
