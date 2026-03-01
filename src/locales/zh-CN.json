@@ -492,7 +492,10 @@
     "createError": "创建失败: {{msg}}",
     "updateError": "更新失败: {{msg}}",
     "deleteError": "删除失败: {{msg}}",
-    "notFound": "客户端不存在"
+    "notFound": "客户端不存在",
+    "static": "静态",
+    "dynamic": "动态",
+    "promoteToStatic": "转为静态客户端"
   },
   "clientGroups": {
     "title": "客户端分组",

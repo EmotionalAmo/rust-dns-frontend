@@ -481,7 +481,10 @@
     "createError": "Create failed: {{msg}}",
     "updateError": "Update failed: {{msg}}",
     "deleteError": "Delete failed: {{msg}}",
-    "notFound": "Client not found"
+    "notFound": "Client not found",
+    "static": "Static",
+    "dynamic": "Dynamic",
+    "promoteToStatic": "Promote to Static"
   },
   "clientGroups": {
     "title": "Client Groups",
