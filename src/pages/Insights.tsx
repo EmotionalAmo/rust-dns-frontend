@@ -116,8 +116,8 @@ function TopDomainsCard({ hours }: { hours: number }) {
   const [showAll, setShowAll] = useState(false);
 
   const { data: rawData = [], isLoading } = useQuery<DomainStatEntry[]>({
-    queryKey: ['insights', 'top-domains-full', hours],
-    queryFn: () => insightsApi.getTopDomains({ hours, limit: 20 }),
+    queryKey: ['insights', 'top-domains-full', hours, 'allowed'],
+    queryFn: () => insightsApi.getTopDomains({ hours, limit: 20, status: 'allowed' }),
     staleTime: 60_000,
     retry: false,
   });
