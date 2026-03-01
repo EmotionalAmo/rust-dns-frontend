@@ -53,6 +53,7 @@ import {
   ChevronRight,
   ToggleLeft,
   ToggleRight,
+  Edit2,
 } from 'lucide-react';
 import { formatDateTimeShort } from '@/lib/datetime';
 
@@ -678,8 +679,9 @@ export default function RulesPage() {
                                 size="sm"
                                 onClick={() => handleEditRule(rule)}
                                 disabled={toggleMutationRef.current.isPending}
+                                title={t('common.edit')}
                               >
-                                <RefreshCw size={14} />
+                                <Edit2 size={14} />
                               </Button>
                               <Button
                                 variant="ghost"

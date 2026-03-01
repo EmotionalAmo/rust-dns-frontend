@@ -187,7 +187,8 @@ export const clientGroupsApi = {
     skipped_count: number;
     skipped_clients: string[];
   }> {
-    return apiClient.post(`/api/v1/client-groups/${id}/members`, data);
+    const response = await apiClient.post(`/api/v1/client-groups/${id}/members`, data);
+    return response.data;
   },
 
   /**
@@ -214,7 +215,8 @@ export const clientGroupsApi = {
     affected_rules_count: number;
     applied_rules: Array<{ rule_id: number; rule_type: string; name: string; action: string }>;
   }> {
-    return apiClient.post('/api/v1/clients/batch-move', data);
+    const response = await apiClient.post('/api/v1/clients/batch-move', data);
+    return response.data;
   },
 
   /**

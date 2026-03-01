@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { filtersApi } from '@/api';
@@ -210,6 +210,18 @@ function CreateFilterDialog({
     update_interval_hours: filter?.update_interval_hours ?? 0,
   });
 
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: filter?.name || '',
+        url: filter?.url || '',
+        type: filter ? inferFilterType(filter.url) : 'adguard',
+        is_enabled: filter?.is_enabled ?? true,
+        update_interval_hours: filter?.update_interval_hours ?? 0,
+      });
+    }
+  }, [open, filter]);
+
   const createMutation = useMutation({
     mutationFn: filtersApi.createFilter,
     onSuccess: (data: { syncing?: boolean }) => {
@@ -306,7 +318,7 @@ function CreateFilterDialog({
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="例如: AdGuard DNS Filter"
+                placeholder={formData.type === 'hosts' ? "例如: StevenBlack Hosts" : "例如: AdGuard DNS Filter"}
               />
             </div>
 
@@ -320,7 +332,7 @@ function CreateFilterDialog({
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                placeholder="https://example.com/filter.txt"
+                placeholder={formData.type === 'hosts' ? "https://example.com/hosts.txt" : "https://example.com/filter.txt"}
               />
               <p className="text-xs text-muted-foreground">
                 支持 AdGuard 规则或 hosts 格式。留空可创建本地空列表，用于手动添加自定义规则。

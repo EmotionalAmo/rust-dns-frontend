@@ -63,10 +63,20 @@ const RESOURCE_COLOR: Record<string, string> = {
   user: 'text-pink-600 bg-pink-500/10 dark:text-pink-300',
 };
 
+const RESOURCE_OPTIONS: Record<string, string> = {
+  rule: '规则',
+  filter: '过滤器',
+  client: '客户端',
+  rewrite: '重写规则',
+  session: '会话',
+  user: '用户',
+};
+
 function ResourceBadge({ resource }: { resource: string }) {
   const color = RESOURCE_COLOR[resource] ?? 'text-muted-foreground bg-muted';
+  const label = RESOURCE_OPTIONS[resource] ?? resource;
   return (
-    <span className={`text-xs font-medium rounded px-2 py-0.5 ${color}`}>{resource}</span>
+    <span className={`text-xs font-medium rounded px-2 py-0.5 ${color}`}>{label}</span>
   );
 }
 
