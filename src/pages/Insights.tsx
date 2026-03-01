@@ -9,9 +9,9 @@ import { dashboardApi } from '@/api/dashboard';
 import { cn } from '@/lib/utils';
 
 const TIME_RANGES = [
-  { label: '1h',  hours: 1 },
+  { label: '1h', hours: 1 },
   { label: '24h', hours: 24 },
-  { label: '7d',  hours: 168 },
+  { label: '7d', hours: 168 },
   { label: '30d', hours: 720 },
 ] as const;
 
@@ -28,7 +28,7 @@ const CATEGORY_VALUES = [
 ] as const;
 
 const STATUS_VALUES = [
-  { value: '',        labelKey: 'insights.statusAll' },
+  { value: '', labelKey: 'insights.statusAll' },
   { value: 'blocked', labelKey: 'insights.statusBlocked' },
   { value: 'allowed', labelKey: 'insights.statusAllowed' },
 ] as const;
@@ -38,19 +38,19 @@ type DomainSortKey = 'total_queries' | 'block_rate';
 type SortDir = 'desc' | 'asc';
 
 const CATEGORY_I18N_MAP: Record<string, string> = {
-  Streaming:     'insights.catStreaming',
-  Social:        'insights.catSocial',
-  Tech:          'insights.catTech',
-  Gaming:        'insights.catGaming',
+  Streaming: 'insights.catStreaming',
+  Social: 'insights.catSocial',
+  Tech: 'insights.catTech',
+  Gaming: 'insights.catGaming',
   Communication: 'insights.catCommunication',
-  Shopping:      'insights.catShopping',
-  Finance:       'insights.catFinance',
-  News:          'insights.catNews',
+  Shopping: 'insights.catShopping',
+  Finance: 'insights.catFinance',
+  News: 'insights.catNews',
 };
 
 function formatNumber(num: number): string {
   if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-  if (num >= 1_000)     return `${(num / 1_000).toFixed(1)}K`;
+  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
   return num.toString();
 }
 
@@ -61,7 +61,7 @@ function formatRelativeTime(
   if (!iso) return '-';
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60_000);
-  if (mins < 1)  return t('common.justNow');
+  if (mins < 1) return t('common.justNow');
   if (mins < 60) return t('common.minutesAgo', { count: mins });
   const hours = Math.floor(mins / 60);
   if (hours < 24) return t('common.hoursAgo', { count: hours });
@@ -73,7 +73,7 @@ function formatTimeRange(
   t: (key: string, opts?: Record<string, unknown>) => string,
 ): string {
   if (hours >= 168) return t('insights.timeRangeDays', { count: hours / 24 });
-  if (hours >= 24)  return t('insights.timeRange24h');
+  if (hours >= 24) return t('insights.timeRange24h');
   return t('insights.timeRangeHours', { count: hours });
 }
 
@@ -99,14 +99,14 @@ function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; s
   if (col !== sortKey) return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
   return sortDir === 'desc'
     ? <ArrowDown className="ml-1 inline h-3 w-3 text-primary" />
-    : <ArrowUp   className="ml-1 inline h-3 w-3 text-primary" />;
+    : <ArrowUp className="ml-1 inline h-3 w-3 text-primary" />;
 }
 
 function DomainSortIcon({ col, sortKey, sortDir }: { col: DomainSortKey; sortKey: DomainSortKey; sortDir: SortDir }) {
   if (col !== sortKey) return <ArrowUpDown className="ml-1 inline h-3 w-3 opacity-40" />;
   return sortDir === 'desc'
     ? <ArrowDown className="ml-1 inline h-3 w-3 text-primary" />
-    : <ArrowUp   className="ml-1 inline h-3 w-3 text-primary" />;
+    : <ArrowUp className="ml-1 inline h-3 w-3 text-primary" />;
 }
 
 function TopDomainsCard({ hours }: { hours: number }) {
@@ -144,7 +144,7 @@ function TopDomainsCard({ hours }: { hours: number }) {
   const refVal = sorted.length > 0 ? (sorted[0].total_queries || 1) : 1;
 
   return (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <Globe className="h-4 w-4 text-muted-foreground" />
@@ -154,15 +154,17 @@ function TopDomainsCard({ hours }: { hours: number }) {
           {t('insights.top10Desc', { time: formatTimeRange(hours, t) })}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 flex flex-col">
         {isLoading ? (
-          <div className="space-y-2 p-6">
+          <div className="space-y-2 p-6 flex-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="h-8 animate-pulse rounded bg-muted" />
             ))}
           </div>
         ) : sorted.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">{t('insights.noData')}</p>
+          <div className="flex-1 flex items-center justify-center py-6">
+            <p className="text-sm text-muted-foreground">{t('insights.noData')}</p>
+          </div>
         ) : (
           <>
             <div className="overflow-x-auto">
@@ -197,8 +199,8 @@ function TopDomainsCard({ hours }: { hours: number }) {
                       blockRateNum >= 50
                         ? 'text-destructive'
                         : blockRateNum >= 20
-                        ? 'text-orange-500'
-                        : 'text-muted-foreground';
+                          ? 'text-orange-500'
+                          : 'text-muted-foreground';
 
                     return (
                       <tr key={entry.domain} className="transition-colors hover:bg-muted/30">
@@ -259,7 +261,7 @@ function AppTrendChart({ appId, hours }: { appId: number; hours: number }) {
   const { t } = useTranslation();
   const { data = [], isLoading } = useQuery({
     queryKey: ['insights', 'trend', appId, hours],
-    queryFn:  () => insightsApi.getAppTrend(appId, hours),
+    queryFn: () => insightsApi.getAppTrend(appId, hours),
     staleTime: 60_000,
     retry: false,
   });
@@ -273,7 +275,7 @@ function AppTrendChart({ appId, hours }: { appId: number; hours: number }) {
 
   const chartData = data.map((d) => ({
     // Show HH:MM from ISO string, fallback to full string
-    hour:    d.hour.length >= 16 ? d.hour.substring(11, 16) : d.hour,
+    hour: d.hour.length >= 16 ? d.hour.substring(11, 16) : d.hour,
     queries: d.total_queries,
   }));
 
@@ -282,7 +284,7 @@ function AppTrendChart({ appId, hours }: { appId: number; hours: number }) {
       <AreaChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
         <defs>
           <linearGradient id={`grad-${appId}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%"  stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
             <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
           </linearGradient>
         </defs>
@@ -297,9 +299,9 @@ function AppTrendChart({ appId, hours }: { appId: number; hours: number }) {
         <Tooltip
           contentStyle={{
             backgroundColor: 'hsl(var(--background))',
-            border:          '1px solid hsl(var(--border))',
-            borderRadius:    '0.375rem',
-            fontSize:        11,
+            border: '1px solid hsl(var(--border))',
+            borderRadius: '0.375rem',
+            fontSize: 11,
           }}
           formatter={(v: number | undefined) => [formatNumber(v ?? 0), 'Queries']}
         />
@@ -318,15 +320,15 @@ function AppTrendChart({ appId, hours }: { appId: number; hours: number }) {
 
 export default function InsightsPage() {
   const { t } = useTranslation();
-  const [hours,      setHours]      = useState<number>(24);
-  const [category,   setCategory]   = useState<string>('');
-  const [status,     setStatus]     = useState<string>('');
-  const [sortKey,    setSortKey]    = useState<SortKey>('total_queries');
-  const [sortDir,    setSortDir]    = useState<SortDir>('desc');
+  const [hours, setHours] = useState<number>(24);
+  const [category, setCategory] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
+  const [sortKey, setSortKey] = useState<SortKey>('total_queries');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const categoryParam = category === '' ? undefined : category;
-  const statusParam   = status   === '' ? undefined : status;
+  const statusParam = status === '' ? undefined : status;
 
   const {
     data: topAppsRaw = [],
@@ -335,7 +337,7 @@ export default function InsightsPage() {
     isFetching: appsFetching,
   } = useQuery<AppStatEntry[]>({
     queryKey: ['insights', 'top-apps', hours, categoryParam, statusParam],
-    queryFn:  () => insightsApi.getTopApps({ hours, limit: 50, category: categoryParam, status: statusParam }),
+    queryFn: () => insightsApi.getTopApps({ hours, limit: 50, category: categoryParam, status: statusParam }),
     staleTime: 60_000,
     retry: false,
   });
@@ -357,14 +359,14 @@ export default function InsightsPage() {
 
   const { data: topDomains = [], isLoading: domainsLoading } = useQuery({
     queryKey: ['insights', 'top-domains', hours],
-    queryFn:  () => dashboardApi.getTopBlockedDomains(hours),
+    queryFn: () => dashboardApi.getTopBlockedDomains(hours),
     staleTime: 60_000,
     retry: false,
   });
 
   const stats = useMemo(() => {
-    const totalQ   = topAppsRaw.reduce((s, a) => s + a.total_queries,   0);
-    const totalB   = topAppsRaw.reduce((s, a) => s + a.blocked_queries, 0);
+    const totalQ = topAppsRaw.reduce((s, a) => s + a.total_queries, 0);
+    const totalB = topAppsRaw.reduce((s, a) => s + a.blocked_queries, 0);
     const blockRate = totalQ > 0 ? ((totalB / totalQ) * 100).toFixed(1) : '0';
     const peakDevices = topAppsRaw.reduce((m, a) => Math.max(m, a.unique_clients), 0);
     return { totalQ, totalB, blockRate, peakDevices, appsCount: topAppsRaw.length };
@@ -436,10 +438,10 @@ export default function InsightsPage() {
       {!appsLoading && topAppsRaw.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: t('insights.statTotal'),   value: formatNumber(stats.totalQ),     sub: formatTimeRange(hours, t) },
-            { label: t('insights.statBlocked'), value: formatNumber(stats.totalB),     sub: `${stats.blockRate}%` },
-            { label: t('insights.statApps'),    value: String(stats.appsCount),        sub: t('insights.filterAll') },
-            { label: t('insights.statDevices'), value: String(stats.peakDevices),      sub: t('insights.colDevices') },
+            { label: t('insights.statTotal'), value: formatNumber(stats.totalQ), sub: formatTimeRange(hours, t) },
+            { label: t('insights.statBlocked'), value: formatNumber(stats.totalB), sub: `${stats.blockRate}%` },
+            { label: t('insights.statApps'), value: String(stats.appsCount), sub: t('insights.filterAll') },
+            { label: t('insights.statDevices'), value: String(stats.peakDevices), sub: t('insights.colDevices') },
           ].map((s) => (
             <Card key={s.label} className="py-3">
               <CardContent className="px-4 py-0">
@@ -596,7 +598,7 @@ export default function InsightsPage() {
                               title={isExpanded ? 'Collapse' : 'Show trend'}
                             >
                               {isExpanded
-                                ? <ChevronUp   className="h-3.5 w-3.5" />
+                                ? <ChevronUp className="h-3.5 w-3.5" />
                                 : <ChevronDown className="h-3.5 w-3.5" />}
                             </button>
                           </td>
@@ -622,58 +624,63 @@ export default function InsightsPage() {
         </CardContent>
       </Card>
 
-      {/* Top queried domains leaderboard */}
-      <TopDomainsCard hours={hours} />
+      {/* Top domains grid */}
+      <div className="grid gap-6 lg:grid-cols-2 items-start">
+        {/* Top queried domains leaderboard */}
+        <TopDomainsCard hours={hours} />
 
-      {/* Top blocked domains card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Globe className="h-4 w-4 text-muted-foreground" />
-            {t('insights.top10Title')}
-          </CardTitle>
-          <CardDescription>
-            {t('insights.top10Desc', { time: formatTimeRange(hours, t) })}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {domainsLoading ? (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-6 animate-pulse rounded bg-muted" />
-              ))}
-            </div>
-          ) : topDomains.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">{t('insights.noData')}</p>
-          ) : (
-            <div className="space-y-2.5">
-              {topDomains.slice(0, 10).map((entry, i) => {
-                const maxCount = topDomains[0]?.count ?? 1;
-                const pct = Math.round((entry.count / maxCount) * 100);
-                return (
-                  <div key={i} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="max-w-[70%] truncate font-mono text-xs" title={entry.domain}>
-                        <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
-                        {entry.domain}
-                      </span>
-                      <span className="ml-2 shrink-0 text-muted-foreground tabular-nums">
-                        {formatNumber(entry.count)}
-                      </span>
+        {/* Top blocked domains card */}
+        <Card className="flex flex-col h-full">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              {t('insights.top10Title')}
+            </CardTitle>
+            <CardDescription>
+              {t('insights.top10Desc', { time: formatTimeRange(hours, t) })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col">
+            {domainsLoading ? (
+              <div className="space-y-2 flex-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-6 animate-pulse rounded bg-muted" />
+                ))}
+              </div>
+            ) : topDomains.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center py-6">
+                <p className="text-sm text-muted-foreground">{t('insights.noData')}</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {topDomains.slice(0, 10).map((entry, i) => {
+                  const maxCount = topDomains[0]?.count ?? 1;
+                  const pct = Math.round((entry.count / maxCount) * 100);
+                  return (
+                    <div key={i} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="max-w-[70%] truncate font-mono text-xs" title={entry.domain}>
+                          <span className="mr-1.5 text-muted-foreground">{i + 1}.</span>
+                          {entry.domain}
+                        </span>
+                        <span className="ml-2 shrink-0 text-muted-foreground tabular-nums">
+                          {formatNumber(entry.count)}
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                        <div
+                          className="h-full rounded-full bg-destructive/60"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-destructive/60"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

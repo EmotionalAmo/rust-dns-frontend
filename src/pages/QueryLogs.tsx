@@ -81,7 +81,7 @@ function TimingCell({ elapsedNs, upstreamNs, status }: TimingCellProps) {
   const tag = status === 'cached' ? t('queryLogs.cache') : t('queryLogs.local');
   return (
     <div className="text-right tabular-nums text-xs text-muted-foreground"
-         title={`${tag}处理耗时 ${formatNs(elapsedNs)}，无上游调用`}>
+      title={`${tag}处理耗时 ${formatNs(elapsedNs)}，无上游调用`}>
       {formatNs(elapsedNs)} <span className="text-[10px] opacity-60">{tag}</span>
     </div>
   );
@@ -90,10 +90,10 @@ function TimingCell({ elapsedNs, upstreamNs, status }: TimingCellProps) {
 function WsStatusBadge({ status }: { status: string }) {
   const { t } = useTranslation();
   const config: Record<string, { color: string; labelKey: string }> = {
-    connected:    { color: 'text-green-600',  labelKey: 'queryLogs.wsStatusLive' },
-    connecting:   { color: 'text-yellow-500', labelKey: 'queryLogs.wsStatusConnecting' },
+    connected: { color: 'text-green-600', labelKey: 'queryLogs.wsStatusLive' },
+    connecting: { color: 'text-yellow-500', labelKey: 'queryLogs.wsStatusConnecting' },
     disconnected: { color: 'text-muted-foreground', labelKey: 'queryLogs.wsStatusOffline' },
-    error:        { color: 'text-red-500',    labelKey: 'queryLogs.wsStatusError' },
+    error: { color: 'text-red-500', labelKey: 'queryLogs.wsStatusError' },
   };
   const { color, labelKey } = config[status] ?? config.disconnected;
   return (
@@ -193,7 +193,7 @@ export default function QueryLogsPage() {
           <CardDescription>{t('queryLogs.desc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-end justify-between">
             <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">{t('queryLogs.filterDomain')}</label>
@@ -231,13 +231,14 @@ export default function QueryLogsPage() {
                 </Select>
               </div>
               <div className="flex gap-2">
-                <Button type="submit" size="sm" disabled={isFetching}>
+                <Button type="submit" size="sm" className="h-9" disabled={isFetching}>
                   {t('queryLogs.searchBtn')}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
+                  className="h-9"
                   onClick={() => refetch()}
                   disabled={isFetching}
                 >
@@ -247,10 +248,10 @@ export default function QueryLogsPage() {
             </form>
 
             {/* 导出按钮 */}
-            <div className="flex items-center gap-2 border-t pt-3">
-              <label className="text-xs text-muted-foreground">{t('queryLogs.exportFormat')}</label>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground whitespace-nowrap">{t('queryLogs.exportFormat')}</label>
               <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as 'csv' | 'json')}>
-                <SelectTrigger className="h-8 w-24">
+                <SelectTrigger className="h-9 w-24">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -262,6 +263,7 @@ export default function QueryLogsPage() {
                 type="button"
                 variant="outline"
                 size="sm"
+                className="h-9"
                 onClick={handleExport}
                 disabled={isExporting}
               >

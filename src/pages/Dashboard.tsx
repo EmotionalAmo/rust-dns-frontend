@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
-import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users } from 'lucide-react';
+import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw } from 'lucide-react';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -167,6 +167,13 @@ export default function DashboardPage() {
           {getShortTimeRangeLabel(hours, currentLang)}
           {currentLang === 'zh-CN' ? '（可在设置页调整）' : ' (adjustable in Settings)'}
         </p>
+        <button
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['dashboard'] })}
+          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          {t('dashboard.refreshStatus')}
+        </button>
       </div>
       {/* Zero-traffic onboarding guide */}
       {showOnboarding && (
@@ -307,11 +314,10 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-medium">{blockRateStr}%</span>
                       {lastWeekBlockRate > 0 && (
-                        <span className={`flex items-center text-xs ${
-                          blockRateTrend === 'up' ? 'text-red-500' :
-                          blockRateTrend === 'down' ? 'text-green-500' :
-                          'text-muted-foreground'
-                        }`}>
+                        <span className={`flex items-center text-xs ${blockRateTrend === 'up' ? 'text-red-500' :
+                            blockRateTrend === 'down' ? 'text-green-500' :
+                              'text-muted-foreground'
+                          }`}>
                           {blockRateTrend === 'up' && <TrendingUp className="h-3 w-3" />}
                           {blockRateTrend === 'down' && <TrendingDown className="h-3 w-3" />}
                           {blockRateTrend === 'flat' && <Minus className="h-3 w-3" />}
@@ -349,15 +355,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Separator + refresh button — anchored to the bottom of the card */}
-              <div className="pt-4 border-t mt-4">
-                <button
-                  onClick={() => queryClient.invalidateQueries({ queryKey: ['dashboard'] })}
-                  className="w-full px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
-                >
-                  {t('dashboard.refreshStatus')}
-                </button>
-              </div>
             </CardContent>
           </Card>
         </div>

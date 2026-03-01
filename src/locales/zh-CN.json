@@ -129,7 +129,7 @@
     "filterLists": "过滤列表",
     "customRules": "{{count}} 条自定义规则",
     "customRulesLabel": "自定义规则",
-    "queryTrend": "查询趋势（24小时）",
+    "queryTrend": "查询趋势",
     "queryTrendDesc": "最近 24 小时 DNS 查询，每 5 秒自动刷新",
     "systemStatus": "系统状态",
     "dnsServiceStatus": "DNS 服务运行状态",

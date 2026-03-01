@@ -129,7 +129,7 @@
     "filterLists": "Filter Lists",
     "customRules": "{{count}} custom rules",
     "customRulesLabel": "Custom Rules",
-    "queryTrend": "Query Trend (24h)",
+    "queryTrend": "Query Trend",
     "queryTrendDesc": "DNS queries in the last 24 hours, auto-refreshes every 5 seconds",
     "systemStatus": "System Status",
     "dnsServiceStatus": "DNS Service Status",
