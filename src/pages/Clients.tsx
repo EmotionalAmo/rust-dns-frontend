@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
@@ -306,7 +307,16 @@ export default function ClientsPage() {
                 <TableBody>
                   {clients.map((client) => (
                     <TableRow key={client.id}>
-                      <TableCell className="font-medium">{client.name}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {client.name}
+                          {client.is_static !== false ? (
+                            <Badge variant="secondary" className="text-[10px] h-4 px-1 rounded-sm">{t('clients.static') || 'Static'}</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] h-4 px-1 rounded-sm text-muted-foreground">{t('clients.dynamic') || 'Dynamic'}</Badge>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {client.identifiers?.map((id) => (
@@ -332,6 +342,7 @@ export default function ClientsPage() {
                       <TableCell>
                         <Switch
                           checked={client.filter_enabled}
+                          disabled={client.is_static === false}
                           onCheckedChange={(checked) =>
                             toggleFilterMutation.mutate({ id: client.id, filter_enabled: checked })
                           }
@@ -350,23 +361,43 @@ export default function ClientsPage() {
                         {formatDate(client.created_at)}
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => { setEditing(client); setDialogOpen(true); }}
-                          >
-                            <Edit2 size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeleteTarget(client)}
-                          >
-                            <X size={14} />
-                          </Button>
-                        </div>
+                        {client.is_static !== false ? (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setEditing(client); setDialogOpen(true); }}
+                            >
+                              <Edit2 size={14} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeleteTarget(client)}
+                            >
+                              <X size={14} />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              title={t('clients.promoteToStatic') || 'Add to static list'}
+                              onClick={() => {
+                                // Create a new static record from this dynamic one
+                                setEditing({
+                                  ...client,
+                                  id: '', // Empty ID means create new
+                                });
+                                setDialogOpen(true);
+                              }}
+                            >
+                              <Plus size={14} />
+                            </Button>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

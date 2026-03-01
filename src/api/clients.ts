@@ -10,6 +10,7 @@ export interface ClientRecord {
   created_at: string;
   updated_at: string;
   query_count?: number;
+  is_static?: boolean;
 }
 
 export interface CreateClientPayload {
