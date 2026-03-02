@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type GroupRule, type ClientGroup } from '@/api/clientGroups';
+import { type Rule, type Rewrite } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,10 +29,10 @@ interface GroupRulesPanelProps {
   group: ClientGroup | null;
   rules: GroupRule[];
   loading?: boolean;
-  onBindRule: (ruleId: number, ruleType: string, priority: number) => Promise<void>;
-  onUnbindRule: (ruleId: number, ruleType: string) => Promise<void>;
-  availableFilters?: Array<{ id: number; name: string; pattern: string; action: string }>;
-  availableRewrites?: Array<{ id: number; name: string; domain: string }>;
+  onBindRule: (ruleId: string, ruleType: string, priority: number) => Promise<void>;
+  onUnbindRule: (ruleId: string, ruleType: string) => Promise<void>;
+  availableRules?: Rule[];
+  availableRewrites?: Rewrite[];
 }
 
 export function GroupRulesPanel({
@@ -40,14 +41,16 @@ export function GroupRulesPanel({
   loading = false,
   onBindRule,
   onUnbindRule,
-  availableFilters = [],
+  availableRules = [],
+  availableRewrites = [],
 }: GroupRulesPanelProps) {
   const { t } = useTranslation();
   const [showDeleteDialog, setShowDeleteDialog] = useState<{
     rule: GroupRule | null;
   }>({ rule: null });
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [selectedRules, setSelectedRules] = useState<Set<number>>(new Set());
+  const [selectedRules, setSelectedRules] = useState<Set<string>>(new Set());
+  const [selectedRewrites, setSelectedRewrites] = useState<Set<string>>(new Set());
   const [bindLoading, setBindLoading] = useState(false);
 
   if (!group) {
@@ -60,19 +63,20 @@ export function GroupRulesPanel({
   }
 
   const handleAddRules = async () => {
-    if (selectedRules.size === 0) return;
+    if (selectedRules.size === 0 && selectedRewrites.size === 0) return;
 
     setBindLoading(true);
     try {
-      const promises = Array.from(selectedRules).map(async (ruleId) => {
-        const filter = availableFilters.find((f) => f.id === ruleId);
-        if (filter) {
-          await onBindRule(ruleId, 'filter', 0);
-        }
-      });
+      const rulePromises = Array.from(selectedRules).map((ruleId) =>
+        onBindRule(ruleId, 'custom_rule', 0)
+      );
+      const rewritePromises = Array.from(selectedRewrites).map((ruleId) =>
+        onBindRule(ruleId, 'rewrite', 0)
+      );
 
-      await Promise.all(promises);
+      await Promise.all([...rulePromises, ...rewritePromises]);
       setSelectedRules(new Set());
+      setSelectedRewrites(new Set());
       setShowAddDialog(false);
     } catch (error) {
       console.error('绑定规则失败:', error);
@@ -97,7 +101,7 @@ export function GroupRulesPanel({
   };
 
   const getRuleIcon = (ruleType: string) => {
-    return ruleType === 'filter' ? (
+    return ruleType === 'custom_rule' ? (
       <Filter className="h-4 w-4" />
     ) : (
       <ArrowRightCircle className="h-4 w-4" />
@@ -105,10 +109,11 @@ export function GroupRulesPanel({
   };
 
   const getRuleActionBadge = (rule: GroupRule) => {
-    if (rule.rule_type === 'filter' && rule.action) {
+    if (rule.rule_type === 'custom_rule') {
+      const isBlock = rule.rule && rule.rule.startsWith('||');
       return (
-        <Badge variant={rule.action === 'block' ? 'destructive' : 'default'}>
-          {rule.action === 'block' ? t('common.block') : t('common.allow')}
+        <Badge variant={isBlock ? 'destructive' : 'default'}>
+          {isBlock ? t('common.block') : t('common.allow')}
         </Badge>
       );
     }
@@ -154,23 +159,24 @@ export function GroupRulesPanel({
                       <span className="text-sm text-muted-foreground">
                         {index + 1}.
                       </span>
-                      <span className="font-medium">{rule.name}</span>
+                      <span className="font-medium">
+                        {rule.rule_type === 'custom_rule' ? rule.rule : rule.domain}
+                      </span>
                       {getRuleActionBadge(rule)}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       {getRuleIcon(rule.rule_type)}
-                      {rule.rule_type === 'filter' ? (
+                      {rule.rule_type === 'custom_rule' ? (
                         <>
-                          <span className="font-mono">{rule.pattern}</span>
+                          <span className="font-mono">{rule.comment || t('clientGroups.customRule')}</span>
                           <Badge variant="outline" className="text-xs">
                             {t('clientGroups.rulePriority', { n: rule.priority })}
                           </Badge>
                         </>
                       ) : (
                         <>
-                          <span className="font-mono">{rule.domain}</span>
                           <ArrowRightCircle className="h-3 w-3" />
-                          <span className="font-mono">{rule.replacement}</span>
+                          <span className="font-mono">{rule.answer || rule.replacement}</span>
                           <Badge variant="outline" className="text-xs">
                             {t('clientGroups.rulePriority', { n: rule.priority })}
                           </Badge>
@@ -199,7 +205,7 @@ export function GroupRulesPanel({
           <AlertDialogHeader>
             <AlertDialogTitle>{t('clientGroups.unbindTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('clientGroups.unbindDesc', { name: showDeleteDialog.rule?.name })}
+              {t('clientGroups.unbindDesc', { name: showDeleteDialog.rule?.rule || showDeleteDialog.rule?.domain })}
               <br />
               <br />
               {t('clientGroups.unbindHint')}
@@ -216,56 +222,113 @@ export function GroupRulesPanel({
 
       {/* 添加规则对话框 */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t('clientGroups.addRuleTitle')}</DialogTitle>
             <DialogDescription>
               {t('clientGroups.addRuleDesc')}
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-96 overflow-y-auto space-y-2">
-            {availableFilters.map((filter) => (
-              <label
-                key={filter.id}
-                className={cn(
-                  'flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors',
-                  selectedRules.has(filter.id) && 'bg-accent border-primary'
-                )}
-              >
-                <input
-                  type="checkbox"
-                  className="mt-0.5"
-                  checked={selectedRules.has(filter.id)}
-                  onChange={(e) => {
-                    const newSet = new Set(selectedRules);
-                    if (e.target.checked) {
-                      newSet.add(filter.id);
-                    } else {
-                      newSet.delete(filter.id);
-                    }
-                    setSelectedRules(newSet);
-                  }}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{filter.name}</span>
-                    <Badge variant={filter.action === 'block' ? 'destructive' : 'default'}>
-                      {filter.action === 'block' ? t('common.block') : t('common.allow')}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-muted-foreground font-mono">
-                    {filter.pattern}
-                  </div>
+          <div className="max-h-[60vh] overflow-y-auto space-y-6 pr-2">
+
+            <div className="space-y-3">
+              <h3 className="font-medium">{t('clientGroups.customRules')}</h3>
+              {availableRules.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRules')}</p>
+              ) : (
+                <div className="space-y-2">
+                  {availableRules.map((filter) => (
+                    <label
+                      key={filter.id}
+                      className={cn(
+                        'flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors',
+                        selectedRules.has(filter.id) && 'bg-accent border-primary'
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={selectedRules.has(filter.id)}
+                        onChange={(e) => {
+                          const newSet = new Set(selectedRules);
+                          if (e.target.checked) {
+                            newSet.add(filter.id);
+                          } else {
+                            newSet.delete(filter.id);
+                          }
+                          setSelectedRules(newSet);
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium font-mono">{filter.rule}</span>
+                          <Badge variant={filter.rule.startsWith('||') ? 'destructive' : 'default'}>
+                            {filter.rule.startsWith('||') ? t('common.block') : t('common.allow')}
+                          </Badge>
+                        </div>
+                        {filter.comment && (
+                          <div className="text-sm text-muted-foreground">
+                            {filter.comment}
+                          </div>
+                        )}
+                      </div>
+                    </label>
+                  ))}
                 </div>
-              </label>
-            ))}
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-medium">{t('clientGroups.rewrites')}</h3>
+              {availableRewrites.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRewrites')}</p>
+              ) : (
+                <div className="space-y-2">
+                  {availableRewrites.map((rewrite) => (
+                    <label
+                      key={rewrite.id}
+                      className={cn(
+                        'flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors',
+                        selectedRewrites.has(rewrite.id) && 'bg-accent border-primary'
+                      )}
+                    >
+                      <input
+                        type="checkbox"
+                        className="mt-0.5"
+                        checked={selectedRewrites.has(rewrite.id)}
+                        onChange={(e) => {
+                          const newSet = new Set(selectedRewrites);
+                          if (e.target.checked) {
+                            newSet.add(rewrite.id);
+                          } else {
+                            newSet.delete(rewrite.id);
+                          }
+                          setSelectedRewrites(newSet);
+                        }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium font-mono">{rewrite.domain}</span>
+                          <Badge variant="outline">{t('common.rewrite')}</Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-2 font-mono">
+                          <ArrowRightCircle className="h-3 w-3" />
+                          {rewrite.answer}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleAddRules} disabled={bindLoading || selectedRules.size === 0}>
-              {bindLoading ? t('clientGroups.binding') : t('clientGroups.bindConfirm', { count: selectedRules.size })}
+            <Button onClick={handleAddRules} disabled={bindLoading || (selectedRules.size === 0 && selectedRewrites.size === 0)}>
+              {bindLoading ? t('clientGroups.binding') : t('clientGroups.bindConfirm', { count: selectedRules.size + selectedRewrites.size })}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientGroupsApi, type ClientGroup, type CreateClientGroupRequest, type UpdateClientGroupRequest, type ClientGroupMember, type PaginatedResponse } from '@/api/clientGroups';
 import { clientsApi, type ClientRecord } from '@/api/clients';
-// import { filtersApi } from '@/api/filters';
+import { rulesApi } from '@/api/rules';
+import { rewritesApi } from '@/api/rewrites';
 import { GroupTree } from '@/components/GroupTree';
 import { ClientList } from '@/components/ClientList';
 import { GroupRulesPanel } from '@/components/GroupRulesPanel';
@@ -117,17 +118,38 @@ export default function ClientGroupsPage() {
 
   const clients = clientsData?.data || [];
 
-  // 查询分组规则
-  const { data: rulesData, isLoading: rulesLoading } = useQuery({
-    queryKey: ['client-group-rules', selectedGroupId],
-    queryFn: () => clientGroupsApi.getRules(selectedGroupId!, { rule_type: 'filter' }),
+  // 查询分组规则 (custom_rule)
+  const { data: rulesDataCustom, isLoading: rulesLoadingCustom } = useQuery({
+    queryKey: ['client-group-rules', selectedGroupId, 'custom_rule'],
+    queryFn: () => clientGroupsApi.getRules(selectedGroupId!, { rule_type: 'custom_rule' }),
     enabled: !!selectedGroupId && activeTab === 'rules',
   });
 
-  const rules = rulesData?.data || [];
+  // 查询分组规则 (rewrite)
+  const { data: rulesDataRewrite, isLoading: rulesLoadingRewrite } = useQuery({
+    queryKey: ['client-group-rules', selectedGroupId, 'rewrite'],
+    queryFn: () => clientGroupsApi.getRules(selectedGroupId!, { rule_type: 'rewrite' }),
+    enabled: !!selectedGroupId && activeTab === 'rules',
+  });
 
-  // 查询可用的过滤器列表 - 使用 mock 数据，因为 filtersApi.list 不存在
-  const availableFilters: Array<{ id: number; name: string; pattern: string; action: string }> = [];
+  const rules = [...(rulesDataCustom?.data || []), ...(rulesDataRewrite?.data || [])];
+  const rulesLoading = rulesLoadingCustom || rulesLoadingRewrite;
+
+  // 查询可用的自定义规则
+  const { data: availableRulesData } = useQuery({
+    queryKey: ['rules'],
+    queryFn: () => rulesApi.listRules({ per_page: 1000 }),
+    enabled: activeTab === 'rules',
+  });
+  const availableRules = availableRulesData?.data || [];
+
+  // 查询可用的重写规则
+  const { data: availableRewritesData } = useQuery({
+    queryKey: ['rewrites'],
+    queryFn: () => rewritesApi.listRewrites(),
+    enabled: activeTab === 'rules',
+  });
+  const availableRewrites = availableRewritesData || [];
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId);
 
@@ -383,7 +405,8 @@ export default function ClientGroupsPage() {
                   onUnbindRule={async (ruleId, ruleType) => {
                     await unbindRuleMutation.mutateAsync({ rule_id: String(ruleId), rule_type: ruleType });
                   }}
-                  availableFilters={availableFilters}
+                  availableRules={availableRules}
+                  availableRewrites={availableRewrites}
                 />
               </TabsContent>
             </Tabs>

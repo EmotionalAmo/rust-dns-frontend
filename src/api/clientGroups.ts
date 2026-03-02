@@ -53,15 +53,19 @@ export interface ClientGroupMember {
  * 分组规则详情
  */
 export interface GroupRule {
-  rule_id: number;
+  rule_id: string;
   rule_type: string;
-  name: string;
+  name?: string;
   pattern?: string;
   domain?: string;
   replacement?: string;
   action?: string;
   priority: number;
   created_at: string;
+  rule?: string;
+  comment?: string;
+  is_enabled?: boolean;
+  answer?: string;
 }
 
 /**
