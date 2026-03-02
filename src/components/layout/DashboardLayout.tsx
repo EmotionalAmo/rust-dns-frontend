@@ -27,7 +27,9 @@ import {
   FolderTree,
   KeyRound,
   ClipboardList,
+  Bell,
 } from 'lucide-react';
+import { NotificationBell } from './NotificationBell';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -38,18 +40,19 @@ interface NavItem {
 }
 
 const NAV_KEYS = [
-  { path: '/',              key: 'nav.dashboard',    icon: <BarChart3 size={16} /> },
-  { path: '/rules',        key: 'nav.rules',         icon: <List size={16} /> },
-  { path: '/filters',      key: 'nav.filters',       icon: <Shield size={16} /> },
-  { path: '/rewrites',     key: 'nav.rewrites',      icon: <ArrowLeftRight size={16} /> },
-  { path: '/clients',      key: 'nav.clients',       icon: <Laptop size={16} /> },
-  { path: '/client-groups',key: 'nav.clientGroups',  icon: <FolderTree size={16} /> },
-  { path: '/upstreams',    key: 'nav.upstreams',     icon: <Server size={16} /> },
-  { path: '/logs',         key: 'nav.queryLogs',     icon: <FileText size={16} /> },
-  { path: '/insights',     key: 'nav.insights',      icon: <BarChart2 size={16} /> },
-  { path: '/settings',     key: 'nav.settings',      icon: <Settings size={16} /> },
-  { path: '/users',        key: 'nav.users',         icon: <Users size={16} />, adminOnly: true },
-  { path: '/audit-log',   key: 'nav.auditLog',      icon: <ClipboardList size={16} />, adminOnly: true },
+  { path: '/', key: 'nav.dashboard', icon: <BarChart3 size={16} /> },
+  { path: '/rules', key: 'nav.rules', icon: <List size={16} /> },
+  { path: '/filters', key: 'nav.filters', icon: <Shield size={16} /> },
+  { path: '/rewrites', key: 'nav.rewrites', icon: <ArrowLeftRight size={16} /> },
+  { path: '/clients', key: 'nav.clients', icon: <Laptop size={16} /> },
+  { path: '/client-groups', key: 'nav.clientGroups', icon: <FolderTree size={16} /> },
+  { path: '/upstreams', key: 'nav.upstreams', icon: <Server size={16} /> },
+  { path: '/alerts', key: 'Alerts', icon: <Bell size={16} /> },
+  { path: '/logs', key: 'nav.queryLogs', icon: <FileText size={16} /> },
+  { path: '/insights', key: 'nav.insights', icon: <BarChart2 size={16} /> },
+  { path: '/settings', key: 'nav.settings', icon: <Settings size={16} /> },
+  { path: '/users', key: 'nav.users', icon: <Users size={16} />, adminOnly: true },
+  { path: '/audit-log', key: 'nav.auditLog', icon: <ClipboardList size={16} />, adminOnly: true },
 ];
 
 interface DashboardLayoutProps {
@@ -214,6 +217,10 @@ export function DashboardLayout({ title }: DashboardLayoutProps) {
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <CheckCircle size={14} className="text-success" />
               <span className="hidden sm:inline">{t('nav.dnsRunning')}</span>
+            </div>
+            {/* Notification Bell */}
+            <div className="flex items-center gap-1 border-l pl-3 ml-1">
+              <NotificationBell />
             </div>
             {/* Theme Toggle */}
             <div className="flex items-center gap-1 border-l pl-3">

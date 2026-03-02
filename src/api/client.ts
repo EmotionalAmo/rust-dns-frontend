@@ -55,7 +55,9 @@ apiClient.interceptors.response.use(
     // Handle 401 Unauthorized - clear token and redirect to login
     if (error.response?.status === 401 && clearAuth) {
       clearAuth();
-      window.location.href = '/login';
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
 
     return Promise.reject(apiError);

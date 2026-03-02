@@ -7,6 +7,7 @@ export interface DnsSettingsRecord {
   stats_retention_days: number;
   safe_search_enabled: boolean;
   parental_control_enabled: boolean;
+  upstream_strategy?: string;
 }
 
 export interface UpdateDnsSettingsPayload {
@@ -16,6 +17,7 @@ export interface UpdateDnsSettingsPayload {
   stats_retention_days?: number;
   safe_search_enabled?: boolean;
   parental_control_enabled?: boolean;
+  upstream_strategy?: string;
 }
 
 async function getDnsSettings(): Promise<DnsSettingsRecord> {

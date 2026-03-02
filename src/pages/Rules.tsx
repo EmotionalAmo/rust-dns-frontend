@@ -54,8 +54,10 @@ import {
   ToggleLeft,
   ToggleRight,
   Edit2,
+  Play,
 } from 'lucide-react';
 import { formatDateTimeShort } from '@/lib/datetime';
+import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
 
 const PER_PAGE = 50;
 
@@ -334,6 +336,103 @@ function DeleteConfirmDialog({
   );
 }
 
+function SandboxDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  const [rule, setRule] = useState('');
+  const [domainsText, setDomainsText] = useState('');
+  const [result, setResult] = useState<SandboxResponse | null>(null);
+
+  const testMutation = useMutation({
+    mutationFn: () => sandboxApi.testRule({
+      rule: rule.trim(),
+      test_domains: domainsText.split('\\n').map(d => d.trim()).filter(Boolean),
+    }),
+    onSuccess: (data) => setResult(data),
+    onError: (error: Error) => toast.error(error.message || 'Error occurred'),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rule.trim()) return toast.error(t('rules.ruleRequired'));
+    if (!domainsText.trim()) return toast.error('Please enter at least one domain');
+    testMutation.mutate();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setResult(null); }}>
+      <DialogContent className="sm:max-w-2xl px-6 py-6 pb-2">
+        <DialogHeader>
+          <DialogTitle>Rule Sandbox (Dry Run)</DialogTitle>
+          <DialogDescription>
+            Test exactly how a custom rule will behave against specific domains before applying it to your network.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="col-span-1 space-y-2 max-w-full md:mt-0 mt-4">
+              <Label>Rule to test</Label>
+              <Input
+                placeholder="e.g. ||example.com^"
+                value={rule}
+                onChange={(e) => setRule(e.target.value)}
+              />
+              <Label className="mt-4 block">Test Domains (one per line)</Label>
+              <textarea
+                className="flex h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="test.example.com&#10;google.com"
+                value={domainsText}
+                onChange={(e) => setDomainsText(e.target.value)}
+              />
+            </div>
+            <div className="col-span-1 space-y-2 border rounded-md min-h-[160px] bg-muted/20 p-3 overflow-y-auto w-full max-h-56">
+              <div className="font-semibold text-sm mb-2">Results</div>
+              {testMutation.isPending && (
+                <div className="flex h-12 items-center justify-center"><RefreshCw className="animate-spin text-muted-foreground" /></div>
+              )}
+              {result && (
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    <Badge variant={result.rule_valid ? 'default' : 'destructive'} className={result.rule_valid ? "bg-green-600 hover:bg-green-700" : ""}>
+                      {result.rule_valid ? 'Valid Rule' : 'Invalid Rule'}
+                    </Badge>
+                    {result.rule_type && <Badge variant="outline">{result.rule_type}</Badge>}
+                  </div>
+                  <ul className="space-y-1 mt-2 text-sm">
+                    {result.results.map((r, i) => (
+                      <li key={i} className="flex justify-between items-center py-1 border-b last:border-0 border-border/50">
+                        <span className="font-mono text-xs w-[60%] truncate" title={r.domain}>{r.domain}</span>
+                        <Badge variant={r.status === 'blocked' ? 'destructive' : r.status === 'allowed' ? 'default' : 'secondary'} className="capitalize text-[10px] w-16 justify-center">
+                          {r.status}
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {!result && !testMutation.isPending && (
+                <p className="text-sm text-muted-foreground text-center mt-6">Click test to see results</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="mt-4 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
+            <Button type="submit" disabled={testMutation.isPending}>
+              {testMutation.isPending ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+              Test Rule
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RulesPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -343,6 +442,7 @@ export default function RulesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showExamples, setShowExamples] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [sandboxDialogOpen, setSandboxDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -548,6 +648,10 @@ export default function RulesPage() {
               </Button>
             </>
           )}
+          <Button variant="secondary" onClick={() => setSandboxDialogOpen(true)}>
+            <Play size={16} className="mr-1" />
+            Rule Sandbox
+          </Button>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus size={16} className="mr-1" />
             {t('rules.addRule')}
@@ -794,6 +898,11 @@ export default function RulesPage() {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         count={selectedIds.size}
+      />
+
+      <SandboxDialog
+        open={sandboxDialogOpen}
+        onOpenChange={setSandboxDialogOpen}
       />
     </div>
   );

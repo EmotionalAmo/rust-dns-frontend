@@ -223,6 +223,7 @@ export default function SettingsPage() {
         stats_retention_days: settings.stats_retention_days,
         safe_search_enabled: settings.safe_search_enabled,
         parental_control_enabled: settings.parental_control_enabled,
+        upstream_strategy: settings.upstream_strategy ?? 'priority',
       });
     }
   }, [settings]);
@@ -538,8 +539,8 @@ export default function SettingsPage() {
                           {formatDateTime(entry.timestamp)}
                         </span>
                         <span className={`px-2 py-0.5 rounded text-xs ${entry.action === 'failover_triggered' ? 'bg-yellow-100 text-yellow-800' :
-                            entry.action === 'recovered' ? 'bg-green-100 text-green-800' :
-                              'bg-red-100 text-red-800'
+                          entry.action === 'recovered' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
                           }`}>
                           {entry.action}
                         </span>
@@ -575,9 +576,30 @@ export default function SettingsPage() {
                   <Plus size={14} className="mr-1" />{t('settings.addUpstream')}
                 </Button>
               </CardTitle>
-              <CardDescription>{t('settings.upstreamsDesc')}</CardDescription>
+              <CardDescription>{t('settings.upstreamsDesc')} Configure DNS resolution routing.</CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-6 mb-4">
+                <SettingRow
+                  label="Upstream Routing Strategy"
+                  description="Choose how queries are distributed across active upstreams."
+                >
+                  <Select
+                    value={current.upstream_strategy ?? 'priority'}
+                    onValueChange={(v) => setForm({ ...form, upstream_strategy: v })}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="priority">Priority (Strict Failover)</SelectItem>
+                      <SelectItem value="load_balance">Load Balancing (Round-Robin)</SelectItem>
+                      <SelectItem value="fastest">Fastest (Lowest Latency)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </SettingRow>
+              </div>
+
               {upstreamsLoading ? (
                 <div className="flex justify-center py-8">
                   <RefreshCw size={24} className="animate-spin text-muted-foreground" />
