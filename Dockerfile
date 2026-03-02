@@ -21,6 +21,9 @@ FROM nginx:alpine
 # Copy the build output from the builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
+# Copy custom nginx configuration with API proxy
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 # Expose HTTP port
 EXPOSE 80
 
