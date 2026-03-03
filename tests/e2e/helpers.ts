@@ -13,7 +13,7 @@ import { Page } from '@playwright/test';
  * 1. 正常登录 - 登录后直接跳转到 Dashboard (/)
  * 2. 强制密码修改 - 登录后跳转到 /change-password（默认密码场景）
  *
- * 当 ENT_DNS__AUTH__ALLOW_DEFAULT_PASSWORD=true 时，默认密码不会触发修改流程。
+ * 当 RUST_DNS__AUTH__ALLOW_DEFAULT_PASSWORD=true 时，默认密码不会触发修改流程。
  * 当设置为 false 时，使用默认密码会被强制修改密码。
  *
  * @param page Playwright Page 对象

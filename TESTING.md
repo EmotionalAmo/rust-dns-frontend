@@ -45,9 +45,9 @@
 1. **Start the Backend:**
    ```bash
    cd /Users/emotionalamo/Developer/rust-dns/projects/rust-dns
-   ENT_DNS__DNS__PORT=15353 \
-   ENT_DNS__DATABASE__PATH=/tmp/rust-dns-test.db \
-   ENT_DNS__API__PORT=8080 \
+   RUST_DNS__DNS__PORT=15353 \
+   RUST_DNS__DATABASE__PATH=/tmp/rust-dns-test.db \
+   RUST_DNS__API__PORT=8080 \
    cargo run
    ```
 

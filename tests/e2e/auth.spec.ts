@@ -15,8 +15,8 @@
  *
  * 注意：这些测试依赖真实后端服务。在 CI 中需要先启动后端。
  * 本地跑测试时请确保后端已启动：
- *   ENT_DNS__DNS__PORT=15353 ENT_DNS__DATABASE__PATH=/tmp/rust-dns-test.db \
- *   ENT_DNS__AUTH__JWT_SECRET=dev-local-secret-for-development-only cargo run
+ *   RUST_DNS__DNS__PORT=15353 RUST_DNS__DATABASE__PATH=/tmp/rust-dns-test.db \
+ *   RUST_DNS__AUTH__JWT_SECRET=dev-local-secret-for-development-only cargo run
  */
 import { test, expect } from '@playwright/test';
 import { login, clearBrowserState } from './helpers';
