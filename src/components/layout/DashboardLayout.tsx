@@ -130,7 +130,7 @@ export function DashboardLayout({ title }: DashboardLayoutProps) {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
               <Shield className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-semibold tracking-wide">Ent-DNS</span>
+            <span className="text-sm font-semibold tracking-wide">rust-dns</span>
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}

@@ -1,7 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * Ent-DNS 前端 E2E 测试配置
+ * rust-dns 前端 E2E 测试配置
  *
  * 测试策略：
  * - 仅使用 Chromium（CI 中快速、稳定）

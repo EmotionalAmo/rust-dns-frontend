@@ -1,4 +1,4 @@
-# Ent-DNS Frontend Testing Guide
+# rust-dns Frontend Testing Guide
 
 ## Task #15: Authentication Routes & Login Page - COMPLETED
 
@@ -44,16 +44,16 @@
 
 1. **Start the Backend:**
    ```bash
-   cd /Users/emotionalamo/Developer/Ent-DNS/projects/ent-dns
+   cd /Users/emotionalamo/Developer/rust-dns/projects/rust-dns
    ENT_DNS__DNS__PORT=15353 \
-   ENT_DNS__DATABASE__PATH=/tmp/ent-dns-test.db \
+   ENT_DNS__DATABASE__PATH=/tmp/rust-dns-test.db \
    ENT_DNS__API__PORT=8080 \
    cargo run
    ```
 
 2. **Start the Frontend:**
    ```bash
-   cd /Users/emotionalamo/Developer/Ent-DNS/projects/ent-dns/frontend
+   cd /Users/emotionalamo/Developer/rust-dns/projects/rust-dns/frontend
    npm run dev
    ```
 

@@ -77,7 +77,7 @@
     "language": "Language"
   },
   "login": {
-    "subtitle": "Enterprise DNS Filtering & Management Platform",
+    "subtitle": "Rust DNS Filtering & Management Platform",
     "title": "Sign In",
     "username": "Username",
     "password": "Password",
@@ -148,12 +148,12 @@
     "queryTrendDynamic": "DNS queries in {{timeRange}}, auto-refreshes every 5 seconds",
     "noBlockData": "No blocked data available",
     "noClientData": "No client data available",
-    "gettingStartedTitle": "Get Started with Ent-DNS",
+    "gettingStartedTitle": "Get Started with rust-dns",
     "gettingStartedDesc": "No DNS queries detected yet. Follow these steps to complete setup.",
     "step1Title": "1. Subscribe to Filter Lists",
     "step1Desc": "Go to Filter Lists and add subscriptions like AdGuard or EasyList",
     "step2Title": "2. Point Your Device DNS to This Host",
-    "step2Desc": "Change your device DNS server to the host running Ent-DNS (default port 53)",
+    "step2Desc": "Change your device DNS server to the host running rust-dns (default port 53)",
     "step3Title": "3. View Real-time Logs",
     "step3Desc": "Go to Query Logs to confirm DNS requests are being processed correctly",
     "trendTotal": "Total",
