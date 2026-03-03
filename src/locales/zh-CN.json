@@ -52,7 +52,11 @@
     "healthy": "健康",
     "degraded": "降级",
     "unhealthy": "异常",
-    "unknownStatus": "未知"
+    "unknownStatus": "未知",
+    "error": "错误：{{msg}}",
+    "success": "成功",
+    "failed": "失败",
+    "unknownError": "未知错误"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -149,18 +153,25 @@
     "noBlockData": "暂无拦截数据",
     "noClientData": "暂无客户端数据",
     "gettingStartedTitle": "开始使用 rust-dns",
-    "gettingStartedDesc": "尚未检测到任何 DNS 查询，按以下步骤完成配置",
-    "step1Title": "1. 订阅过滤列表",
-    "step1Desc": "前往「过滤列表」页面，添加 AdGuard、EasyList 等订阅源",
-    "step2Title": "2. 将设备 DNS 指向本机",
-    "step2Desc": "修改设备 DNS 服务器为运行 rust-dns 的主机 IP（默认端口 53）",
-    "step3Title": "3. 查看实时日志",
-    "step3Desc": "前往「查询日志」页面确认 DNS 请求已被正确处理",
+    "gettingStartedDesc": "看起来您的 DNS 服务已经正常运行，但还没有收到任何查询。请按照以下步骤设置您的设备。",
+    "step1Title": "1. 配置路由器或设备",
+    "step1Desc": "将您的设备的 DNS 服务器设置为本机的 IP 地址（通常是 53 端口）。",
+    "step2Title": "2. 发送测试查询",
+    "step2Desc": "在您的设备上浏览一些网站，确保流量通过 rust-dns。",
+    "step3Title": "3. 查看分析数据",
+    "step3Desc": "收到查询后，数据将在 30 秒内自动显示在这里。",
     "trendTotal": "总查询",
     "trendBlocked": "拦截",
     "trendAllowed": "允许",
     "trendLoading": "加载中...",
-    "trendNoData": "暂无查询数据"
+    "trendNoData": "暂无查询数据",
+    "timeRanges": {
+      "24": "最近 1 天",
+      "168": "最近 7 天",
+      "720": "最近 30 天"
+    },
+    "dataRange": "数据范围：",
+    "adjustableInSettings": "（可在设置页调整）"
   },
   "rules": {
     "title": "规则列表",
@@ -416,8 +427,21 @@
     "deleteConfirm": "确定要删除 \"{{name}}\" 吗？",
     "failoverColTime": "时间",
     "failoverColUpstream": "上游 ID",
-    "failoverColAction": "动作",
-    "failoverColReason": "原因"
+    "failoverColReason": "原因",
+    "placeholders": {
+      "upstreamName": "例如: Cloudflare Primary",
+      "upstreamAddresses": "例如: 1.1.1.1:53, 1.0.0.1:53"
+    },
+    "dashboardSettings": "仪表盘设置",
+    "dashboardSettingsDesc": "调整仪表盘数据的时间范围",
+    "dashboardTimeRange": "数据时间范围",
+    "dashboardTimeRangeDesc": "仪表盘中趋势图和排行榜的时间范围",
+    "dashboardTimeRangeSaved": "仪表盘时间范围已保存",
+    "healthCheckFailed": "健康检查失败：{{error}}",
+    "createFailed": "创建失败: {{msg}}",
+    "updateFailed": "更新失败: {{msg}}",
+    "deleteFailed": "删除失败: {{msg}}",
+    "failoverTriggered": "已切换到: {{msg}}"
   },
   "users": {
     "title": "用户管理",
@@ -673,5 +697,43 @@
     "block_rate": "拦截率",
     "show_more": "显示更多",
     "show_less": "收起"
+  },
+  "auditLog": {
+    "title": "审计日志",
+    "desc": "记录所有管理操作，仅管理员可查看",
+    "actionType": "操作类型：",
+    "totalRecords": "共 {{count}} 条记录",
+    "recordCount": "操作记录",
+    "pageInfo": "第 {{page}} 页，每页 {{perPage}} 条",
+    "loadFailed": "加载失败",
+    "retry": "重试",
+    "noRecords": "暂无审计记录",
+    "colTime": "时间",
+    "colUser": "用户",
+    "colAction": "操作",
+    "colResource": "资源",
+    "colResourceId": "资源 ID",
+    "colDetail": "详情",
+    "colIp": "IP",
+    "actions": {
+      "all": "全部操作",
+      "create": "创建",
+      "update": "更新",
+      "delete": "删除",
+      "login": "登录",
+      "logout": "登出",
+      "toggle": "切换",
+      "bulk_action": "批量操作",
+      "refresh": "刷新",
+      "password_change": "修改密码"
+    },
+    "resources": {
+      "rule": "规则",
+      "filter": "过滤器",
+      "client": "客户端",
+      "rewrite": "重写规则",
+      "session": "会话",
+      "user": "用户"
+    }
   }
 }

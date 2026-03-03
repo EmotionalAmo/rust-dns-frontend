@@ -105,7 +105,7 @@ function UpstreamDialog({
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="例如: Cloudflare Primary"
+            placeholder={t('settings.placeholders.upstreamName')}
           />
         </div>
         <div className="space-y-2">
@@ -114,7 +114,7 @@ function UpstreamDialog({
             id="addresses"
             value={addresses}
             onChange={(e) => setAddresses(e.target.value)}
-            placeholder="例如: 1.1.1.1:53, 1.0.0.1:53"
+            placeholder={t('settings.placeholders.upstreamAddresses')}
           />
           <p className="text-xs text-muted-foreground">{t('settings.upstreamAddressesHint')}</p>
         </div>
@@ -204,7 +204,7 @@ export default function SettingsPage() {
     const n = Number(v);
     setDashHours(n);
     localStorage.setItem('dashboard-time-range', String(n));
-    toast.success('仪表盘时间范围已保存');
+    toast.success(t('settings.dashboardTimeRangeSaved'));
   };
 
   // Dialog state
@@ -252,7 +252,7 @@ export default function SettingsPage() {
           if (result.success) {
             toast.success(t('settings.connectSuccess', { ms: result.latency_ms }));
           } else {
-            toast.warning(`健康检查失败：${result.error ?? '未知错误'}`);
+            toast.warning(t('settings.healthCheckFailed', { error: result.error ?? t('common.unknownError') }));
           }
         } catch {
           // ignore auto-check errors
@@ -262,7 +262,7 @@ export default function SettingsPage() {
         queryClient.invalidateQueries({ queryKey: ['upstreams'] });
       }
     },
-    onError: (e: Error) => toast.error(`创建失败: ${e.message}`),
+    onError: (e: Error) => toast.error(t('settings.createFailed', { msg: e.message })),
   });
 
   const updateUpstreamMutation = useMutation({
@@ -274,7 +274,7 @@ export default function SettingsPage() {
       setEditingUpstream(undefined);
       queryClient.invalidateQueries({ queryKey: ['upstreams'] });
     },
-    onError: (e: Error) => toast.error(`更新失败: ${e.message}`),
+    onError: (e: Error) => toast.error(t('settings.updateFailed', { msg: e.message })),
   });
 
   const deleteUpstreamMutation = useMutation({
@@ -283,14 +283,14 @@ export default function SettingsPage() {
       toast.success(t('settings.upstreamDeleted'));
       queryClient.invalidateQueries({ queryKey: ['upstreams'] });
     },
-    onError: (e: Error) => toast.error(`删除失败: ${e.message}`),
+    onError: (e: Error) => toast.error(t('settings.deleteFailed', { msg: e.message })),
   });
 
   const failoverMutation = useMutation({
     mutationFn: () => upstreamsApi.triggerFailover(),
     onSuccess: (result) => {
       if (result.success) {
-        toast.success(`已切换到: ${result.message}`);
+        toast.success(t('settings.failoverTriggered', { msg: result.message }));
       } else {
         toast.warning(result.message);
       }
@@ -500,20 +500,20 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 size={16} />
-                仪表盘设置
+                {t('settings.dashboardSettings')}
               </CardTitle>
-              <CardDescription>调整仪表盘数据的时间范围</CardDescription>
+              <CardDescription>{t('settings.dashboardSettingsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
-              <SettingRow label="数据时间范围" description="仪表盘中趋势图和排行榜的时间范围">
+              <SettingRow label={t('settings.dashboardTimeRange')} description={t('settings.dashboardTimeRangeDesc')}>
                 <Select value={String(dashHours)} onValueChange={handleDashHoursChange}>
                   <SelectTrigger className="w-36">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="24">最近 1 天</SelectItem>
-                    <SelectItem value="168">最近 7 天</SelectItem>
-                    <SelectItem value="720">最近 30 天</SelectItem>
+                    <SelectItem value="24">{t('dashboard.timeRanges.24')}</SelectItem>
+                    <SelectItem value="168">{t('dashboard.timeRanges.168')}</SelectItem>
+                    <SelectItem value="720">{t('dashboard.timeRanges.720')}</SelectItem>
                   </SelectContent>
                 </Select>
               </SettingRow>

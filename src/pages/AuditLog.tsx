@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { auditLogApi, type AuditLogRecord } from '@/api/auditLog';
 import { formatDateTime } from '@/lib/datetime';
 import {
@@ -22,16 +23,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { RefreshCw, ClipboardList, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACTION_OPTIONS = [
-  { value: 'all', label: '全部操作' },
-  { value: 'create', label: '创建' },
-  { value: 'update', label: '更新' },
-  { value: 'delete', label: '删除' },
-  { value: 'login', label: '登录' },
-  { value: 'logout', label: '登出' },
-  { value: 'toggle', label: '切换' },
-  { value: 'bulk_action', label: '批量操作' },
-  { value: 'refresh', label: '刷新' },
-  { value: 'password_change', label: '修改密码' },
+  'all',
+  'create',
+  'update',
+  'delete',
+  'login',
+  'logout',
+  'toggle',
+  'bulk_action',
+  'refresh',
+  'password_change',
 ];
 
 const ACTION_COLOR: Record<string, string> = {
@@ -47,8 +48,10 @@ const ACTION_COLOR: Record<string, string> = {
 };
 
 function ActionBadge({ action }: { action: string }) {
+  const { t } = useTranslation();
   const color = ACTION_COLOR[action] ?? 'text-muted-foreground bg-muted';
-  const label = ACTION_OPTIONS.find((o) => o.value === action)?.label ?? action;
+  // Fallback to action string if translation is missing
+  const label = t(`auditLog.actions.${action}`, action);
   return (
     <span className={`text-xs font-medium rounded px-2 py-0.5 ${color}`}>{label}</span>
   );
@@ -63,18 +66,11 @@ const RESOURCE_COLOR: Record<string, string> = {
   user: 'text-pink-600 bg-pink-500/10 dark:text-pink-300',
 };
 
-const RESOURCE_OPTIONS: Record<string, string> = {
-  rule: '规则',
-  filter: '过滤器',
-  client: '客户端',
-  rewrite: '重写规则',
-  session: '会话',
-  user: '用户',
-};
-
 function ResourceBadge({ resource }: { resource: string }) {
+  const { t } = useTranslation();
   const color = RESOURCE_COLOR[resource] ?? 'text-muted-foreground bg-muted';
-  const label = RESOURCE_OPTIONS[resource] ?? resource;
+  // Fallback to resource string if translation is missing
+  const label = t(`auditLog.resources.${resource}`, resource);
   return (
     <span className={`text-xs font-medium rounded px-2 py-0.5 ${color}`}>{label}</span>
   );
@@ -83,6 +79,7 @@ function ResourceBadge({ resource }: { resource: string }) {
 const PER_PAGE = 50;
 
 export default function AuditLogPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [actionFilter, setActionFilter] = useState('all');
 
@@ -107,11 +104,11 @@ export default function AuditLogPage() {
 
   return (
     <div className="space-y-6">
-      {/* 操作栏 */}
+      {/* 行动栏 */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">审计日志</h2>
-          <p className="text-sm text-muted-foreground">记录所有管理操作，仅管理员可查看</p>
+          <h2 className="text-lg font-semibold">{t('auditLog.title')}</h2>
+          <p className="text-sm text-muted-foreground">{t('auditLog.desc')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
@@ -123,15 +120,15 @@ export default function AuditLogPage() {
       {/* 筛选栏 */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">操作类型：</span>
+          <span className="text-sm text-muted-foreground">{t('auditLog.actionType')}</span>
           <Select value={actionFilter} onValueChange={handleActionChange}>
             <SelectTrigger className="w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {ACTION_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+              {ACTION_OPTIONS.map((action) => (
+                <SelectItem key={action} value={action}>
+                  {t(`auditLog.actions.${action}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -139,7 +136,7 @@ export default function AuditLogPage() {
         </div>
         {total > 0 && (
           <span className="text-sm text-muted-foreground ml-auto">
-            共 {total} 条记录
+            {t('auditLog.totalRecords', { count: total })}
           </span>
         )}
       </div>
@@ -149,10 +146,10 @@ export default function AuditLogPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ClipboardList size={18} />
-            操作记录
+            {t('auditLog.recordCount')}
           </CardTitle>
           <CardDescription>
-            第 {page} 页，每页 {PER_PAGE} 条
+            {t('auditLog.pageInfo', { page, perPage: PER_PAGE })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -162,26 +159,26 @@ export default function AuditLogPage() {
             </div>
           ) : error ? (
             <div className="flex flex-col items-center py-12 gap-3">
-              <p className="text-muted-foreground">加载失败</p>
-              <Button variant="outline" onClick={() => refetch()}>重试</Button>
+              <p className="text-muted-foreground">{t('auditLog.loadFailed')}</p>
+              <Button variant="outline" onClick={() => refetch()}>{t('auditLog.retry')}</Button>
             </div>
           ) : logs.length === 0 ? (
             <div className="flex flex-col items-center py-12 gap-4">
               <ClipboardList size={48} className="text-muted-foreground" />
-              <p className="text-muted-foreground">暂无审计记录</p>
+              <p className="text-muted-foreground">{t('auditLog.noRecords')}</p>
             </div>
           ) : (
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>时间</TableHead>
-                    <TableHead>用户</TableHead>
-                    <TableHead>操作</TableHead>
-                    <TableHead>资源</TableHead>
-                    <TableHead>资源 ID</TableHead>
-                    <TableHead>详情</TableHead>
-                    <TableHead>IP</TableHead>
+                    <TableHead>{t('auditLog.colTime')}</TableHead>
+                    <TableHead>{t('auditLog.colUser')}</TableHead>
+                    <TableHead>{t('auditLog.colAction')}</TableHead>
+                    <TableHead>{t('auditLog.colResource')}</TableHead>
+                    <TableHead>{t('auditLog.colResourceId')}</TableHead>
+                    <TableHead>{t('auditLog.colDetail')}</TableHead>
+                    <TableHead>{t('auditLog.colIp')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

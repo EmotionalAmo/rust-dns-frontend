@@ -52,7 +52,11 @@
     "healthy": "Healthy",
     "degraded": "Degraded",
     "unhealthy": "Unhealthy",
-    "unknownStatus": "Unknown"
+    "unknownStatus": "Unknown",
+    "error": "Error: {{msg}}",
+    "success": "Success",
+    "failed": "Failed",
+    "unknownError": "Unknown error"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -149,18 +153,25 @@
     "noBlockData": "No blocked data available",
     "noClientData": "No client data available",
     "gettingStartedTitle": "Get Started with rust-dns",
-    "gettingStartedDesc": "No DNS queries detected yet. Follow these steps to complete setup.",
-    "step1Title": "1. Subscribe to Filter Lists",
-    "step1Desc": "Go to Filter Lists and add subscriptions like AdGuard or EasyList",
-    "step2Title": "2. Point Your Device DNS to This Host",
-    "step2Desc": "Change your device DNS server to the host running rust-dns (default port 53)",
-    "step3Title": "3. View Real-time Logs",
-    "step3Desc": "Go to Query Logs to confirm DNS requests are being processed correctly",
+    "gettingStartedDesc": "It looks like your DNS service is running, but hasn't received any queries yet. Follow these steps to set up your devices.",
+    "step1Title": "1. Configure Router or Device",
+    "step1Desc": "Set your device's DNS server to this server's IP address (typically port 53).",
+    "step2Title": "2. Send Test Queries",
+    "step2Desc": "Browse some websites on your device to ensure traffic is routed through rust-dns.",
+    "step3Title": "3. View Analytics",
+    "step3Desc": "Data will appear here automatically within 30 seconds once queries are received.",
     "trendTotal": "Total",
     "trendBlocked": "Blocked",
     "trendAllowed": "Allowed",
     "trendLoading": "Loading...",
-    "trendNoData": "No query data available"
+    "trendNoData": "No query data available",
+    "timeRanges": {
+      "24": "the last 1 day",
+      "168": "the last 7 days",
+      "720": "the last 30 days"
+    },
+    "dataRange": "Data range: ",
+    "adjustableInSettings": " (adjustable in Settings)"
   },
   "rules": {
     "title": "Rules",
@@ -406,7 +417,21 @@
     "failoverColTime": "Time",
     "failoverColUpstream": "Upstream ID",
     "failoverColAction": "Action",
-    "failoverColReason": "Reason"
+    "failoverColReason": "Reason",
+    "placeholders": {
+      "upstreamName": "e.g. Cloudflare Primary",
+      "upstreamAddresses": "e.g. 1.1.1.1:53, 1.0.0.1:53"
+    },
+    "dashboardSettings": "Dashboard Settings",
+    "dashboardSettingsDesc": "Adjust the time range for dashboard data.",
+    "dashboardTimeRange": "Data Time Range",
+    "dashboardTimeRangeDesc": "Time range for trend charts and leaderboards on the dashboard.",
+    "dashboardTimeRangeSaved": "Dashboard time range saved successfully.",
+    "healthCheckFailed": "Health check failed: {{error}}",
+    "createFailed": "Creation failed: {{msg}}",
+    "updateFailed": "Update failed: {{msg}}",
+    "deleteFailed": "Deletion failed: {{msg}}",
+    "failoverTriggered": "Switched to: {{msg}}"
   },
   "users": {
     "title": "User Management",
@@ -614,7 +639,7 @@
     "addressRequired": "Please enter at least one address",
     "testSuccess": "Connected successfully, latency {{ms}}ms",
     "testFailed": "Connection failed: {{msg}}",
-    "testError": "Test failed: {{msg}}",
+    "testError": "Test failed: {{msg}",
     "createError": "Create failed: {{msg}}",
     "updateError": "Update failed: {{msg}}",
     "deleteError": "Delete failed: {{msg}}"
@@ -662,5 +687,43 @@
     "block_rate": "Block Rate",
     "show_more": "Show More",
     "show_less": "Show Less"
+  },
+  "auditLog": {
+    "title": "Audit Log",
+    "desc": "Record of all management operations, visible only to administrators",
+    "actionType": "Action Type: ",
+    "totalRecords": "Total {{count}} records",
+    "recordCount": "Operation Records",
+    "pageInfo": "Page {{page}}, {{perPage}} per page",
+    "loadFailed": "Load failed",
+    "retry": "Retry",
+    "noRecords": "No audit records",
+    "colTime": "Time",
+    "colUser": "User",
+    "colAction": "Action",
+    "colResource": "Resource",
+    "colResourceId": "Resource ID",
+    "colDetail": "Detail",
+    "colIp": "IP",
+    "actions": {
+      "all": "All Actions",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "login": "Login",
+      "logout": "Logout",
+      "toggle": "Toggle",
+      "bulk_action": "Bulk Action",
+      "refresh": "Refresh",
+      "password_change": "Change Password"
+    },
+    "resources": {
+      "rule": "Rule",
+      "filter": "Filter",
+      "client": "Client",
+      "rewrite": "Rewrite Rule",
+      "session": "Session",
+      "user": "User"
+    }
   }
 }

@@ -9,31 +9,22 @@ import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, Trend
 /**
  * Get time range label in Chinese or English based on hours
  */
-function getTimeRangeLabel(hours: number, lang: string): string {
-  if (lang === 'zh-CN') {
-    if (hours <= 24) return '最近 1 天';
-    if (hours <= 168) return '最近 7 天';
-    return '最近 30 天';
-  }
-  // English
-  if (hours <= 24) return 'the last 1 day';
-  if (hours <= 168) return 'the last 7 days';
-  return 'the last 30 days';
+function getTimeRangeLabel(hours: number, t: (key: string) => string): string {
+  if (hours <= 24) return t('dashboard.timeRanges.24');
+  if (hours <= 168) return t('dashboard.timeRanges.168');
+  return t('dashboard.timeRanges.720');
 }
 
 /**
  * Get short time range label for card subtitles (e.g., "最近 7 天")
  */
-function getShortTimeRangeLabel(hours: number, lang: string): string {
-  return getTimeRangeLabel(hours, lang);
+function getShortTimeRangeLabel(hours: number, t: (key: string) => string): string {
+  return getTimeRangeLabel(hours, t);
 }
 
 export default function DashboardPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-
-  // Get current language for time range labels
-  const currentLang = i18n.language;
 
   // Use state with useEffect to sync with localStorage changes
   const [hours, setHours] = useState<number>(() => {
@@ -42,7 +33,7 @@ export default function DashboardPage() {
   });
 
   // Get time range label for UI display (computed from hours)
-  const timeRangeLabel = getTimeRangeLabel(hours, currentLang);
+  const timeRangeLabel = getTimeRangeLabel(hours, t);
 
   // Sync hours state with localStorage changes (when user changes in Settings)
   useEffect(() => {
@@ -132,7 +123,7 @@ export default function DashboardPage() {
     {
       title: t('dashboard.totalQueries'),
       value: formatNumber(totalQueries),
-      subtitle: getShortTimeRangeLabel(hours, currentLang),
+      subtitle: getShortTimeRangeLabel(hours, t),
       icon: Activity,
     },
     {
@@ -163,9 +154,9 @@ export default function DashboardPage() {
       {/* 时间范围标签 */}
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          {currentLang === 'zh-CN' ? '数据范围：' : 'Data range: '}
-          {getShortTimeRangeLabel(hours, currentLang)}
-          {currentLang === 'zh-CN' ? '（可在设置页调整）' : ' (adjustable in Settings)'}
+          {t('dashboard.dataRange')}
+          {getShortTimeRangeLabel(hours, t)}
+          {t('dashboard.adjustableInSettings')}
         </p>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['dashboard'] })}
@@ -315,8 +306,8 @@ export default function DashboardPage() {
                       <span className="text-sm font-medium">{blockRateStr}%</span>
                       {lastWeekBlockRate > 0 && (
                         <span className={`flex items-center text-xs ${blockRateTrend === 'up' ? 'text-red-500' :
-                            blockRateTrend === 'down' ? 'text-green-500' :
-                              'text-muted-foreground'
+                          blockRateTrend === 'down' ? 'text-green-500' :
+                            'text-muted-foreground'
                           }`}>
                           {blockRateTrend === 'up' && <TrendingUp className="h-3 w-3" />}
                           {blockRateTrend === 'down' && <TrendingDown className="h-3 w-3" />}
