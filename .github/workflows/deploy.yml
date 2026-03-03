@@ -1,0 +1,51 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+# 同一时间只允许一个部署在跑，新的推送会取消旧的
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript types
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+        # VITE_API_BASE_URL 不在这里设置
+        # 原因：frontend 部署在 CDN，backend 地址由用户在运行时配置
+        # 保持 VITE_API_BASE_URL 为空，前端用相对路径 /api/*
+        # 用户通过反向代理将 /api 转发到 backend
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=rust-dns-frontend --branch=main
