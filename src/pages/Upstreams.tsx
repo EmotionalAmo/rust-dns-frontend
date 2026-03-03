@@ -179,7 +179,7 @@ function UpstreamDialog({ open, onOpenChange, upstream }: UpstreamDialogProps) {
                   id="addresses"
                   value={form.addresses}
                   onChange={(e) => setForm({ ...form, addresses: e.target.value })}
-                  placeholder={"https://1.1.1.1/dns-query\nhttps://1.0.0.1/dns-query\ntls://1.1.1.1"}
+                  placeholder={"https://1.1.1.1/dns-query\ntls://1.1.1.1\ntcp://8.8.8.8\nudp://8.8.8.8"}
                   className="h-20 font-mono text-sm"
                 />
               </div>
