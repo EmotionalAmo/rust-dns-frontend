@@ -308,6 +308,7 @@ export default function QueryLogsPage() {
                     <TableHead className="text-xs">{t('queryLogs.colType')}</TableHead>
                     <TableHead className="text-xs">{t('queryLogs.colStatus')}</TableHead>
                     <TableHead className="text-xs">{t('queryLogs.colClient')}</TableHead>
+                    <TableHead className="text-xs">{t('queryLogs.colUpstream')}</TableHead>
                     <TableHead className="text-right text-xs">{t('queryLogs.colLatency')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -327,6 +328,7 @@ export default function QueryLogsPage() {
                         <StatusBadge status={entry.status} />
                       </TableCell>
                       <TableCell className="text-muted-foreground py-1.5">{entry.client_ip || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground py-1.5">{entry.upstream || '-'}</TableCell>
                       <TableCell className="py-1.5">
                         <TimingCell elapsedNs={entry.elapsed_ns} upstreamNs={entry.upstream_ns} status={entry.status} />
                       </TableCell>
@@ -376,6 +378,7 @@ export default function QueryLogsPage() {
                       <TableHead>{t('queryLogs.colStatus')}</TableHead>
                       <TableHead>{t('queryLogs.colClient')}</TableHead>
                       <TableHead>{t('queryLogs.colResponse')}</TableHead>
+                      <TableHead>{t('queryLogs.colUpstream')}</TableHead>
                       <TableHead className="text-right">{t('queryLogs.colLatency')}</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -401,6 +404,9 @@ export default function QueryLogsPage() {
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
                           {log.answer || '-'}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {log.upstream || '-'}
                         </TableCell>
                         <TableCell>
                           <TimingCell elapsedNs={log.elapsed_ns} upstreamNs={log.upstream_ns} status={log.status} />

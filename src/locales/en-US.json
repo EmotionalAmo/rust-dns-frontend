@@ -344,6 +344,7 @@
     "colClient": "Client",
     "colLatency": "Latency",
     "colResponse": "Response",
+    "colUpstream": "Upstream",
     "statusBlocked2": "Blocked",
     "statusAllowed2": "Allowed",
     "latencyTooltip": "Total {{total}} = Local {{local}} + Upstream {{upstream}}",

@@ -12,6 +12,7 @@ export interface LiveQueryEntry {
   reason?: string | null;
   elapsed_ns?: number | null;
   upstream_ns?: number | null;
+  upstream?: string | null;
   _key: string; // unique display key
 }
 

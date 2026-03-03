@@ -13,6 +13,7 @@ export interface QueryLogEntry {
   reason: string | null;
   elapsed_ns: number | null;
   upstream_ns: number | null;
+  upstream: string | null;
 }
 
 export interface QueryLogListParams {

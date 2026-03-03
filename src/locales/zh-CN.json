@@ -355,6 +355,7 @@
     "colClient": "客户端",
     "colLatency": "耗时",
     "colResponse": "响应",
+    "colUpstream": "上游",
     "statusBlocked2": "拦截",
     "statusAllowed2": "允许",
     "latencyTooltip": "总 {{total}} = 本地 {{local}} + 上游 {{upstream}}",
