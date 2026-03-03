@@ -22,6 +22,7 @@ export interface QueryLogListParams {
   domain?: string;
   status?: 'blocked' | 'allowed';
   client?: string;
+  upstream?: string;
 }
 
 export interface QueryLogResponse {
@@ -39,6 +40,7 @@ export async function listQueryLogs(params: QueryLogListParams = {}): Promise<Qu
   if (params.domain) query.set('domain', params.domain);
   if (params.status) query.set('status', params.status);
   if (params.client) query.set('client', params.client);
+  if (params.upstream) query.set('upstream', params.upstream);
 
   const qs = query.toString();
   const response = await apiClient.get<QueryLogResponse>(

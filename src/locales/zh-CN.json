@@ -332,6 +332,8 @@
     "filterDomain": "域名",
     "filterClient": "客户端 IP",
     "filterStatus": "状态",
+    "filterUpstream": "上游",
+    "upstreamAll": "全部",
     "domainPlaceholder": "过滤域名...",
     "clientPlaceholder": "过滤客户端...",
     "statusAll": "全部",

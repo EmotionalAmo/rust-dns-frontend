@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { queryLogApi, type QueryLogListParams } from '@/api/queryLog';
+import { upstreamsApi } from '@/api/upstreams';
 import { useQueryLogWebSocket } from '@/hooks/useQueryLogWebSocket';
 import {
   Table,
@@ -109,6 +110,7 @@ export default function QueryLogsPage() {
   const [domainFilter, setDomainFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'blocked' | 'allowed' | 'all'>('all');
   const [clientFilter, setClientFilter] = useState('');
+  const [upstreamFilter, setUpstreamFilter] = useState<string>('all');
   const [page, setPage] = useState(0);
   const [appliedFilters, setAppliedFilters] = useState<QueryLogListParams>({
     limit: PAGE_SIZE,
@@ -118,6 +120,12 @@ export default function QueryLogsPage() {
   const [isExporting, setIsExporting] = useState(false);
 
   const { wsStatus, liveEntries, clearEntries } = useQueryLogWebSocket({ maxEntries: 100 });
+
+  // Fetch upstreams for filter dropdown
+  const { data: upstreams = [] } = useQuery({
+    queryKey: ['upstreams'],
+    queryFn: () => upstreamsApi.list(),
+  });
 
   const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['query-logs', appliedFilters],
@@ -143,6 +151,7 @@ export default function QueryLogsPage() {
     if (domainFilter) newFilters.domain = domainFilter;
     if (statusFilter && statusFilter !== 'all') newFilters.status = statusFilter;
     if (clientFilter) newFilters.client = clientFilter;
+    if (upstreamFilter && upstreamFilter !== 'all') newFilters.upstream = upstreamFilter;
     setAppliedFilters(newFilters);
   };
 
@@ -225,6 +234,22 @@ export default function QueryLogsPage() {
                     {STATUS_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">{t('queryLogs.filterUpstream')}</label>
+                <Select value={upstreamFilter} onValueChange={setUpstreamFilter}>
+                  <SelectTrigger className="h-9 w-36">
+                    <SelectValue placeholder={t('queryLogs.filterUpstream')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('queryLogs.upstreamAll')}</SelectItem>
+                    {upstreams.map((up) => (
+                      <SelectItem key={up.id} value={up.name}>
+                        {up.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

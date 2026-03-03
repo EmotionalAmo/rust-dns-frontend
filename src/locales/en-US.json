@@ -321,6 +321,8 @@
     "filterDomain": "Domain",
     "filterClient": "Client IP",
     "filterStatus": "Status",
+    "filterUpstream": "Upstream",
+    "upstreamAll": "All",
     "domainPlaceholder": "Filter domain...",
     "clientPlaceholder": "Filter client...",
     "statusAll": "All",
