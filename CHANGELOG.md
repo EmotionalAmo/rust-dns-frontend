@@ -1,0 +1,54 @@
+# Changelog
+
+All notable changes to rust-dns-frontend will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.1.0] - 2026-03-03
+
+### Added
+
+- **DoT upstream address placeholder** — the upstream address input field now shows a DNS-over-TLS format hint to guide users when adding DoT upstreams.
+- **ACLs — identity-based policies UI (Option A)** — full management interface for identity-based access control policies, including rule creation and ordering.
+- **Monitoring & Alerts dashboard (Option C)** — new monitoring section with alert configuration, threshold management, and live status indicators.
+- **nginx API proxy configuration** — bundled nginx config for proxying API requests in Docker Compose deployments, removing the need for manual reverse-proxy setup.
+- **Cloudflare Pages deployment** — CI/CD workflow and `_redirects` / `_headers` configuration for deploying the frontend to Cloudflare Pages.
+- **Dynamic clients display** — client groups page now shows dynamic clients alongside static ones, with MAC address badge rendering.
+- **MAC address resolution** — enabled hardware address resolution in the client detail views.
+- Insights page now excludes blocked domains from the top-queries chart for more meaningful traffic analysis.
+
+### Fixed
+
+- Dashboard refresh triggered from the correct location after the layout refactor.
+- Query log layout aligned with the rest of the application.
+- Client groups layout height corrected; "All" view now shows only static clients as intended.
+- Frontend UI bugs in Audit Log view; Audit Log localization strings added.
+- CI workflow `working-directory` and cache paths corrected for the monorepo structure.
+
+### Changed
+
+- **i18n migration** — all previously hard-coded Chinese strings have been moved into the i18n translation layer, making the UI fully localizable.
+- Environment variables renamed from `ENT_DNS_*` to `RUST_DNS_*` across tests, docs, and runtime config.
+- Project references and display names updated from "Ent-DNS" to "rust-dns" throughout the codebase.
+- README, Dockerfile, and CI workflow optimized for clarity and build performance.
+
+## [1.0.0] - 2026-03-03
+
+### Added
+
+- Initial release of rust-dns-frontend, split from the Ent-DNS monorepo.
+- React + TypeScript SPA for managing the rust-dns-backend service.
+- Dashboard with query statistics and cache metrics.
+- DNS zone and record management UI.
+- Upstream resolver management.
+- Query log viewer with filtering.
+- Client group management.
+- Internationalization (i18n) foundation.
+- Docker support with multi-stage build.
+
+[Unreleased]: https://github.com/EmotionalAmo/rust-dns-frontend/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/EmotionalAmo/rust-dns-frontend/releases/tag/v1.1.0
+[1.0.0]: https://github.com/EmotionalAmo/rust-dns-frontend/releases/tag/v1.0.0
