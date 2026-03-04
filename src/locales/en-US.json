@@ -363,7 +363,15 @@
     "tableCount": "{{count}} records total",
     "emptyState": "No query records",
     "loadError": "Load failed, please retry",
-    "exportError": "Export failed, please retry"
+    "exportError": "Export failed, please retry",
+    "filterTimeRange": "Time Range",
+    "timeRangeAll": "All",
+    "timeRange1h": "Last 1h",
+    "timeRange6h": "Last 6h",
+    "timeRange24h": "Last 24h",
+    "timeRange7d": "Last 7d",
+    "filterQtype": "Record Type",
+    "qtypeAll": "All"
   },
   "settings": {
     "title": "System Settings",

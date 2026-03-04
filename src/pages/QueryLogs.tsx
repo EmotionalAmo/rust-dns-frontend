@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { queryLogApi, type QueryLogListParams } from '@/api/queryLog';
 import { upstreamsApi } from '@/api/upstreams';
 import { useQueryLogWebSocket } from '@/hooks/useQueryLogWebSocket';
+import { queryLogAdvancedApi } from '@/api/queryLogAdvanced';
 import {
   Table,
   TableBody,
@@ -119,6 +120,74 @@ export default function QueryLogsPage() {
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
   const [isExporting, setIsExporting] = useState(false);
 
+  // New filter states
+  const [timeRange, setTimeRange] = useState<string>('all');
+  const [qtypeFilter, setQtypeFilter] = useState<string>('all');
+
+  // Autocomplete states for domain
+  const [domainSuggestions, setDomainSuggestions] = useState<string[]>([]);
+  const [showDomainSuggestions, setShowDomainSuggestions] = useState(false);
+  const domainDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const domainInputRef = useRef<HTMLDivElement>(null);
+
+  // Autocomplete states for client IP
+  const [clientSuggestions, setClientSuggestions] = useState<string[]>([]);
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+  const clientDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clientInputRef = useRef<HTMLDivElement>(null);
+
+  // Click-outside handler to close suggestion dropdowns
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (domainInputRef.current && !domainInputRef.current.contains(e.target as Node)) {
+        setShowDomainSuggestions(false);
+      }
+      if (clientInputRef.current && !clientInputRef.current.contains(e.target as Node)) {
+        setShowClientSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const fetchDomainSuggestions = useCallback((prefix: string) => {
+    if (domainDebounceRef.current) clearTimeout(domainDebounceRef.current);
+    if (!prefix || prefix.length < 1) {
+      setDomainSuggestions([]);
+      setShowDomainSuggestions(false);
+      return;
+    }
+    domainDebounceRef.current = setTimeout(async () => {
+      try {
+        const suggestions = await queryLogAdvancedApi.suggest('question', prefix, 8);
+        setDomainSuggestions(suggestions);
+        setShowDomainSuggestions(suggestions.length > 0);
+      } catch {
+        setDomainSuggestions([]);
+        setShowDomainSuggestions(false);
+      }
+    }, 300);
+  }, []);
+
+  const fetchClientSuggestions = useCallback((prefix: string) => {
+    if (clientDebounceRef.current) clearTimeout(clientDebounceRef.current);
+    if (!prefix || prefix.length < 1) {
+      setClientSuggestions([]);
+      setShowClientSuggestions(false);
+      return;
+    }
+    clientDebounceRef.current = setTimeout(async () => {
+      try {
+        const suggestions = await queryLogAdvancedApi.suggest('client_ip', prefix, 8);
+        setClientSuggestions(suggestions);
+        setShowClientSuggestions(suggestions.length > 0);
+      } catch {
+        setClientSuggestions([]);
+        setShowClientSuggestions(false);
+      }
+    }, 300);
+  }, []);
+
   const { wsStatus, liveEntries, clearEntries } = useQueryLogWebSocket({ maxEntries: 100 });
 
   // Fetch upstreams for filter dropdown
@@ -152,6 +221,8 @@ export default function QueryLogsPage() {
     if (statusFilter && statusFilter !== 'all') newFilters.status = statusFilter;
     if (clientFilter) newFilters.client = clientFilter;
     if (upstreamFilter && upstreamFilter !== 'all') newFilters.upstream = upstreamFilter;
+    if (qtypeFilter && qtypeFilter !== 'all') newFilters.qtype = qtypeFilter;
+    if (timeRange && timeRange !== 'all') newFilters.time_range = timeRange;
     setAppliedFilters(newFilters);
   };
 
@@ -203,26 +274,102 @@ export default function QueryLogsPage() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col xl:flex-row gap-4 items-start xl:items-end justify-between">
-            <form onSubmit={handleSearch} className="flex flex-wrap gap-3 items-end">
+            <form onSubmit={handleSearch} className="flex flex-col gap-3">
+              {/* Time range selector - first row */}
               <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">{t('queryLogs.filterTimeRange')}</label>
+                <div className="flex gap-1">
+                  {[
+                    { value: 'all', label: t('queryLogs.timeRangeAll') },
+                    { value: '1h', label: t('queryLogs.timeRange1h') },
+                    { value: '6h', label: t('queryLogs.timeRange6h') },
+                    { value: '24h', label: t('queryLogs.timeRange24h') },
+                    { value: '7d', label: t('queryLogs.timeRange7d') },
+                  ].map((opt) => (
+                    <Button
+                      key={opt.value}
+                      type="button"
+                      size="sm"
+                      variant={timeRange === opt.value ? 'default' : 'outline'}
+                      className="h-8 px-3 text-xs"
+                      onClick={() => setTimeRange(opt.value)}
+                    >
+                      {opt.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              {/* Filter inputs - second row */}
+              <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex flex-col gap-1 relative" ref={domainInputRef}>
                 <label className="text-xs text-muted-foreground">{t('queryLogs.filterDomain')}</label>
                 <Input
                   type="text"
                   placeholder={t('queryLogs.domainPlaceholder')}
                   value={domainFilter}
-                  onChange={(e) => setDomainFilter(e.target.value)}
+                  onChange={(e) => {
+                    setDomainFilter(e.target.value);
+                    fetchDomainSuggestions(e.target.value);
+                  }}
+                  onFocus={() => {
+                    if (domainSuggestions.length > 0) setShowDomainSuggestions(true);
+                  }}
                   className="h-9 w-48"
+                  autoComplete="off"
                 />
+                {showDomainSuggestions && (
+                  <div className="absolute top-full left-0 z-50 mt-1 w-48 rounded-md border bg-popover shadow-md">
+                    {domainSuggestions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        className="w-full px-3 py-1.5 text-left text-xs hover:bg-accent truncate"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setDomainFilter(s);
+                          setShowDomainSuggestions(false);
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 relative" ref={clientInputRef}>
                 <label className="text-xs text-muted-foreground">{t('queryLogs.filterClient')}</label>
                 <Input
                   type="text"
                   placeholder={t('queryLogs.clientPlaceholder')}
                   value={clientFilter}
-                  onChange={(e) => setClientFilter(e.target.value)}
+                  onChange={(e) => {
+                    setClientFilter(e.target.value);
+                    fetchClientSuggestions(e.target.value);
+                  }}
+                  onFocus={() => {
+                    if (clientSuggestions.length > 0) setShowClientSuggestions(true);
+                  }}
                   className="h-9 w-40"
+                  autoComplete="off"
                 />
+                {showClientSuggestions && (
+                  <div className="absolute top-full left-0 z-50 mt-1 w-40 rounded-md border bg-popover shadow-md">
+                    {clientSuggestions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        className="w-full px-3 py-1.5 text-left text-xs hover:bg-accent truncate"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setClientFilter(s);
+                          setShowClientSuggestions(false);
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground">{t('queryLogs.filterStatus')}</label>
@@ -235,6 +382,20 @@ export default function QueryLogsPage() {
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
                       </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">{t('queryLogs.filterQtype')}</label>
+                <Select value={qtypeFilter} onValueChange={setQtypeFilter}>
+                  <SelectTrigger className="h-9 w-28">
+                    <SelectValue placeholder={t('queryLogs.filterQtype')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('queryLogs.qtypeAll')}</SelectItem>
+                    {['A', 'AAAA', 'CNAME', 'MX', 'TXT', 'PTR', 'NS', 'SRV'].map((qt) => (
+                      <SelectItem key={qt} value={qt}>{qt}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -269,6 +430,7 @@ export default function QueryLogsPage() {
                 >
                   <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
                 </Button>
+              </div>
               </div>
             </form>
 

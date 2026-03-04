@@ -374,7 +374,15 @@
     "tableCount": "共 {{count}} 条记录",
     "emptyState": "暂无查询记录",
     "loadError": "加载失败，请重试",
-    "exportError": "导出失败，请重试"
+    "exportError": "导出失败，请重试",
+    "filterTimeRange": "时间范围",
+    "timeRangeAll": "全部",
+    "timeRange1h": "最近1小时",
+    "timeRange6h": "最近6小时",
+    "timeRange24h": "最近24小时",
+    "timeRange7d": "最近7天",
+    "filterQtype": "记录类型",
+    "qtypeAll": "全部"
   },
   "settings": {
     "title": "系统设置",
