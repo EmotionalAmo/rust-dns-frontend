@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-03-04
+
+### Added
+
+- **时间范围按钮组** — Query Logs 页面新增快速时间范围选择按钮（1h / 6h / 24h / 7d），一键切换日志视图时间窗口。
+- **QTYPE 下拉过滤框** — 新增 DNS 记录类型过滤下拉框，支持按 A、AAAA、CNAME、MX 等类型筛选查询日志。
+- **域名搜索自动补全** — 域名搜索框新增自动补全功能，根据已有日志实时提示候选域名，提升搜索效率。
+
 ## [1.5.0] - 2026-03-04
 
 ### Added
