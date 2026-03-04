@@ -144,6 +144,7 @@
     "blockRateStat": "Block Rate",
     "cacheHitRate": "Cache Hit Rate",
     "clientsLabel": "Clients",
+    "activeUpstreams": "Active Upstreams",
     "refreshStatus": "Refresh Status",
     "top10Blocked": "Top 10 Blocked Domains",
     "top10BlockedDesc": "Most blocked domains in {{timeRange}}",
@@ -171,7 +172,13 @@
       "720": "the last 30 days"
     },
     "dataRange": "Data range: ",
-    "adjustableInSettings": " (adjustable in Settings)"
+    "adjustableInSettings": " (adjustable in Settings)",
+    "upstreamDistribution": "Upstream Distribution",
+    "upstreamDistributionDesc": "Upstream DNS query distribution in {{timeRange}}",
+    "upstreamDistributionTrend": "Upstream Distribution Trend",
+    "upstreamDistributionStats": "Upstream Distribution Stats",
+    "upstreamQueries": "Queries",
+    "upstreamPercentage": "Percentage"
   },
   "rules": {
     "title": "Rules",

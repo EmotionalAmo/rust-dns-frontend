@@ -144,6 +144,7 @@
     "blockRateStat": "拦截率",
     "cacheHitRate": "缓存命中率",
     "clientsLabel": "客户端数量",
+    "activeUpstreams": "活跃上游数",
     "refreshStatus": "刷新状态",
     "top10Blocked": "Top 10 被拦截域名",
     "top10BlockedDesc": "{{timeRange}}拦截次数最多的域名",
@@ -171,7 +172,13 @@
       "720": "最近 30 天"
     },
     "dataRange": "数据范围：",
-    "adjustableInSettings": "（可在设置页调整）"
+    "adjustableInSettings": "（可在设置页调整）",
+    "upstreamDistribution": "上游分布",
+    "upstreamDistributionDesc": "{{timeRange}} 上游 DNS 查询分布",
+    "upstreamDistributionTrend": "上游分布趋势",
+    "upstreamDistributionStats": "上游分布统计",
+    "upstreamQueries": "查询数",
+    "upstreamPercentage": "占比"
   },
   "rules": {
     "title": "规则列表",

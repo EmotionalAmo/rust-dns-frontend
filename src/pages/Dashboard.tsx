@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
-import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw } from 'lucide-react';
+import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
+import { UpstreamDistributionChart } from '@/components/dashboard/UpstreamDistributionChart';
+import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe } from 'lucide-react';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -91,6 +93,25 @@ export default function DashboardPage() {
   const { data: topClients = [], isLoading: topClientsLoading } = useQuery({
     queryKey: ['dashboard', 'top-clients', hours],
     queryFn: () => dashboardApi.getTopClients(hours),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
+  // Fetch upstream trend data
+  const { data: upstreamTrendResponse, isLoading: upstreamTrendLoading } = useQuery({
+    queryKey: ['dashboard', 'upstream-trend', hours],
+    queryFn: () => dashboardApi.getUpstreamTrend(hours, 10),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
+  const upstreamTrendData = upstreamTrendResponse?.data ?? [];
+  const activeUpstreams = upstreamTrendResponse?.total_upstreams ?? 0;
+
+  // Fetch upstream distribution data
+  const { data: upstreamDistribution = [], isLoading: upstreamDistributionLoading } = useQuery({
+    queryKey: ['dashboard', 'upstream-distribution', hours],
+    queryFn: () => dashboardApi.getUpstreamDistribution(hours),
     refetchInterval: 30000,
     staleTime: 20000,
   });
@@ -344,6 +365,19 @@ export default function DashboardPage() {
                     <span className="text-sm font-medium">{clients}</span>
                   )}
                 </div>
+
+                {/* Active Upstreams */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t('dashboard.activeUpstreams')}</span>
+                  </div>
+                  {upstreamTrendLoading ? (
+                    <div className="h-5 w-16 animate-pulse bg-muted rounded" />
+                  ) : (
+                    <span className="text-sm font-medium">{activeUpstreams}</span>
+                  )}
+                </div>
               </div>
 
             </CardContent>
@@ -442,6 +476,31 @@ export default function DashboardPage() {
                 })}
               </div>
             )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Upstream Distribution */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Upstream Trend */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.upstreamDistributionTrend')}</CardTitle>
+            <CardDescription>{t('dashboard.upstreamDistributionDesc', { timeRange: timeRangeLabel })}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UpstreamTrendChart data={upstreamTrendData} isLoading={upstreamTrendLoading} />
+          </CardContent>
+        </Card>
+
+        {/* Upstream Distribution (pie/bar) */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.upstreamDistributionStats')}</CardTitle>
+            <CardDescription>{t('dashboard.upstreamDistributionDesc', { timeRange: timeRangeLabel })}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UpstreamDistributionChart data={upstreamDistribution} isLoading={upstreamDistributionLoading} />
           </CardContent>
         </Card>
       </div>

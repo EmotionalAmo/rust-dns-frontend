@@ -1,5 +1,6 @@
 import { apiClient, type DashboardStats } from './';
 import type { QueryTrendData } from '@/components/dashboard/QueryTrendChart';
+import type { UpstreamTrendData } from '@/components/dashboard/UpstreamTrendChart';
 import type { TopDomainEntry, TopClientEntry } from './types';
 
 /**
@@ -51,10 +52,42 @@ export async function getTopClients(hours = 24): Promise<TopClientEntry[]> {
   return response.data;
 }
 
+/**
+ * Get upstream distribution trend for past N hours
+ */
+export async function getUpstreamTrend(hours = 24, limit = 10): Promise<{
+  data: UpstreamTrendData[];
+  total_upstreams: number;
+}> {
+  const response = await apiClient.get<{
+    data: UpstreamTrendData[];
+    total_upstreams: number;
+  }>(`/api/v1/dashboard/upstream-trend?hours=${hours}&limit=${limit}`);
+  return response.data;
+}
+
+/**
+ * Get upstream distribution (count and percentage) for past N hours
+ */
+export async function getUpstreamDistribution(hours = 24): Promise<Array<{
+  upstream: string;
+  count: number;
+  percentage: number;
+}>> {
+  const response = await apiClient.get<Array<{
+    upstream: string;
+    count: number;
+    percentage: number;
+  }>>(`/api/v1/dashboard/upstream-distribution?hours=${hours}`);
+  return response.data;
+}
+
 // Export API object
 export const dashboardApi = {
   getStats: getDashboardStats,
   getQueryTrend,
   getTopBlockedDomains,
   getTopClients,
+  getUpstreamTrend,
+  getUpstreamDistribution,
 };

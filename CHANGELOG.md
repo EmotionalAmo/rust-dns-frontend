@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-03-04
+
+### Added
+
+- **UpstreamDistributionChart 百分比标签** — 上游分布饼图各扇区现在直接显示百分比数值标签，无需悬停即可读取各上游占比。
+- **System Status Card 活跃上游数** — 系统状态卡片新增"活跃上游"指标，实时展示当前健康可用的上游 resolver 数量。
+
 ## [1.1.0] - 2026-03-03
 
 ### Added
@@ -49,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Internationalization (i18n) foundation.
 - Docker support with multi-stage build.
 
-[Unreleased]: https://github.com/EmotionalAmo/rust-dns-frontend/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/EmotionalAmo/rust-dns-frontend/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/EmotionalAmo/rust-dns-frontend/compare/v1.1.0...v1.5.0
 [1.1.0]: https://github.com/EmotionalAmo/rust-dns-frontend/releases/tag/v1.1.0
 [1.0.0]: https://github.com/EmotionalAmo/rust-dns-frontend/releases/tag/v1.0.0
