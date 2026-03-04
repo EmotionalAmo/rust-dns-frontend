@@ -371,7 +371,13 @@
     "timeRange24h": "Last 24h",
     "timeRange7d": "Last 7d",
     "filterQtype": "Record Type",
-    "qtypeAll": "All"
+    "qtypeAll": "All",
+    "colActions": "Actions",
+    "actionBlock": "Block",
+    "actionAllow": "Allow",
+    "blockSuccess": "Block rule added: {{domain}}",
+    "allowSuccess": "Allow rule added: {{domain}}",
+    "actionError": "Action failed: {{msg}}"
   },
   "settings": {
     "title": "System Settings",

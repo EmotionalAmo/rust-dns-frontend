@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { queryLogApi, type QueryLogListParams } from '@/api/queryLog';
+import { rulesApi } from '@/api/rules';
 import { upstreamsApi } from '@/api/upstreams';
 import { useQueryLogWebSocket } from '@/hooks/useQueryLogWebSocket';
 import { queryLogAdvancedApi } from '@/api/queryLogAdvanced';
@@ -17,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2 } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, Ban, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
@@ -119,6 +120,7 @@ export default function QueryLogsPage() {
   });
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
   const [isExporting, setIsExporting] = useState(false);
+  const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
   // New filter states
   const [timeRange, setTimeRange] = useState<string>('all');
@@ -258,6 +260,30 @@ export default function QueryLogsPage() {
       toast.error(t('queryLogs.exportError'));
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleQuickRule = async (domain: string, type: 'block' | 'allow') => {
+    const key = `${type}:${domain}`;
+    if (pendingActions.has(key)) return;
+    setPendingActions((prev) => new Set(prev).add(key));
+    try {
+      const rule = type === 'block' ? `||${domain}^` : `@@||${domain}^`;
+      await rulesApi.createRule({ rule });
+      toast.success(
+        type === 'block'
+          ? t('queryLogs.blockSuccess', { domain })
+          : t('queryLogs.allowSuccess', { domain })
+      );
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('queryLogs.actionError', { msg }));
+    } finally {
+      setPendingActions((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
     }
   };
 
@@ -497,6 +523,7 @@ export default function QueryLogsPage() {
                     <TableHead className="text-xs">{t('queryLogs.colClient')}</TableHead>
                     <TableHead className="text-xs">{t('queryLogs.colUpstream')}</TableHead>
                     <TableHead className="text-right text-xs">{t('queryLogs.colLatency')}</TableHead>
+                    <TableHead className="text-xs">{t('queryLogs.colActions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -518,6 +545,35 @@ export default function QueryLogsPage() {
                       <TableCell className="text-muted-foreground py-1.5">{entry.upstream || '-'}</TableCell>
                       <TableCell className="py-1.5">
                         <TimingCell elapsedNs={entry.elapsed_ns} upstreamNs={entry.upstream_ns} status={entry.status} />
+                      </TableCell>
+                      <TableCell className="py-1.5">
+                        {(() => {
+                          const domain = entry.question.replace(/\.$/, '');
+                          return (
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                title={t('queryLogs.actionBlock')}
+                                disabled={pendingActions.has(`block:${domain}`)}
+                                onClick={() => handleQuickRule(domain, 'block')}
+                              >
+                                <Ban size={12} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 px-1.5 text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                                title={t('queryLogs.actionAllow')}
+                                disabled={pendingActions.has(`allow:${domain}`)}
+                                onClick={() => handleQuickRule(domain, 'allow')}
+                              >
+                                <ShieldCheck size={12} />
+                              </Button>
+                            </div>
+                          );
+                        })()}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -567,6 +623,7 @@ export default function QueryLogsPage() {
                       <TableHead>{t('queryLogs.colResponse')}</TableHead>
                       <TableHead>{t('queryLogs.colUpstream')}</TableHead>
                       <TableHead className="text-right">{t('queryLogs.colLatency')}</TableHead>
+                      <TableHead>{t('queryLogs.colActions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -597,6 +654,35 @@ export default function QueryLogsPage() {
                         </TableCell>
                         <TableCell>
                           <TimingCell elapsedNs={log.elapsed_ns} upstreamNs={log.upstream_ns} status={log.status} />
+                        </TableCell>
+                        <TableCell>
+                          {(() => {
+                            const domain = log.question.replace(/\.$/, '');
+                            return (
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                                  title={t('queryLogs.actionBlock')}
+                                  disabled={pendingActions.has(`block:${domain}`)}
+                                  onClick={() => handleQuickRule(domain, 'block')}
+                                >
+                                  <Ban size={13} />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                                  title={t('queryLogs.actionAllow')}
+                                  disabled={pendingActions.has(`allow:${domain}`)}
+                                  onClick={() => handleQuickRule(domain, 'allow')}
+                                >
+                                  <ShieldCheck size={13} />
+                                </Button>
+                              </div>
+                            );
+                          })()}
                         </TableCell>
                       </TableRow>
                     ))}

@@ -382,7 +382,13 @@
     "timeRange24h": "最近24小时",
     "timeRange7d": "最近7天",
     "filterQtype": "记录类型",
-    "qtypeAll": "全部"
+    "qtypeAll": "全部",
+    "colActions": "操作",
+    "actionBlock": "屏蔽",
+    "actionAllow": "允许",
+    "blockSuccess": "已添加屏蔽规则：{{domain}}",
+    "allowSuccess": "已添加允许规则：{{domain}}",
+    "actionError": "操作失败：{{msg}}"
   },
   "settings": {
     "title": "系统设置",
