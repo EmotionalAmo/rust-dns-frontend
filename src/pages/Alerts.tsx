@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { alertsApi } from '@/api/alerts';
 import { Bell, BellRing, Check, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 export default function AlertsPage() {
+    const { t } = useTranslation();
     const [page, setPage] = useState(1);
     const pageSize = 20;
     const queryClient = useQueryClient();
@@ -19,7 +22,7 @@ export default function AlertsPage() {
     const markAllReadMutation = useMutation({
         mutationFn: alertsApi.markAllAsRead,
         onSuccess: () => {
-            toast.success('All alerts marked as read');
+            toast.success(t('alerts.markAllReadSuccess'));
             queryClient.invalidateQueries({ queryKey: ['alerts'] });
         },
     });
@@ -27,7 +30,7 @@ export default function AlertsPage() {
     const clearAlertsMutation = useMutation({
         mutationFn: alertsApi.clearAlerts,
         onSuccess: () => {
-            toast.success('Alerts history cleared');
+            toast.success(t('alerts.clearSuccess'));
             queryClient.invalidateQueries({ queryKey: ['alerts'] });
             setPage(1);
         },
@@ -50,33 +53,36 @@ export default function AlertsPage() {
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <Bell className="h-6 w-6 text-primary" />
-                        Threat Alerts Center
+                        {t('alerts.title')}
                     </h1>
                     <p className="text-sm text-muted-foreground mt-1">
-                        Monitor anomalous activities and security events across all devices on your network.
+                        {t('alerts.desc')}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
-                    <button
+                    <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => markAllReadMutation.mutate()}
                         disabled={markAllReadMutation.isPending || alerts.every(a => a.is_read)}
-                        className="flex items-center gap-2 rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50"
                     >
                         <Check className="h-4 w-4" />
-                        Mark all read
-                    </button>
-                    <button
+                        {t('alerts.markAllRead')}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive border-destructive/30 hover:bg-destructive/10"
                         onClick={() => {
-                            if (window.confirm('Are you sure you want to clear all alerts history?')) {
+                            if (window.confirm(t('alerts.clearConfirm'))) {
                                 clearAlertsMutation.mutate();
                             }
                         }}
                         disabled={clearAlertsMutation.isPending || alerts.length === 0}
-                        className="flex items-center gap-2 rounded-md border border-destructive/30 text-destructive px-4 py-2 text-sm font-medium hover:bg-destructive/10 disabled:opacity-50"
                     >
                         <Trash2 className="h-4 w-4" />
-                        Clear alerts
-                    </button>
+                        {t('alerts.clearAlerts')}
+                    </Button>
                 </div>
             </div>
 
@@ -86,8 +92,8 @@ export default function AlertsPage() {
                         <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
                             <Check className="h-8 w-8 text-muted-foreground/50" />
                         </div>
-                        <h3 className="text-lg font-medium">No alerts found</h3>
-                        <p className="text-muted-foreground mt-2">Your network is currently safe and quiet.</p>
+                        <h3 className="text-lg font-medium">{t('alerts.emptyTitle')}</h3>
+                        <p className="text-muted-foreground mt-2">{t('alerts.emptyDesc')}</p>
                     </div>
                 ) : (
                     <div className="divide-y relative">
@@ -121,20 +127,22 @@ export default function AlertsPage() {
                                             </div>
                                         )}
                                         <div className="flex items-center gap-1">
-                                            Type: <span className="uppercase text-xs tracking-wider">{alert.alert_type}</span>
+                                            {t('alerts.typeLabel')} <span className="uppercase text-xs tracking-wider">{alert.alert_type}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {!alert.is_read && (
                                     <div className="shrink-0 self-start sm:self-center ml-auto">
-                                        <button
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="p-2 rounded-full"
                                             onClick={() => alertsApi.markAsRead(alert.id).then(() => queryClient.invalidateQueries({ queryKey: ['alerts'] }))}
-                                            className="p-2 bg-background hover:bg-muted border rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                                            title="Mark as read"
+                                            title={t('alerts.markAsRead')}
                                         >
                                             <Check className="h-4 w-4" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </div>
@@ -146,24 +154,25 @@ export default function AlertsPage() {
             {totalPages > 1 && (
                 <div className="flex items-center justify-between border-t border-border/40 py-4 px-2">
                     <p className="text-sm text-muted-foreground">
-                        Page <span className="font-medium text-foreground">{page}</span> of{' '}
-                        <span className="font-medium text-foreground">{totalPages}</span>
+                        {t('alerts.pageInfo', { page, total: totalPages })}
                     </p>
                     <div className="flex items-center gap-2">
-                        <button
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setPage((p) => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="rounded-md border bg-background px-3 py-1 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
                         >
-                            Previous
-                        </button>
-                        <button
+                            {t('alerts.previous')}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="rounded-md border bg-background px-3 py-1 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
                         >
-                            Next
-                        </button>
+                            {t('alerts.next')}
+                        </Button>
                     </div>
                 </div>
             )}

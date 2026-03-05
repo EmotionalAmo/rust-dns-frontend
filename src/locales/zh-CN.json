@@ -750,6 +750,22 @@
     "show_more": "显示更多",
     "show_less": "收起"
   },
+  "alerts": {
+    "title": "威胁告警中心",
+    "desc": "监控您网络中所有设备的异常活动和安全事件。",
+    "markAllRead": "全部标记已读",
+    "clearAlerts": "清除告警",
+    "clearConfirm": "确定要清除所有告警历史记录吗？",
+    "emptyTitle": "暂无告警",
+    "emptyDesc": "您的网络目前安全且安静。",
+    "typeLabel": "类型：",
+    "markAsRead": "标记为已读",
+    "markAllReadSuccess": "所有告警已标记为已读",
+    "clearSuccess": "告警历史已清除",
+    "pageInfo": "第 {{page}} / {{total}} 页",
+    "previous": "上一页",
+    "next": "下一页"
+  },
   "auditLog": {
     "title": "审计日志",
     "desc": "记录所有管理操作，仅管理员可查看",

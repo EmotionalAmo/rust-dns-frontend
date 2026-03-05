@@ -740,6 +740,22 @@
     "show_more": "Show More",
     "show_less": "Show Less"
   },
+  "alerts": {
+    "title": "Threat Alerts Center",
+    "desc": "Monitor anomalous activities and security events across all devices on your network.",
+    "markAllRead": "Mark all read",
+    "clearAlerts": "Clear alerts",
+    "clearConfirm": "Are you sure you want to clear all alerts history?",
+    "emptyTitle": "No alerts found",
+    "emptyDesc": "Your network is currently safe and quiet.",
+    "typeLabel": "Type:",
+    "markAsRead": "Mark as read",
+    "markAllReadSuccess": "All alerts marked as read",
+    "clearSuccess": "Alerts history cleared",
+    "pageInfo": "Page {{page}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "auditLog": {
     "title": "Audit Log",
     "desc": "Record of all management operations, visible only to administrators",
