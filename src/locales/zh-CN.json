@@ -494,7 +494,12 @@
     "createFailed": "创建失败: {{msg}}",
     "updateFailed": "更新失败: {{msg}}",
     "deleteFailed": "删除失败: {{msg}}",
-    "failoverTriggered": "已切换到: {{msg}}"
+    "failoverTriggered": "已切换到: {{msg}}",
+    "upstreamRoutingStrategy": "上游路由策略",
+    "upstreamRoutingStrategyDesc": "选择 DNS 查询在活跃上游之间的分发方式",
+    "strategyPriority": "优先级（严格故障转移）",
+    "strategyLoadBalance": "负载均衡（轮询）",
+    "strategyFastest": "最快响应（最低延迟）"
   },
   "users": {
     "title": "用户管理",
@@ -756,6 +761,7 @@
     "desc": "监控您网络中所有设备的异常活动和安全事件。",
     "markAllRead": "全部标记已读",
     "clearAlerts": "清除告警",
+    "clearConfirmTitle": "清除所有告警？",
     "clearConfirm": "确定要清除所有告警历史记录吗？",
     "emptyTitle": "暂无告警",
     "emptyDesc": "您的网络目前安全且安静。",

@@ -484,7 +484,12 @@
     "createFailed": "Creation failed: {{msg}}",
     "updateFailed": "Update failed: {{msg}}",
     "deleteFailed": "Deletion failed: {{msg}}",
-    "failoverTriggered": "Switched to: {{msg}}"
+    "failoverTriggered": "Switched to: {{msg}}",
+    "upstreamRoutingStrategy": "Upstream Routing Strategy",
+    "upstreamRoutingStrategyDesc": "Choose how queries are distributed across active upstreams.",
+    "strategyPriority": "Priority (Strict Failover)",
+    "strategyLoadBalance": "Load Balancing (Round-Robin)",
+    "strategyFastest": "Fastest (Lowest Latency)"
   },
   "users": {
     "title": "User Management",
@@ -746,6 +751,7 @@
     "desc": "Monitor anomalous activities and security events across all devices on your network.",
     "markAllRead": "Mark all read",
     "clearAlerts": "Clear alerts",
+    "clearConfirmTitle": "Clear all alerts?",
     "clearConfirm": "Are you sure you want to clear all alerts history?",
     "emptyTitle": "No alerts found",
     "emptyDesc": "Your network is currently safe and quiet.",

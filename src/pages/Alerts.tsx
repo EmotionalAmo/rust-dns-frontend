@@ -6,10 +6,12 @@ import { Bell, BellRing, Check, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function AlertsPage() {
     const { t } = useTranslation();
     const [page, setPage] = useState(1);
+    const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
     const pageSize = 20;
     const queryClient = useQueryClient();
 
@@ -73,11 +75,7 @@ export default function AlertsPage() {
                         variant="outline"
                         size="sm"
                         className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                        onClick={() => {
-                            if (window.confirm(t('alerts.clearConfirm'))) {
-                                clearAlertsMutation.mutate();
-                            }
-                        }}
+                        onClick={() => setClearConfirmOpen(true)}
                         disabled={clearAlertsMutation.isPending || alerts.length === 0}
                     >
                         <Trash2 className="h-4 w-4" />
@@ -177,5 +175,23 @@ export default function AlertsPage() {
                 </div>
             )}
         </div>
+
+        <AlertDialog open={clearConfirmOpen} onOpenChange={setClearConfirmOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{t('alerts.clearConfirmTitle')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('alerts.clearConfirm')}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={() => clearAlertsMutation.mutate()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                        {t('alerts.clearAlerts')}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }

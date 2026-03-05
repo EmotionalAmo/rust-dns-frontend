@@ -576,13 +576,13 @@ export default function SettingsPage() {
                   <Plus size={14} className="mr-1" />{t('settings.addUpstream')}
                 </Button>
               </CardTitle>
-              <CardDescription>{t('settings.upstreamsDesc')} Configure DNS resolution routing.</CardDescription>
+              <CardDescription>{t('settings.upstreamsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-6 mb-4">
                 <SettingRow
-                  label="Upstream Routing Strategy"
-                  description="Choose how queries are distributed across active upstreams."
+                  label={t('settings.upstreamRoutingStrategy')}
+                  description={t('settings.upstreamRoutingStrategyDesc')}
                 >
                   <Select
                     value={current.upstream_strategy ?? 'priority'}
@@ -592,9 +592,9 @@ export default function SettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="priority">Priority (Strict Failover)</SelectItem>
-                      <SelectItem value="load_balance">Load Balancing (Round-Robin)</SelectItem>
-                      <SelectItem value="fastest">Fastest (Lowest Latency)</SelectItem>
+                      <SelectItem value="priority">{t('settings.strategyPriority')}</SelectItem>
+                      <SelectItem value="load_balance">{t('settings.strategyLoadBalance')}</SelectItem>
+                      <SelectItem value="fastest">{t('settings.strategyFastest')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </SettingRow>
