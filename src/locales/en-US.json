@@ -308,7 +308,8 @@
     "deletedCount": "{{count}} filter lists deleted",
     "nameRequired": "Please enter a filter name",
     "deleteConfirmSingle": "Are you sure you want to delete this filter list?",
-    "deleteConfirmMultiple": "Are you sure you want to delete {{count}} selected filter lists?"
+    "deleteConfirmMultiple": "Are you sure you want to delete {{count}} selected filter lists?",
+    "selectItem": "Select filter {{name}}"
   },
   "rewrites": {
     "title": "DNS Rewrites",
@@ -362,7 +363,8 @@
     "aboutBullet1": "Resolves specified domain to specified IP",
     "aboutBullet2": "Suitable for local development and LAN device access",
     "aboutBullet3": "Takes priority over upstream DNS resolution",
-    "aboutBullet4": "Example: resolve myapp.local to 127.0.0.1"
+    "aboutBullet4": "Example: resolve myapp.local to 127.0.0.1",
+    "selectItem": "Select rewrite rule {{domain}}"
   },
   "queryLogs": {
     "title": "Query Logs",

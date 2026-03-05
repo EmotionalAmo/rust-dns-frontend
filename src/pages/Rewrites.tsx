@@ -552,7 +552,7 @@ export default function RewritesPage() {
                       <Checkbox
                         checked={selectedIds.size === filteredRewrites.length}
                         onCheckedChange={handleSelectAll}
-                        aria-label="全选"
+                        aria-label={t('common.selectAll')}
                       />
                     </TableHead>
                     <TableHead>{t('rewrites.colDomain')}</TableHead>
@@ -577,7 +577,7 @@ export default function RewritesPage() {
                           <Checkbox
                             checked={selectedIds.has(rewrite.id)}
                             onCheckedChange={() => handleSelectRewrite(rewrite.id)}
-                            aria-label={`选择重写规则 ${rewrite.domain}`}
+                            aria-label={t('rewrites.selectItem', { domain: rewrite.domain })}
                           />
                         </TableCell>
                         <TableCell>

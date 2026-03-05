@@ -319,7 +319,8 @@
     "deletedCount": "已删除 {{count}} 个过滤列表",
     "nameRequired": "请输入过滤器名称",
     "deleteConfirmSingle": "确定要删除这个过滤列表吗？",
-    "deleteConfirmMultiple": "确定要删除选中的 {{count}} 个过滤列表吗？"
+    "deleteConfirmMultiple": "确定要删除选中的 {{count}} 个过滤列表吗？",
+    "selectItem": "选择过滤器 {{name}}"
   },
   "rewrites": {
     "title": "DNS 重写规则",
@@ -373,7 +374,8 @@
     "aboutBullet1": "将指定域名的 DNS 查询解析到指定 IP",
     "aboutBullet2": "适用于本地开发环境、局域网设备访问",
     "aboutBullet3": "优先级高于上游 DNS 解析结果",
-    "aboutBullet4": "示例: 将 myapp.local 解析到 127.0.0.1"
+    "aboutBullet4": "示例: 将 myapp.local 解析到 127.0.0.1",
+    "selectItem": "选择重写规则 {{domain}}"
   },
   "queryLogs": {
     "title": "查询日志",

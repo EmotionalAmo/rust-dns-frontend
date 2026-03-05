@@ -788,7 +788,7 @@ export default function FiltersPage() {
                           <Checkbox
                             checked={selectedIds.has(filter.id)}
                             onCheckedChange={() => handleSelectFilter(filter.id)}
-                            aria-label={`选择过滤器 ${filter.name}`}
+                            aria-label={t('filters.selectItem', { name: filter.name })}
                           />
                         </TableCell>
                         <TableCell>
