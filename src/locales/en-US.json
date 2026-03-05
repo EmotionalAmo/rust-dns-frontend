@@ -230,7 +230,16 @@
     "simpleDomain": "Domain",
     "simpleDomainPlaceholder": "e.g. ads.example.com",
     "simpleDomainRequired": "Please enter a domain",
-    "simplePreview": "Generated rule:"
+    "simplePreview": "Generated rule:",
+    "importRules": "Import Rules",
+    "importDialogTitle": "Import Rules",
+    "importDialogDesc": "One rule per line. AdGuard and hosts formats supported. Empty lines and comments (# or !) are ignored.",
+    "importPlaceholder": "||ads.example.com^\n||tracker.example.com^\n@@||safe.example.com^",
+    "importDetected": "{{count}} valid rules detected",
+    "importSubmit": "Import {{count}}",
+    "importProgress": "Importing {{current}}/{{total}}...",
+    "importSuccess": "Successfully imported {{count}} rules",
+    "importPartial": "{{success}} imported, {{failed}} failed"
   },
   "filters": {
     "title": "Filter Lists",

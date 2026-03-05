@@ -56,6 +56,7 @@ import {
   ToggleRight,
   Edit2,
   Play,
+  Upload,
 } from 'lucide-react';
 import { formatDateTimeShort } from '@/lib/datetime';
 import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
@@ -413,6 +414,127 @@ function EditRuleDialog({
   );
 }
 
+function BulkImportDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [text, setText] = useState('');
+  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+
+  const parseRules = (raw: string): string[] => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const line of raw.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      if (trimmed.startsWith('#') || trimmed.startsWith('!')) continue;
+      if (!seen.has(trimmed)) {
+        seen.add(trimmed);
+        result.push(trimmed);
+      }
+    }
+    return result;
+  };
+
+  const validRules = parseRules(text);
+
+  const handleClose = (val: boolean) => {
+    if (!val && progress === null) {
+      setText('');
+    }
+    if (progress !== null) return; // 导入中不允许关闭
+    onOpenChange(val);
+  };
+
+  const handleImport = async () => {
+    if (validRules.length === 0) return;
+    const total = validRules.length;
+    setProgress({ current: 0, total });
+    let success = 0;
+    let failed = 0;
+
+    for (let i = 0; i < validRules.length; i++) {
+      try {
+        await rulesApi.createRule({ rule: validRules[i] });
+        success++;
+      } catch {
+        failed++;
+      }
+      setProgress({ current: i + 1, total });
+    }
+
+    setProgress(null);
+    queryClient.invalidateQueries({ queryKey: ['rules'] });
+
+    if (failed === 0) {
+      toast.success(t('rules.importSuccess', { count: success }));
+    } else {
+      toast.warning(t('rules.importPartial', { success, failed }));
+    }
+
+    setText('');
+    onOpenChange(false);
+    onSuccess();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{t('rules.importDialogTitle')}</DialogTitle>
+          <DialogDescription>{t('rules.importDialogDesc')}</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3 py-2">
+          <textarea
+            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+            rows={12}
+            placeholder={t('rules.importPlaceholder')}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            disabled={progress !== null}
+          />
+          <p className="text-xs text-muted-foreground">
+            {t('rules.importDetected', { count: validRules.length })}
+          </p>
+        </div>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleClose(false)}
+            disabled={progress !== null}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleImport}
+            disabled={validRules.length === 0 || progress !== null}
+          >
+            {progress !== null ? (
+              <>
+                <RefreshCw size={16} className="mr-2 animate-spin" />
+                {t('rules.importProgress', { current: progress.current, total: progress.total })}
+              </>
+            ) : (
+              <>
+                <Upload size={16} className="mr-1" />
+                {t('rules.importSubmit', { count: validRules.length })}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function DeleteConfirmDialog({
   open,
   onOpenChange,
@@ -554,6 +676,7 @@ export default function RulesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showExamples, setShowExamples] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false);
   const [sandboxDialogOpen, setSandboxDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
@@ -763,6 +886,10 @@ export default function RulesPage() {
           <Button variant="secondary" onClick={() => setSandboxDialogOpen(true)}>
             <Play size={16} className="mr-1" />
             Rule Sandbox
+          </Button>
+          <Button variant="outline" onClick={() => setBulkImportDialogOpen(true)}>
+            <Upload size={16} className="mr-1" />
+            {t('rules.importRules')}
           </Button>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus size={16} className="mr-1" />
@@ -997,6 +1124,12 @@ export default function RulesPage() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSuccess={() => setCreateDialogOpen(false)}
+      />
+
+      <BulkImportDialog
+        open={bulkImportDialogOpen}
+        onOpenChange={setBulkImportDialogOpen}
+        onSuccess={() => setBulkImportDialogOpen(false)}
       />
 
       <EditRuleDialog

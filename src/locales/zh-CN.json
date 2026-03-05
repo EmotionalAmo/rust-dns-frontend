@@ -241,7 +241,16 @@
     "simpleDomain": "域名",
     "simpleDomainPlaceholder": "例如: ads.example.com",
     "simpleDomainRequired": "请输入域名",
-    "simplePreview": "生成规则:"
+    "simplePreview": "生成规则:",
+    "importRules": "批量导入",
+    "importDialogTitle": "批量导入规则",
+    "importDialogDesc": "每行一条规则，支持 AdGuard 格式和 hosts 格式。空行和注释（# 或 ! 开头）会自动忽略。",
+    "importPlaceholder": "||ads.example.com^\n||tracker.example.com^\n@@||safe.example.com^",
+    "importDetected": "检测到 {{count}} 条有效规则",
+    "importSubmit": "导入 {{count}} 条",
+    "importProgress": "正在导入 {{current}}/{{total}}...",
+    "importSuccess": "成功导入 {{count}} 条规则",
+    "importPartial": "{{success}} 条成功，{{failed}} 条失败"
   },
   "filters": {
     "title": "过滤列表",
