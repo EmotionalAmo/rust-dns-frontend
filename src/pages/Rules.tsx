@@ -58,7 +58,14 @@ import {
   Play,
   Upload,
   Search,
+  Wrench,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatDateTimeShort } from '@/lib/datetime';
 import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
 import { domainCheckApi, type DomainCheckResult } from '@/api/domainCheck';
@@ -983,14 +990,24 @@ export default function RulesPage() {
               </Button>
             </>
           )}
-          <Button variant="secondary" onClick={() => setDomainCheckDialogOpen(true)}>
-            <Search size={16} className="mr-1" />
-            {t('rules.domainCheck')}
-          </Button>
-          <Button variant="secondary" onClick={() => setSandboxDialogOpen(true)}>
-            <Play size={16} className="mr-1" />
-            Rule Sandbox
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="sm">
+                <Wrench size={16} className="mr-1" />
+                工具
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setDomainCheckDialogOpen(true)}>
+                <Search size={14} className="mr-2" />
+                {t('rules.domainCheck')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSandboxDialogOpen(true)}>
+                <Play size={14} className="mr-2" />
+                Rule Sandbox
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" onClick={() => setBulkImportDialogOpen(true)}>
             <Upload size={16} className="mr-1" />
             {t('rules.importRules')}
@@ -1159,7 +1176,7 @@ export default function RulesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setPage(1)}
+                    onClick={() => { setPage(1); setSelectedIds(new Set()); }}
                     disabled={page <= 1 || isLoading}
                   >
                     {t('common.firstPage')}
@@ -1167,7 +1184,7 @@ export default function RulesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setPage(p => p - 1)}
+                    onClick={() => { setPage(p => p - 1); setSelectedIds(new Set()); }}
                     disabled={page <= 1 || isLoading}
                   >
                     <ChevronLeft size={16} />
@@ -1175,7 +1192,7 @@ export default function RulesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setPage(p => p + 1)}
+                    onClick={() => { setPage(p => p + 1); setSelectedIds(new Set()); }}
                     disabled={page >= totalPages || isLoading}
                   >
                     <ChevronRight size={16} />
@@ -1183,7 +1200,7 @@ export default function RulesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setPage(totalPages)}
+                    onClick={() => { setPage(totalPages); setSelectedIds(new Set()); }}
                     disabled={page >= totalPages || isLoading}
                   >
                     {t('common.lastPage')}

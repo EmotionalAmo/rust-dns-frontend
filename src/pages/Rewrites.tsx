@@ -188,9 +188,19 @@ function CreateRewriteDialog({
       return;
     }
 
-    // 验证 IP 格式（简单验证）
-    const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$|^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/;
-    if (!ipRegex.test(formData.answer)) {
+    // 验证 IP 格式（IPv4 范围校验 + IPv6 格式校验）
+    const isValidIPv4 = (ip: string): boolean => {
+      const parts = ip.split('.');
+      if (parts.length !== 4) return false;
+      return parts.every(part => {
+        if (!/^\d+$/.test(part)) return false;
+        const num = parseInt(part, 10);
+        return num >= 0 && num <= 255;
+      });
+    };
+    const isValidIPv6 = (ip: string): boolean =>
+      /^([0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}$/.test(ip);
+    if (!isValidIPv4(formData.answer) && !isValidIPv6(formData.answer)) {
       toast.error(t('rewrites.ipInvalid'));
       return;
     }

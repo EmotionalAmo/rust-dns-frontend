@@ -681,15 +681,6 @@ export default function FiltersPage() {
             <RefreshCw size={16} className={refreshingAll ? 'animate-spin' : ''} />
             <span className="hidden sm:inline ml-1">{t('filters.refreshAll')}</span>
           </Button>
-          {/* 刷新按钮 */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading}
-          >
-            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-          </Button>
           {/* 删除按钮 */}
           {selectedIds.size > 0 && (
             <Button
