@@ -89,6 +89,14 @@ export default function DashboardPage() {
     staleTime: 20000,
   });
 
+  // Fetch Top 10 queried domains (all statuses)
+  const { data: topQueriedDomains = [], isLoading: topQueriedLoading } = useQuery({
+    queryKey: ['dashboard', 'top-queried-domains', hours],
+    queryFn: () => dashboardApi.getTopQueriedDomains(hours),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
   // Fetch Top 10 active clients
   const { data: topClients = [], isLoading: topClientsLoading } = useQuery({
     queryKey: ['dashboard', 'top-clients', hours],
@@ -482,6 +490,54 @@ export default function DashboardPage() {
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full bg-primary/50"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top Queried Domains Row */}
+      <div className="grid gap-6 md:grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" />
+              {t('dashboard.top10Queried')}
+            </CardTitle>
+            <CardDescription>{t('dashboard.top10QueriedDesc', { timeRange: timeRangeLabel })}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {topQueriedLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-6 animate-pulse bg-muted rounded" />
+                ))}
+              </div>
+            ) : topQueriedDomains.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">{t('dashboard.noQueryData')}</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {topQueriedDomains.map((entry, i) => {
+                  const maxCount = topQueriedDomains[0]?.count ?? 1;
+                  const pct = Math.round((entry.count / maxCount) * 100);
+                  return (
+                    <div key={entry.domain} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="truncate font-mono text-xs max-w-[70%]" title={entry.domain}>
+                          <span className="text-muted-foreground mr-1.5">{i + 1}.</span>
+                          {entry.domain}
+                        </span>
+                        <span className="text-muted-foreground shrink-0 ml-2">{formatNumber(entry.count)}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary/40"
                           style={{ width: `${pct}%` }}
                         />
                       </div>

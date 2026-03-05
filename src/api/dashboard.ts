@@ -43,6 +43,16 @@ export async function getTopBlockedDomains(hours = 24): Promise<TopDomainEntry[]
 }
 
 /**
+ * Get top 10 most queried domains (all statuses) in the past N hours
+ */
+export async function getTopQueriedDomains(hours = 24): Promise<TopDomainEntry[]> {
+  const response = await apiClient.get<TopDomainEntry[]>(
+    `/api/v1/dashboard/top-queried-domains?hours=${hours}`
+  );
+  return response.data;
+}
+
+/**
  * Get top 10 most active clients in the past N hours
  */
 export async function getTopClients(hours = 24): Promise<TopClientEntry[]> {
@@ -87,6 +97,7 @@ export const dashboardApi = {
   getStats: getDashboardStats,
   getQueryTrend,
   getTopBlockedDomains,
+  getTopQueriedDomains,
   getTopClients,
   getUpstreamTrend,
   getUpstreamDistribution,
