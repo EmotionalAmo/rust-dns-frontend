@@ -239,7 +239,17 @@
     "importSubmit": "Import {{count}}",
     "importProgress": "Importing {{current}}/{{total}}...",
     "importSuccess": "Successfully imported {{count}} rules",
-    "importPartial": "{{success}} imported, {{failed}} failed"
+    "importPartial": "{{success}} imported, {{failed}} failed",
+    "domainCheck": "Domain Check",
+    "domainCheckTitle": "Domain Status Check",
+    "domainCheckDesc": "Check if domains are blocked, allowed, or rewritten by current rules",
+    "domainCheckPlaceholder": "example.com\ngoogle.com\nads.example.org",
+    "domainCheckButton": "Check Domains",
+    "domainCheckBlocked": "Blocked",
+    "domainCheckAllowed": "Allowed",
+    "domainCheckRewritten": "Rewritten",
+    "domainCheckNoResults": "Enter domains and click check",
+    "domainCheckLimit": "Maximum 100 domains per check"
   },
   "filters": {
     "title": "Filter Lists",

@@ -11,6 +11,7 @@ export { queryLogApi, type QueryLogResponse } from './queryLog';
 export { clientsApi, type ClientRecord, type CreateClientPayload, type UpdateClientPayload, type ClientsResponse } from './clients';
 export { usersApi, type UserRecord, type CreateUserPayload, type UpdateRolePayload, type UsersResponse } from './users';
 export { settingsApi, type DnsSettingsRecord, type UpdateDnsSettingsPayload } from './settings';
+export { domainCheckApi, type DomainCheckResult, type DomainCheckResponse } from './domainCheck';
 
 // Export types
 export type {

@@ -57,9 +57,11 @@ import {
   Edit2,
   Play,
   Upload,
+  Search,
 } from 'lucide-react';
 import { formatDateTimeShort } from '@/lib/datetime';
 import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
+import { domainCheckApi, type DomainCheckResult } from '@/api/domainCheck';
 
 const PER_PAGE = 50;
 
@@ -667,6 +669,103 @@ function SandboxDialog({
   );
 }
 
+function DomainCheckDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { t } = useTranslation();
+  const [domainsText, setDomainsText] = useState('');
+  const [results, setResults] = useState<DomainCheckResult[] | null>(null);
+
+  const checkMutation = useMutation({
+    mutationFn: () => {
+      const domains = domainsText.split('\n').map(d => d.trim()).filter(Boolean);
+      if (domains.length > 100) {
+        throw new Error(t('rules.domainCheckLimit'));
+      }
+      return domainCheckApi.checkDomains(domains);
+    },
+    onSuccess: (data) => setResults(data.results),
+    onError: (error: Error) => toast.error(error.message || t('common.unknownError')),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const domains = domainsText.split('\n').map(d => d.trim()).filter(Boolean);
+    if (domains.length === 0) return toast.error('Please enter at least one domain');
+    if (domains.length > 100) return toast.error(t('rules.domainCheckLimit'));
+    checkMutation.mutate();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setResults(null); }}>
+      <DialogContent className="sm:max-w-2xl px-6 py-6 pb-2">
+        <DialogHeader>
+          <DialogTitle>{t('rules.domainCheckTitle')}</DialogTitle>
+          <DialogDescription>
+            {t('rules.domainCheckDesc')}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="col-span-1 space-y-2 max-w-full md:mt-0 mt-4">
+              <Label>{t('rules.simpleDomain')}</Label>
+              <textarea
+                className="flex h-40 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder={t('rules.domainCheckPlaceholder')}
+                value={domainsText}
+                onChange={(e) => setDomainsText(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">{t('rules.domainCheckLimit')}</p>
+            </div>
+            <div className="col-span-1 space-y-2 border rounded-md min-h-[160px] bg-muted/20 p-3 overflow-y-auto w-full max-h-56">
+              <div className="font-semibold text-sm mb-2">{t('common.success')}</div>
+              {checkMutation.isPending && (
+                <div className="flex h-12 items-center justify-center"><RefreshCw className="animate-spin text-muted-foreground" /></div>
+              )}
+              {results && (
+                <ul className="space-y-1 text-sm">
+                  {results.map((r, i) => (
+                    <li key={i} className="flex justify-between items-center py-1 border-b last:border-0 border-border/50">
+                      <span className="font-mono text-xs w-[55%] truncate" title={r.domain}>{r.domain}</span>
+                      {r.blocked ? (
+                        <Badge variant="destructive" className="text-[10px] justify-center">
+                          {t('rules.domainCheckBlocked')}
+                        </Badge>
+                      ) : r.rewrite_target ? (
+                        <Badge variant="outline" className="text-[10px] text-blue-600 border-blue-300 bg-blue-50 dark:bg-blue-950/20 justify-center">
+                          {t('rules.domainCheckRewritten')}: {r.rewrite_target}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px] text-green-600 border-green-300 bg-green-50 dark:bg-green-950/20 justify-center">
+                          {t('rules.domainCheckAllowed')}
+                        </Badge>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {!results && !checkMutation.isPending && (
+                <p className="text-sm text-muted-foreground text-center mt-6">{t('rules.domainCheckNoResults')}</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter className="mt-4 pt-4 border-t">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
+            <Button type="submit" disabled={checkMutation.isPending}>
+              {checkMutation.isPending ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+              {t('rules.domainCheckButton')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RulesPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -678,6 +777,7 @@ export default function RulesPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [bulkImportDialogOpen, setBulkImportDialogOpen] = useState(false);
   const [sandboxDialogOpen, setSandboxDialogOpen] = useState(false);
+  const [domainCheckDialogOpen, setDomainCheckDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -883,6 +983,10 @@ export default function RulesPage() {
               </Button>
             </>
           )}
+          <Button variant="secondary" onClick={() => setDomainCheckDialogOpen(true)}>
+            <Search size={16} className="mr-1" />
+            {t('rules.domainCheck')}
+          </Button>
           <Button variant="secondary" onClick={() => setSandboxDialogOpen(true)}>
             <Play size={16} className="mr-1" />
             Rule Sandbox
@@ -1143,6 +1247,11 @@ export default function RulesPage() {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         count={selectedIds.size}
+      />
+
+      <DomainCheckDialog
+        open={domainCheckDialogOpen}
+        onOpenChange={setDomainCheckDialogOpen}
       />
 
       <SandboxDialog

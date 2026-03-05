@@ -250,7 +250,17 @@
     "importSubmit": "导入 {{count}} 条",
     "importProgress": "正在导入 {{current}}/{{total}}...",
     "importSuccess": "成功导入 {{count}} 条规则",
-    "importPartial": "{{success}} 条成功，{{failed}} 条失败"
+    "importPartial": "{{success}} 条成功，{{failed}} 条失败",
+    "domainCheck": "域名检查",
+    "domainCheckTitle": "域名状态检查",
+    "domainCheckDesc": "检查域名是否被当前规则拦截、放行或重写，可一次检查多个域名",
+    "domainCheckPlaceholder": "example.com\ngoogle.com\nads.example.org",
+    "domainCheckButton": "开始检查",
+    "domainCheckBlocked": "已拦截",
+    "domainCheckAllowed": "已放行",
+    "domainCheckRewritten": "已重写",
+    "domainCheckNoResults": "输入域名后点击检查",
+    "domainCheckLimit": "最多检查 100 个域名"
   },
   "filters": {
     "title": "过滤列表",
