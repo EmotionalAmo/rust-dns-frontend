@@ -232,7 +232,16 @@
     "disabledCount": "已禁用 {{count}} 条规则",
     "deletedCount": "已删除 {{count}} 条规则",
     "batchError": "操作失败: {{msg}}",
-    "exportError": "导出失败，请重试"
+    "exportError": "导出失败，请重试",
+    "simpleMode": "简单模式",
+    "expertMode": "专家模式",
+    "simpleAction": "操作",
+    "simpleActionBlock": "阻断域名",
+    "simpleActionAllow": "放行域名",
+    "simpleDomain": "域名",
+    "simpleDomainPlaceholder": "例如: ads.example.com",
+    "simpleDomainRequired": "请输入域名",
+    "simplePreview": "生成规则:"
   },
   "filters": {
     "title": "过滤列表",

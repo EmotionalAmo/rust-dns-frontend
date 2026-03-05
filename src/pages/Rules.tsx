@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,6 +71,15 @@ interface CreateRuleFormData {
   comment: string;
 }
 
+type CreateMode = 'simple' | 'expert';
+type RuleAction = 'block' | 'allow';
+
+function buildSimpleRule(action: RuleAction, domain: string): string {
+  const d = domain.trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  if (!d) return '';
+  return action === 'allow' ? `@@||${d}^` : `||${d}^`;
+}
+
 interface EditRuleFormData {
   rule: string;
   comment: string;
@@ -87,21 +97,33 @@ function CreateRuleDialog({
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [mode, setMode] = useState<CreateMode>('simple');
   const [formData, setFormData] = useState<CreateRuleFormData>({
     rule: '',
     comment: '',
   });
+  const [simpleAction, setSimpleAction] = useState<RuleAction>('block');
+  const [simpleDomain, setSimpleDomain] = useState('');
+  const [simpleComment, setSimpleComment] = useState('');
+
+  const handleClose = (val: boolean) => {
+    if (!val) {
+      setFormData({ rule: '', comment: '' });
+      setSimpleDomain('');
+      setSimpleComment('');
+      setSimpleAction('block');
+      setMode('simple');
+    }
+    onOpenChange(val);
+  };
 
   const createMutation = useMutation({
-    mutationFn: () => rulesApi.createRule({
-      rule: formData.rule.trim(),
-      comment: formData.comment.trim() || undefined,
-    }),
+    mutationFn: (payload: { rule: string; comment?: string }) =>
+      rulesApi.createRule(payload),
     onSuccess: () => {
       toast.success(t('rules.createSuccess'));
       queryClient.invalidateQueries({ queryKey: ['rules'] });
-      onOpenChange(false);
-      setFormData({ rule: '', comment: '' });
+      handleClose(false);
       onSuccess();
     },
     onError: (error: Error) => {
@@ -111,15 +133,32 @@ function CreateRuleDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.rule.trim()) {
-      toast.error(t('rules.ruleRequired'));
-      return;
+    if (mode === 'simple') {
+      const domain = simpleDomain.trim();
+      if (!domain) {
+        toast.error(t('rules.simpleDomainRequired'));
+        return;
+      }
+      const rule = buildSimpleRule(simpleAction, domain);
+      createMutation.mutate({ rule, comment: simpleComment.trim() || undefined });
+    } else {
+      if (!formData.rule.trim()) {
+        toast.error(t('rules.ruleRequired'));
+        return;
+      }
+      createMutation.mutate({
+        rule: formData.rule.trim(),
+        comment: formData.comment.trim() || undefined,
+      });
     }
-    createMutation.mutate();
   };
 
+  const previewRule = simpleDomain.trim()
+    ? buildSimpleRule(simpleAction, simpleDomain)
+    : '';
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t('rules.dialogTitle')}</DialogTitle>
@@ -128,36 +167,109 @@ function CreateRuleDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="rule">{t('rules.ruleContent')}</Label>
-              <RuleInput
-                id="rule"
-                value={formData.rule}
-                onChange={(value) => setFormData({ ...formData, rule: value })}
-                ruleType="filter"
-                placeholder={t('rules.rulePlaceholder')}
-                rows={3}
-              />
-              <p className="text-xs text-muted-foreground">
-                {t('rules.formatHint')}
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="comment">{t('rules.ruleNote')}</Label>
-              <Input
-                id="comment"
-                value={formData.comment}
-                onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                placeholder={t('rules.ruleNotePlaceholder')}
-              />
-            </div>
-          </div>
+          <Tabs value={mode} onValueChange={(v) => setMode(v as CreateMode)} className="pt-2">
+            <TabsList className="w-full">
+              <TabsTrigger value="simple" className="flex-1">{t('rules.simpleMode')}</TabsTrigger>
+              <TabsTrigger value="expert" className="flex-1">{t('rules.expertMode')}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="simple">
+              <div className="space-y-4 py-4">
+                {/* 操作类型 */}
+                <div className="space-y-2">
+                  <Label>{t('rules.simpleAction')}</Label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSimpleAction('block')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 rounded-md border py-2 text-sm font-medium transition-colors ${
+                        simpleAction === 'block'
+                          ? 'border-red-400 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                          : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <XCircle size={14} />
+                      {t('rules.simpleActionBlock')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSimpleAction('allow')}
+                      className={`flex-1 flex items-center justify-center gap-1.5 rounded-md border py-2 text-sm font-medium transition-colors ${
+                        simpleAction === 'allow'
+                          ? 'border-green-400 bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                          : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                      }`}
+                    >
+                      <CheckCircle2 size={14} />
+                      {t('rules.simpleActionAllow')}
+                    </button>
+                  </div>
+                </div>
+                {/* 域名输入 */}
+                <div className="space-y-2">
+                  <Label htmlFor="simple-domain">{t('rules.simpleDomain')}</Label>
+                  <Input
+                    id="simple-domain"
+                    value={simpleDomain}
+                    onChange={(e) => setSimpleDomain(e.target.value)}
+                    placeholder={t('rules.simpleDomainPlaceholder')}
+                    autoFocus
+                  />
+                </div>
+                {/* 规则预览 */}
+                {previewRule && (
+                  <div className="rounded-md bg-muted px-3 py-2 text-sm">
+                    <span className="text-xs text-muted-foreground mr-2">{t('rules.simplePreview')}</span>
+                    <code className="font-mono">{previewRule}</code>
+                  </div>
+                )}
+                {/* 备注 */}
+                <div className="space-y-2">
+                  <Label htmlFor="simple-comment">{t('rules.ruleNote')}</Label>
+                  <Input
+                    id="simple-comment"
+                    value={simpleComment}
+                    onChange={(e) => setSimpleComment(e.target.value)}
+                    placeholder={t('rules.ruleNotePlaceholder')}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="expert">
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rule">{t('rules.ruleContent')}</Label>
+                  <RuleInput
+                    id="rule"
+                    value={formData.rule}
+                    onChange={(value) => setFormData({ ...formData, rule: value })}
+                    ruleType="filter"
+                    placeholder={t('rules.rulePlaceholder')}
+                    rows={3}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('rules.formatHint')}
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="comment">{t('rules.ruleNote')}</Label>
+                  <Input
+                    id="comment"
+                    value={formData.comment}
+                    onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                    placeholder={t('rules.ruleNotePlaceholder')}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={() => handleClose(false)}
               disabled={createMutation.isPending}
             >
               {t('common.cancel')}

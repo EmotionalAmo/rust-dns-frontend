@@ -221,7 +221,16 @@
     "disabledCount": "{{count}} rules disabled",
     "deletedCount": "{{count}} rules deleted",
     "batchError": "Operation failed: {{msg}}",
-    "exportError": "Export failed, please retry"
+    "exportError": "Export failed, please retry",
+    "simpleMode": "Simple",
+    "expertMode": "Expert",
+    "simpleAction": "Action",
+    "simpleActionBlock": "Block Domain",
+    "simpleActionAllow": "Allow Domain",
+    "simpleDomain": "Domain",
+    "simpleDomainPlaceholder": "e.g. ads.example.com",
+    "simpleDomainRequired": "Please enter a domain",
+    "simplePreview": "Generated rule:"
   },
   "filters": {
     "title": "Filter Lists",
