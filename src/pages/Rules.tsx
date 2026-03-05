@@ -603,7 +603,7 @@ function SandboxDialog({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rule.trim()) return toast.error(t('rules.ruleRequired'));
-    if (!domainsText.trim()) return toast.error('Please enter at least one domain');
+    if (!domainsText.trim()) return toast.error(t('rules.sandboxDomainsRequired'));
     testMutation.mutate();
   };
 
@@ -611,21 +611,21 @@ function SandboxDialog({
     <Dialog open={open} onOpenChange={(val) => { onOpenChange(val); if (!val) setResult(null); }}>
       <DialogContent className="sm:max-w-2xl px-6 py-6 pb-2">
         <DialogHeader>
-          <DialogTitle>Rule Sandbox (Dry Run)</DialogTitle>
+          <DialogTitle>{t('rules.sandboxTitle')}</DialogTitle>
           <DialogDescription>
-            Test exactly how a custom rule will behave against specific domains before applying it to your network.
+            {t('rules.sandboxDesc')}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="col-span-1 space-y-2 max-w-full md:mt-0 mt-4">
-              <Label>Rule to test</Label>
+              <Label>{t('rules.sandboxRuleLabel')}</Label>
               <Input
-                placeholder="e.g. ||example.com^"
+                placeholder={t('rules.sandboxRulePlaceholder')}
                 value={rule}
                 onChange={(e) => setRule(e.target.value)}
               />
-              <Label className="mt-4 block">Test Domains (one per line)</Label>
+              <Label className="mt-4 block">{t('rules.sandboxDomainsLabel')}</Label>
               <textarea
                 className="flex h-32 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="test.example.com&#10;google.com"
@@ -634,7 +634,7 @@ function SandboxDialog({
               />
             </div>
             <div className="col-span-1 space-y-2 border rounded-md min-h-[160px] bg-muted/20 p-3 overflow-y-auto w-full max-h-56">
-              <div className="font-semibold text-sm mb-2">Results</div>
+              <div className="font-semibold text-sm mb-2">{t('rules.sandboxResults')}</div>
               {testMutation.isPending && (
                 <div className="flex h-12 items-center justify-center"><RefreshCw className="animate-spin text-muted-foreground" /></div>
               )}
@@ -642,7 +642,7 @@ function SandboxDialog({
                 <div className="space-y-3">
                   <div className="flex flex-wrap gap-2 text-xs">
                     <Badge variant={result.rule_valid ? 'default' : 'destructive'} className={result.rule_valid ? "bg-green-600 hover:bg-green-700" : ""}>
-                      {result.rule_valid ? 'Valid Rule' : 'Invalid Rule'}
+                      {result.rule_valid ? t('rules.sandboxRuleValid') : t('rules.sandboxRuleInvalid')}
                     </Badge>
                     {result.rule_type && <Badge variant="outline">{result.rule_type}</Badge>}
                   </div>
@@ -659,7 +659,7 @@ function SandboxDialog({
                 </div>
               )}
               {!result && !testMutation.isPending && (
-                <p className="text-sm text-muted-foreground text-center mt-6">Click test to see results</p>
+                <p className="text-sm text-muted-foreground text-center mt-6">{t('rules.sandboxResultsEmpty')}</p>
               )}
             </div>
           </div>
@@ -667,7 +667,7 @@ function SandboxDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('common.cancel')}</Button>
             <Button type="submit" disabled={testMutation.isPending}>
               {testMutation.isPending ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-              Test Rule
+              {t('rules.sandboxTestBtn')}
             </Button>
           </DialogFooter>
         </form>
@@ -796,20 +796,20 @@ export default function RulesPage() {
     {
       category: t('rules.exampleBasic'),
       examples: [
-        '||example.com^ - 阻断 example.com 及其子域名',
-        '||ads.example.com^ - 阻断特定子域名',
+        t('rules.exampleBasicDesc1'),
+        t('rules.exampleBasicDesc2'),
       ],
     },
     {
       category: t('rules.exampleWhitelist'),
       examples: [
-        '@@||example.com^ - 允许 example.com（优先于阻断规则）',
+        t('rules.exampleWhitelistDesc1'),
       ],
     },
     {
       category: t('rules.exampleHosts'),
       examples: [
-        '0.0.0.0 example.com - hosts 格式阻断',
+        t('rules.exampleHostsDesc1'),
       ],
     },
   ];
@@ -1004,7 +1004,7 @@ export default function RulesPage() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSandboxDialogOpen(true)}>
                 <Play size={14} className="mr-2" />
-                Rule Sandbox
+                {t('rules.sandboxMenuItem')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1170,7 +1170,7 @@ export default function RulesPage() {
               {/* 分页控件 */}
               <div className="flex items-center justify-between px-6 py-4">
                 <p className="text-sm text-muted-foreground">
-                  第 {page} / {totalPages} 页，每页 {PER_PAGE} 条，共 {total} 条
+                  {t('common.pageInfo', { page, total: totalPages, count: total })}
                 </p>
                 <div className="flex items-center gap-1">
                   <Button

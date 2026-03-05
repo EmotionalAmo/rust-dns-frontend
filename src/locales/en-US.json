@@ -250,7 +250,23 @@
     "domainCheckAllowed": "Allowed",
     "domainCheckRewritten": "Rewritten",
     "domainCheckNoResults": "Enter domains and click check",
-    "domainCheckLimit": "Maximum 100 domains per check"
+    "domainCheckLimit": "Maximum 100 domains per check",
+    "exampleBasicDesc1": "||example.com^ - block example.com and all subdomains",
+    "exampleBasicDesc2": "||ads.example.com^ - block a specific subdomain",
+    "exampleWhitelistDesc1": "@@||example.com^ - allow example.com (takes priority over block rules)",
+    "exampleHostsDesc1": "0.0.0.0 example.com - block in hosts format",
+    "sandboxTitle": "Rule Sandbox (Dry Run)",
+    "sandboxDesc": "Test exactly how a custom rule will behave against specific domains before applying it to your network.",
+    "sandboxRuleLabel": "Rule to test",
+    "sandboxRulePlaceholder": "e.g. ||example.com^",
+    "sandboxDomainsLabel": "Test Domains (one per line)",
+    "sandboxDomainsRequired": "Please enter at least one domain",
+    "sandboxResults": "Results",
+    "sandboxResultsEmpty": "Click test to see results",
+    "sandboxRuleValid": "Valid Rule",
+    "sandboxRuleInvalid": "Invalid Rule",
+    "sandboxTestBtn": "Test Rule",
+    "sandboxMenuItem": "Rule Sandbox"
   },
   "filters": {
     "title": "Filter Lists",
@@ -309,7 +325,19 @@
     "nameRequired": "Please enter a filter name",
     "deleteConfirmSingle": "Are you sure you want to delete this filter list?",
     "deleteConfirmMultiple": "Are you sure you want to delete {{count}} selected filter lists?",
-    "selectItem": "Select filter {{name}}"
+    "selectItem": "Select filter {{name}}",
+    "tableCountAll": "{{count}} filters",
+    "namePlaceholderHosts": "e.g. StevenBlack Hosts",
+    "namePlaceholderAdguard": "e.g. AdGuard DNS Filter",
+    "urlDesc": "Supports AdGuard rules or hosts format. Leave empty to create a local list for manual custom rules.",
+    "updateIntervalLabel": "Auto Update Interval",
+    "intervalManual": "Manual",
+    "intervalDaily": "Daily",
+    "intervalWeekly": "Weekly",
+    "intervalMonthly": "Monthly (30 days)",
+    "aboutLocal": "Local list: Add custom rules manually after creation",
+    "aboutAdguardFormat": "AdGuard format: Supports ||domain.com^ advanced syntax",
+    "aboutHostsFormat": "Hosts format: Standard hosts file format (127.0.0.1 domain.com)"
   },
   "rewrites": {
     "title": "DNS Rewrites",
@@ -364,7 +392,11 @@
     "aboutBullet2": "Suitable for local development and LAN device access",
     "aboutBullet3": "Takes priority over upstream DNS resolution",
     "aboutBullet4": "Example: resolve myapp.local to 127.0.0.1",
-    "selectItem": "Select rewrite rule {{domain}}"
+    "selectItem": "Select rewrite rule {{domain}}",
+    "exampleLocal": "Local dev environment",
+    "exampleNas": "NAS device",
+    "examplePihole": "Pi-hole ad filter",
+    "exampleHomeAssistant": "Home automation hub"
   },
   "queryLogs": {
     "title": "Query Logs",

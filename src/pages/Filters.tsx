@@ -318,7 +318,7 @@ function CreateFilterDialog({
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={formData.type === 'hosts' ? "例如: StevenBlack Hosts" : "例如: AdGuard DNS Filter"}
+                placeholder={formData.type === 'hosts' ? t('filters.namePlaceholderHosts') : t('filters.namePlaceholderAdguard')}
               />
             </div>
 
@@ -335,7 +335,7 @@ function CreateFilterDialog({
                 placeholder={formData.type === 'hosts' ? "https://example.com/hosts.txt" : "https://example.com/filter.txt"}
               />
               <p className="text-xs text-muted-foreground">
-                支持 AdGuard 规则或 hosts 格式。留空可创建本地空列表，用于手动添加自定义规则。
+                {t('filters.urlDesc')}
               </p>
             </div>
 
@@ -356,7 +356,7 @@ function CreateFilterDialog({
             {/* 自动更新频率（仅远程列表） */}
             {formData.url && (
               <div className="space-y-2">
-                <Label>自动更新频率</Label>
+                <Label>{t('filters.updateIntervalLabel')}</Label>
                 <Select
                   value={String(formData.update_interval_hours)}
                   onValueChange={(v) => setFormData({ ...formData, update_interval_hours: Number(v) })}
@@ -365,10 +365,10 @@ function CreateFilterDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">手动更新</SelectItem>
-                    <SelectItem value="24">每天更新</SelectItem>
-                    <SelectItem value="168">每周更新</SelectItem>
-                    <SelectItem value="720">每月更新（30天）</SelectItem>
+                    <SelectItem value="0">{t('filters.intervalManual')}</SelectItem>
+                    <SelectItem value="24">{t('filters.intervalDaily')}</SelectItem>
+                    <SelectItem value="168">{t('filters.intervalWeekly')}</SelectItem>
+                    <SelectItem value="720">{t('filters.intervalMonthly')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -381,10 +381,10 @@ function CreateFilterDialog({
                 <div className="text-xs text-primary">
                   <p className="font-medium mb-1">{t('filters.aboutTitle')}</p>
                   <ul className="space-y-0.5">
-                    <li>• 远程列表：从 URL 自动同步规则</li>
-                    <li>• 本地列表：创建后可以手动添加自定义规则</li>
-                    <li>• AdGuard 格式：支持 ||domain.com^ 等高级语法</li>
-                    <li>• Hosts 格式：标准 hosts 文件格式（127.0.0.1 domain.com）</li>
+                    <li>• {t('filters.aboutRemote')}</li>
+                    <li>• {t('filters.aboutLocal')}</li>
+                    <li>• {t('filters.aboutAdguardFormat')}</li>
+                    <li>• {t('filters.aboutHostsFormat')}</li>
                   </ul>
                 </div>
               </div>
@@ -709,7 +709,7 @@ export default function FiltersPage() {
               <CardDescription>
                 {searchQuery
                   ? t('filters.tableCount', { count: filters.length, matched: filteredFilters.length })
-                  : `${filters.length} 个过滤器`}
+                  : t('filters.tableCountAll', { count: filters.length })}
               </CardDescription>
             </div>
           </div>

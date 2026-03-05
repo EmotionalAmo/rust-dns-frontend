@@ -62,12 +62,12 @@ const LOCAL_SERVICE_IPS = [
   { ip: '172.16.0.1', label: 'Private Network' },
 ];
 
-// 常用重写示例
+// 常用重写示例（description 使用 i18n key，在组件内翻译）
 const COMMON_REWRITES = [
-  { domain: 'myapp.local', ip: '127.0.0.1', description: '本地开发环境' },
-  { domain: 'nas.local', ip: '192.168.1.100', description: 'NAS 设备' },
-  { domain: 'pihole.local', ip: '192.168.1.50', description: 'Pi-hole' },
-  { domain: 'homeassistant.local', ip: '192.168.1.80', description: 'Home Assistant' },
+  { domain: 'myapp.local', ip: '127.0.0.1', descKey: 'rewrites.exampleLocal' },
+  { domain: 'nas.local', ip: '192.168.1.100', descKey: 'rewrites.exampleNas' },
+  { domain: 'pihole.local', ip: '192.168.1.50', descKey: 'rewrites.examplePihole' },
+  { domain: 'homeassistant.local', ip: '192.168.1.80', descKey: 'rewrites.exampleHomeAssistant' },
 ];
 
 interface CreateRewriteFormData {
@@ -120,7 +120,7 @@ function CommonRewritesList({
           >
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium font-mono truncate">{item.domain}</div>
-              <div className="text-xs text-muted-foreground truncate">{item.description}</div>
+              <div className="text-xs text-muted-foreground truncate">{t(item.descKey)}</div>
             </div>
             <div className="text-xs text-muted-foreground font-mono">{item.ip}</div>
           </button>

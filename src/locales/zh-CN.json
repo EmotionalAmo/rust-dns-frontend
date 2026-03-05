@@ -261,7 +261,23 @@
     "domainCheckAllowed": "已放行",
     "domainCheckRewritten": "已重写",
     "domainCheckNoResults": "输入域名后点击检查",
-    "domainCheckLimit": "最多检查 100 个域名"
+    "domainCheckLimit": "最多检查 100 个域名",
+    "exampleBasicDesc1": "||example.com^ - 阻断 example.com 及其子域名",
+    "exampleBasicDesc2": "||ads.example.com^ - 阻断特定子域名",
+    "exampleWhitelistDesc1": "@@||example.com^ - 允许 example.com（优先于阻断规则）",
+    "exampleHostsDesc1": "0.0.0.0 example.com - hosts 格式阻断",
+    "sandboxTitle": "规则沙盒（Dry Run）",
+    "sandboxDesc": "在应用到网络之前，精确测试自定义规则对特定域名的行为。",
+    "sandboxRuleLabel": "待测试规则",
+    "sandboxRulePlaceholder": "例如: ||example.com^",
+    "sandboxDomainsLabel": "测试域名（每行一个）",
+    "sandboxDomainsRequired": "请输入至少一个域名",
+    "sandboxResults": "测试结果",
+    "sandboxResultsEmpty": "点击测试查看结果",
+    "sandboxRuleValid": "规则有效",
+    "sandboxRuleInvalid": "规则无效",
+    "sandboxTestBtn": "测试规则",
+    "sandboxMenuItem": "规则沙盒"
   },
   "filters": {
     "title": "过滤列表",
@@ -320,7 +336,19 @@
     "nameRequired": "请输入过滤器名称",
     "deleteConfirmSingle": "确定要删除这个过滤列表吗？",
     "deleteConfirmMultiple": "确定要删除选中的 {{count}} 个过滤列表吗？",
-    "selectItem": "选择过滤器 {{name}}"
+    "selectItem": "选择过滤器 {{name}}",
+    "tableCountAll": "{{count}} 个过滤器",
+    "namePlaceholderHosts": "例如: StevenBlack Hosts",
+    "namePlaceholderAdguard": "例如: AdGuard DNS Filter",
+    "urlDesc": "支持 AdGuard 规则或 hosts 格式。留空可创建本地空列表，用于手动添加自定义规则。",
+    "updateIntervalLabel": "自动更新频率",
+    "intervalManual": "手动更新",
+    "intervalDaily": "每天更新",
+    "intervalWeekly": "每周更新",
+    "intervalMonthly": "每月更新（30天）",
+    "aboutLocal": "本地列表：创建后可以手动添加自定义规则",
+    "aboutAdguardFormat": "AdGuard 格式：支持 ||domain.com^ 等高级语法",
+    "aboutHostsFormat": "Hosts 格式：标准 hosts 文件格式（127.0.0.1 domain.com）"
   },
   "rewrites": {
     "title": "DNS 重写规则",
@@ -375,7 +403,11 @@
     "aboutBullet2": "适用于本地开发环境、局域网设备访问",
     "aboutBullet3": "优先级高于上游 DNS 解析结果",
     "aboutBullet4": "示例: 将 myapp.local 解析到 127.0.0.1",
-    "selectItem": "选择重写规则 {{domain}}"
+    "selectItem": "选择重写规则 {{domain}}",
+    "exampleLocal": "本地开发环境",
+    "exampleNas": "NAS 设备",
+    "examplePihole": "Pi-hole 广告过滤",
+    "exampleHomeAssistant": "智能家居中枢"
   },
   "queryLogs": {
     "title": "查询日志",
