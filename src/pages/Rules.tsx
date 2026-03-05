@@ -587,7 +587,7 @@ function SandboxDialog({
   const testMutation = useMutation({
     mutationFn: () => sandboxApi.testRule({
       rule: rule.trim(),
-      test_domains: domainsText.split('\\n').map(d => d.trim()).filter(Boolean),
+      test_domains: domainsText.split('\n').map(d => d.trim()).filter(Boolean),
     }),
     onSuccess: (data) => setResult(data),
     onError: (error: Error) => toast.error(error.message || 'Error occurred'),

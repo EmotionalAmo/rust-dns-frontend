@@ -45,7 +45,6 @@ import {
   Server,
   User,
   Clock,
-  ExternalLink,
   Copy,
 } from 'lucide-react';
 import type { Rewrite, CreateRewriteRequest } from '@/api/types';
@@ -550,7 +549,7 @@ export default function RewritesPage() {
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedIds.size === filteredRewrites.length}
+                        checked={filteredRewrites.length > 0 && selectedIds.size === filteredRewrites.length}
                         onCheckedChange={handleSelectAll}
                         aria-label={t('common.selectAll')}
                       />
@@ -620,7 +619,7 @@ export default function RewritesPage() {
                               onClick={() => handleTestDns(rewrite.domain)}
                               title={t('rewrites.testResolve')}
                             >
-                              <ExternalLink size={14} />
+                              <Copy size={14} />
                             </Button>
                             <Button
                               variant="ghost"

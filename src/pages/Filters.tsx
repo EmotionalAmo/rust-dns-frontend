@@ -239,7 +239,7 @@ function CreateFilterDialog({
           if (attempts >= 20) clearInterval(timer);
         }, 3000);
       } else {
-        toast.success(t('filters.updateSuccess'));
+        toast.success(t('filters.createSuccess'));
       }
     },
     onError: (error: Error) => {
@@ -763,7 +763,7 @@ export default function FiltersPage() {
                   <TableRow>
                     <TableHead className="w-12">
                       <Checkbox
-                        checked={selectedIds.size === filteredFilters.length}
+                        checked={filteredFilters.length > 0 && selectedIds.size === filteredFilters.length}
                         onCheckedChange={handleSelectAll}
                         aria-label={t('common.selectAll')}
                       />
