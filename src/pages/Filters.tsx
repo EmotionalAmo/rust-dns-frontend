@@ -441,8 +441,8 @@ function DeleteConfirmDialog({
           <AlertDialogTitle>{t('common.confirmDelete')}</AlertDialogTitle>
           <AlertDialogDescription>
             {filterIds.length === 1
-              ? `确定要删除这个过滤列表吗？${t('common.cannotUndo')}`
-              : `确定要删除选中的 ${filterIds.length} 个过滤列表吗？${t('common.cannotUndo')}`}
+              ? `${t('filters.deleteConfirmSingle')} ${t('common.cannotUndo')}`
+              : `${t('filters.deleteConfirmMultiple', { count: filterIds.length })} ${t('common.cannotUndo')}`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -84,7 +84,7 @@ function TimingCell({ elapsedNs, upstreamNs, status }: TimingCellProps) {
   const tag = status === 'cached' ? t('queryLogs.cache') : t('queryLogs.local');
   return (
     <div className="text-right tabular-nums text-xs text-muted-foreground"
-      title={`${tag}处理耗时 ${formatNs(elapsedNs)}，无上游调用`}>
+      title={t('queryLogs.localLatencyTooltip', { tag, elapsed: formatNs(elapsedNs) })}>
       {formatNs(elapsedNs)} <span className="text-[10px] opacity-60">{tag}</span>
     </div>
   );

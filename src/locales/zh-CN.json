@@ -317,7 +317,9 @@
     "refreshAllStarted": "所有过滤器同步已在后台启动，完成后自动刷新",
     "refreshAllSuccess": "已刷新所有过滤器",
     "deletedCount": "已删除 {{count}} 个过滤列表",
-    "nameRequired": "请输入过滤器名称"
+    "nameRequired": "请输入过滤器名称",
+    "deleteConfirmSingle": "确定要删除这个过滤列表吗？",
+    "deleteConfirmMultiple": "确定要删除选中的 {{count}} 个过滤列表吗？"
   },
   "rewrites": {
     "title": "DNS 重写规则",
@@ -360,7 +362,18 @@
     "deletedCount": "已删除 {{count}} 条重写规则",
     "createError": "创建失败: {{msg}}",
     "updateError": "更新失败: {{msg}}",
-    "deleteError": "删除失败: {{msg}}"
+    "deleteError": "删除失败: {{msg}}",
+    "deleteConfirmSingle": "确定要删除这条重写规则吗？此操作无法撤销。",
+    "deleteConfirmMultiple": "确定要删除选中的 {{count}} 条重写规则吗？此操作无法撤销。",
+    "domainPlaceholder": "例如: myapp.local",
+    "targetIPPlaceholder": "例如: 127.0.0.1",
+    "domainHint": "DNS 查询此域名时将返回指定的 IP 地址。",
+    "ipHint": "支持 IPv4 和 IPv6 地址。",
+    "aboutTitle": "关于 DNS 重写",
+    "aboutBullet1": "将指定域名的 DNS 查询解析到指定 IP",
+    "aboutBullet2": "适用于本地开发环境、局域网设备访问",
+    "aboutBullet3": "优先级高于上游 DNS 解析结果",
+    "aboutBullet4": "示例: 将 myapp.local 解析到 127.0.0.1"
   },
   "queryLogs": {
     "title": "查询日志",
@@ -397,6 +410,7 @@
     "statusBlocked2": "拦截",
     "statusAllowed2": "允许",
     "latencyTooltip": "总 {{total}} = 本地 {{local}} + 上游 {{upstream}}",
+    "localLatencyTooltip": "{{tag}}处理耗时 {{elapsed}}，无上游调用",
     "cache": "缓存",
     "local": "本地",
     "tableTitle": "日志列表",
@@ -703,6 +717,7 @@
     "createSuccess": "上游 DNS 已创建",
     "updateSuccess": "上游 DNS 已更新",
     "deleteSuccess": "已删除",
+    "namePlaceholder": "例如: Cloudflare DoH",
     "nameRequired": "请输入名称",
     "addressRequired": "请至少填写一个地址",
     "testSuccess": "连接成功，延迟 {{ms}}ms",
@@ -710,7 +725,9 @@
     "testError": "测试失败: {{msg}}",
     "createError": "创建失败: {{msg}}",
     "updateError": "更新失败: {{msg}}",
-    "deleteError": "删除失败: {{msg}}"
+    "deleteError": "删除失败: {{msg}}",
+    "healthCheckSuccess": "健康检查通过：{{ms}}ms",
+    "healthCheckFailed": "健康检查失败：{{msg}}"
   },
   "insights": {
     "title": "网站洞察",

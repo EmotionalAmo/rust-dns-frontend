@@ -104,9 +104,9 @@ function UpstreamDialog({ open, onOpenChange, upstream }: UpstreamDialogProps) {
         try {
           const result = await upstreamsApi.testConnectivity(newUpstream.id);
           if (result.success) {
-            toast.success(`健康检查通过：${result.latency_ms} ms`);
+            toast.success(t('upstreams.healthCheckSuccess', { ms: result.latency_ms }));
           } else {
-            toast.warning(`健康检查失败：${result.error ?? '未知错误'}`);
+            toast.warning(t('upstreams.healthCheckFailed', { msg: result.error ?? t('common.unknownError') }));
           }
         } catch {
           // ignore auto-check errors
@@ -168,7 +168,7 @@ function UpstreamDialog({ open, onOpenChange, upstream }: UpstreamDialogProps) {
                   id="name"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  placeholder="例如: Cloudflare DoH"
+                  placeholder={t('upstreams.namePlaceholder')}
                 />
               </div>
               <div className="col-span-2 space-y-1.5">

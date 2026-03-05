@@ -230,10 +230,10 @@ function CreateRewriteDialog({
               type="domain"
               value={formData.domain}
               onChange={(value) => setFormData({ ...formData, domain: value })}
-              placeholder="例如: myapp.local"
+              placeholder={t('rewrites.domainPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              DNS 查询此域名时将返回指定的 IP 地址
+              {t('rewrites.domainHint')}
             </p>
 
             {/* 目标 IP 输入 */}
@@ -247,10 +247,10 @@ function CreateRewriteDialog({
               type="ip"
               value={formData.answer}
               onChange={(value) => setFormData({ ...formData, answer: value })}
-              placeholder="例如: 127.0.0.1"
+              placeholder={t('rewrites.targetIPPlaceholder')}
             />
             <p className="text-xs text-muted-foreground">
-              支持 IPv4 和 IPv6 地址
+              {t('rewrites.ipHint')}
             </p>
 
             {/* 启用状态 */}
@@ -261,12 +261,12 @@ function CreateRewriteDialog({
               <div className="flex items-start gap-2">
                 <Info size={14} className="mt-0.5 text-primary shrink-0" />
                 <div className="text-xs text-primary">
-                  <p className="font-medium mb-1">关于 DNS 重写</p>
+                  <p className="font-medium mb-1">{t('rewrites.aboutTitle')}</p>
                   <ul className="space-y-0.5">
-                    <li>• 将指定域名的 DNS 查询解析到指定 IP</li>
-                    <li>• 适用于本地开发环境、局域网设备访问</li>
-                    <li>• 优先级高于上游 DNS 解析结果</li>
-                    <li>• 示例: 将 myapp.local 解析到 127.0.0.1</li>
+                    <li>• {t('rewrites.aboutBullet1')}</li>
+                    <li>• {t('rewrites.aboutBullet2')}</li>
+                    <li>• {t('rewrites.aboutBullet3')}</li>
+                    <li>• {t('rewrites.aboutBullet4')}</li>
                   </ul>
                 </div>
               </div>
@@ -315,24 +315,25 @@ function DeleteConfirmDialog({
   onConfirm: () => void;
   rewriteIds: string[];
 }) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>确认删除</AlertDialogTitle>
+          <AlertDialogTitle>{t('common.confirmDelete')}</AlertDialogTitle>
           <AlertDialogDescription>
             {rewriteIds.length === 1
-              ? '确定要删除这条重写规则吗？此操作无法撤销。'
-              : `确定要删除选中的 ${rewriteIds.length} 条重写规则吗？此操作无法撤销。`}
+              ? t('rewrites.deleteConfirmSingle')
+              : t('rewrites.deleteConfirmMultiple', { count: rewriteIds.length })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            删除
+            {t('common.delete')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -306,7 +306,9 @@
     "refreshAllStarted": "All filters sync started in background, will refresh automatically when done",
     "refreshAllSuccess": "All filters refreshed",
     "deletedCount": "{{count}} filter lists deleted",
-    "nameRequired": "Please enter a filter name"
+    "nameRequired": "Please enter a filter name",
+    "deleteConfirmSingle": "Are you sure you want to delete this filter list?",
+    "deleteConfirmMultiple": "Are you sure you want to delete {{count}} selected filter lists?"
   },
   "rewrites": {
     "title": "DNS Rewrites",
@@ -349,7 +351,18 @@
     "deletedCount": "{{count}} rewrite rules deleted",
     "createError": "Create failed: {{msg}}",
     "updateError": "Update failed: {{msg}}",
-    "deleteError": "Delete failed: {{msg}}"
+    "deleteError": "Delete failed: {{msg}}",
+    "deleteConfirmSingle": "Are you sure you want to delete this rewrite rule? This action cannot be undone.",
+    "deleteConfirmMultiple": "Are you sure you want to delete {{count}} selected rewrite rules? This action cannot be undone.",
+    "domainPlaceholder": "e.g. myapp.local",
+    "targetIPPlaceholder": "e.g. 127.0.0.1",
+    "domainHint": "DNS queries for this domain will return the specified IP address.",
+    "ipHint": "Supports IPv4 and IPv6 addresses.",
+    "aboutTitle": "About DNS Rewrites",
+    "aboutBullet1": "Resolves specified domain to specified IP",
+    "aboutBullet2": "Suitable for local development and LAN device access",
+    "aboutBullet3": "Takes priority over upstream DNS resolution",
+    "aboutBullet4": "Example: resolve myapp.local to 127.0.0.1"
   },
   "queryLogs": {
     "title": "Query Logs",
@@ -386,6 +399,7 @@
     "statusBlocked2": "Blocked",
     "statusAllowed2": "Allowed",
     "latencyTooltip": "Total {{total}} = Local {{local}} + Upstream {{upstream}}",
+    "localLatencyTooltip": "{{tag}} processing time {{elapsed}}, no upstream call",
     "cache": "Cache",
     "local": "Local",
     "tableTitle": "Log List",
@@ -693,6 +707,7 @@
     "createSuccess": "Upstream DNS created",
     "updateSuccess": "Upstream DNS updated",
     "deleteSuccess": "Deleted",
+    "namePlaceholder": "e.g. Cloudflare DoH",
     "nameRequired": "Please enter a name",
     "addressRequired": "Please enter at least one address",
     "testSuccess": "Connected successfully, latency {{ms}}ms",
@@ -700,7 +715,9 @@
     "testError": "Test failed: {{msg}}",
     "createError": "Create failed: {{msg}}",
     "updateError": "Update failed: {{msg}}",
-    "deleteError": "Delete failed: {{msg}}"
+    "deleteError": "Delete failed: {{msg}}",
+    "healthCheckSuccess": "Health check passed: {{ms}}ms",
+    "healthCheckFailed": "Health check failed: {{msg}}"
   },
   "insights": {
     "title": "Insights",
