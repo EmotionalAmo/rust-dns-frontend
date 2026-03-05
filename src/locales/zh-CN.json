@@ -145,6 +145,7 @@
     "cacheHitRate": "缓存命中率",
     "clientsLabel": "客户端数量",
     "activeUpstreams": "活跃上游数",
+    "qps": "实时 QPS",
     "refreshStatus": "刷新状态",
     "top10Blocked": "Top 10 被拦截域名",
     "top10BlockedDesc": "{{timeRange}}拦截次数最多的域名",

@@ -145,6 +145,7 @@
     "cacheHitRate": "Cache Hit Rate",
     "clientsLabel": "Clients",
     "activeUpstreams": "Active Upstreams",
+    "qps": "Live QPS",
     "refreshStatus": "Refresh Status",
     "top10Blocked": "Top 10 Blocked Domains",
     "top10BlockedDesc": "Most blocked domains in {{timeRange}}",

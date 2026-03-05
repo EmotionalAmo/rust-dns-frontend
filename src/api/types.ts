@@ -32,6 +32,7 @@ export interface DashboardStats {
   block_rate: number;
   last_week_block_rate: number;
   clients: number;
+  qps: number;
 }
 
 export interface TopDomainEntry {

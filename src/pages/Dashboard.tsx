@@ -124,6 +124,7 @@ export default function DashboardPage() {
   const blockRate = stats?.block_rate ?? 0;
   const lastWeekBlockRate = stats?.last_week_block_rate ?? 0;
   const clients = stats?.clients ?? 0;
+  const qps = stats?.qps ?? 0;
 
   // Format numbers
   const formatNumber = (num: number): string => {
@@ -376,6 +377,19 @@ export default function DashboardPage() {
                     <div className="h-5 w-16 animate-pulse bg-muted rounded" />
                   ) : (
                     <span className="text-sm font-medium">{activeUpstreams}</span>
+                  )}
+                </div>
+
+                {/* QPS */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm">{t('dashboard.qps')}</span>
+                  </div>
+                  {isLoading ? (
+                    <div className="h-5 w-16 animate-pulse bg-muted rounded" />
+                  ) : (
+                    <span className="text-sm font-medium">{qps} /s</span>
                   )}
                 </div>
               </div>
