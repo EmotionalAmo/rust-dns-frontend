@@ -434,8 +434,11 @@ function BulkImportDialog({
 }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const [tab, setTab] = useState<'paste' | 'file'>('paste');
   const [text, setText] = useState('');
-  const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parseRules = (raw: string): string[] => {
     const seen = new Set<string>();
@@ -455,43 +458,45 @@ function BulkImportDialog({
   const validRules = parseRules(text);
 
   const handleClose = (val: boolean) => {
-    if (!val && progress === null) {
+    if (isImporting) return;
+    if (!val) {
       setText('');
+      setSelectedFile(null);
     }
-    if (progress !== null) return; // 导入中不允许关闭
     onOpenChange(val);
   };
 
   const handleImport = async () => {
-    if (validRules.length === 0) return;
-    const total = validRules.length;
-    setProgress({ current: 0, total });
-    let success = 0;
-    let failed = 0;
-
-    for (let i = 0; i < validRules.length; i++) {
-      try {
-        await rulesApi.createRule({ rule: validRules[i] });
-        success++;
-      } catch {
-        failed++;
-      }
-      setProgress({ current: i + 1, total });
-    }
-
-    setProgress(null);
-    queryClient.invalidateQueries({ queryKey: ['rules'] });
-
-    if (failed === 0) {
-      toast.success(t('rules.importSuccess', { count: success }));
+    if (isImporting) return;
+    let file: File;
+    if (tab === 'paste') {
+      if (validRules.length === 0) return;
+      file = new File([text], 'rules.txt', { type: 'text/plain' });
     } else {
-      toast.warning(t('rules.importPartial', { success, failed }));
+      if (!selectedFile) return;
+      file = selectedFile;
     }
-
-    setText('');
-    onOpenChange(false);
-    onSuccess();
+    setIsImporting(true);
+    try {
+      const result = await rulesApi.importRulesFile(file);
+      queryClient.invalidateQueries({ queryKey: ['rules'] });
+      if (result.skipped > 0) {
+        toast.success(t('rules.importResultWithSkipped', { imported: result.imported, skipped: result.skipped }));
+      } else {
+        toast.success(t('rules.importSuccess', { count: result.imported }));
+      }
+      setText('');
+      setSelectedFile(null);
+      onOpenChange(false);
+      onSuccess();
+    } catch {
+      toast.error(t('rules.importError'));
+    } finally {
+      setIsImporting(false);
+    }
   };
+
+  const canSubmit = tab === 'paste' ? validRules.length > 0 : selectedFile !== null;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -500,41 +505,71 @@ function BulkImportDialog({
           <DialogTitle>{t('rules.importDialogTitle')}</DialogTitle>
           <DialogDescription>{t('rules.importDialogDesc')}</DialogDescription>
         </DialogHeader>
-        <div className="space-y-3 py-2">
-          <textarea
-            className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
-            rows={12}
-            placeholder={t('rules.importPlaceholder')}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            disabled={progress !== null}
-          />
-          <p className="text-xs text-muted-foreground">
-            {t('rules.importDetected', { count: validRules.length })}
-          </p>
-        </div>
+        <Tabs value={tab} onValueChange={(v) => setTab(v as 'paste' | 'file')} className="mt-1">
+          <TabsList className="grid grid-cols-2">
+            <TabsTrigger value="paste">{t('rules.importTabPaste')}</TabsTrigger>
+            <TabsTrigger value="file">{t('rules.importTabFile')}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="paste" className="space-y-3 mt-3">
+            <textarea
+              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+              rows={10}
+              placeholder={t('rules.importPlaceholder')}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              disabled={isImporting}
+            />
+            <p className="text-xs text-muted-foreground">
+              {t('rules.importDetected', { count: validRules.length })}
+            </p>
+          </TabsContent>
+          <TabsContent value="file" className="mt-3">
+            <div
+              className="flex flex-col items-center justify-center border-2 border-dashed rounded-md p-8 cursor-pointer hover:border-primary transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload size={32} className="text-muted-foreground mb-3" />
+              {selectedFile ? (
+                <p className="text-sm font-medium">{selectedFile.name}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">{t('rules.importFileHint')}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{t('rules.importFileLimit')}</p>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".txt,.json,.conf,.list"
+              className="hidden"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
+              disabled={isImporting}
+            />
+          </TabsContent>
+        </Tabs>
         <DialogFooter>
           <Button
             type="button"
             variant="outline"
             onClick={() => handleClose(false)}
-            disabled={progress !== null}
+            disabled={isImporting}
           >
             {t('common.cancel')}
           </Button>
-          <Button
-            onClick={handleImport}
-            disabled={validRules.length === 0 || progress !== null}
-          >
-            {progress !== null ? (
+          <Button onClick={handleImport} disabled={!canSubmit || isImporting}>
+            {isImporting ? (
               <>
                 <RefreshCw size={16} className="mr-2 animate-spin" />
-                {t('rules.importProgress', { current: progress.current, total: progress.total })}
+                {t('common.importing')}
+              </>
+            ) : tab === 'paste' ? (
+              <>
+                <Upload size={16} className="mr-1" />
+                {t('rules.importSubmit', { count: validRules.length })}
               </>
             ) : (
               <>
                 <Upload size={16} className="mr-1" />
-                {t('rules.importSubmit', { count: validRules.length })}
+                {t('rules.importFileSubmit')}
               </>
             )}
           </Button>

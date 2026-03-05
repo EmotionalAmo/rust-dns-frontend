@@ -20,6 +20,12 @@ export interface UpdateRuleRequest {
   is_enabled?: boolean;
 }
 
+export interface ImportRulesResponse {
+  imported: number;
+  skipped: number;
+  total: number;
+}
+
 export interface ToggleRuleRequest {
   is_enabled: boolean;
 }
@@ -72,6 +78,15 @@ export const rulesApi = {
   async exportRules(format: 'csv' | 'json'): Promise<Blob> {
     const response = await apiClient.get(`/api/v1/rules/export?format=${format}`, {
       responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  async importRulesFile(file: File): Promise<ImportRulesResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await apiClient.post<ImportRulesResponse>('/api/v1/rules/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   },
