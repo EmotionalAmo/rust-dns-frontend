@@ -11,6 +11,7 @@ import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, Trend
 import { ruleStatsApi } from '@/api/ruleStats';
 import { upstreamsApi } from '@/api/upstreams';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
+import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -230,6 +231,8 @@ export default function DashboardPage() {
         isLoading={isLoading}
         upstreamsLoading={upstreamsListLoading}
       />
+      {/* Latency Stats Card */}
+      <LatencyStatsCard hours={hours} />
       {/* Zero-traffic onboarding guide */}
       {showOnboarding && (
         <Card className="border-blue-200 bg-blue-50">

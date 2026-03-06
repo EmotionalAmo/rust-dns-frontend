@@ -202,7 +202,17 @@
     "healthLowBlockRate": "Low Block Rate",
     "healthFilterActive": "Filter Active",
     "healthNoUpstreams": "No Active Upstreams",
-    "healthFilterInactive": "Filter Inactive"
+    "healthFilterInactive": "Filter Inactive",
+    "latencyStats": "Response Latency",
+    "latencyP50": "P50",
+    "latencyP95": "P95",
+    "latencyP99": "P99",
+    "latencyFast": "Fast",
+    "latencySlow": "Slow",
+    "latencyVerySlow": "Very Slow",
+    "latencyNoData": "Insufficient data",
+    "latencyNoDataDesc": "Need more queries to compute latency stats",
+    "latencySampleCount": "{{count}} samples"
   },
   "rules": {
     "title": "Rules",

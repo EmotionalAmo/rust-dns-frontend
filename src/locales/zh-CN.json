@@ -202,7 +202,17 @@
     "healthLowBlockRate": "拦截率偏低",
     "healthFilterActive": "过滤器活跃",
     "healthNoUpstreams": "无激活上游",
-    "healthFilterInactive": "过滤器未生效"
+    "healthFilterInactive": "过滤器未生效",
+    "latencyStats": "响应延迟",
+    "latencyP50": "P50",
+    "latencyP95": "P95",
+    "latencyP99": "P99",
+    "latencyFast": "快速",
+    "latencySlow": "偏慢",
+    "latencyVerySlow": "过慢",
+    "latencyNoData": "数据不足",
+    "latencyNoDataDesc": "需要更多查询才能计算延迟统计",
+    "latencySampleCount": "{{count}} 个样本"
   },
   "rules": {
     "title": "规则列表",
