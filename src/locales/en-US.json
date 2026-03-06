@@ -187,7 +187,20 @@
     "upstreamDistributionTrend": "Upstream Distribution Trend",
     "upstreamDistributionStats": "Upstream Distribution Stats",
     "upstreamQueries": "Queries",
-    "upstreamPercentage": "Percentage"
+    "upstreamPercentage": "Percentage",
+    "networkHealth": "Network Health",
+    "networkHealthy": "Healthy",
+    "networkWarning": "Needs Attention",
+    "networkCritical": "Fault Detected",
+    "healthBlockRate": "Block Rate",
+    "healthUpstreamAvail": "Upstream Availability",
+    "healthQps": "Live QPS",
+    "healthAllHealthy": "All Healthy",
+    "healthHasUnknown": "Has Unknown",
+    "healthHasDegraded": "Has Degraded",
+    "healthNoTraffic": "No Traffic",
+    "healthLowBlockRate": "Low Block Rate",
+    "healthFilterActive": "Filter Active"
   },
   "rules": {
     "title": "Rules",

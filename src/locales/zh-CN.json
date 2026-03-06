@@ -187,7 +187,20 @@
     "upstreamDistributionTrend": "上游分布趋势",
     "upstreamDistributionStats": "上游分布统计",
     "upstreamQueries": "查询数",
-    "upstreamPercentage": "占比"
+    "upstreamPercentage": "占比",
+    "networkHealth": "网络健康状态",
+    "networkHealthy": "系统正常",
+    "networkWarning": "需要关注",
+    "networkCritical": "存在故障",
+    "healthBlockRate": "拦截率",
+    "healthUpstreamAvail": "上游可用性",
+    "healthQps": "当前 QPS",
+    "healthAllHealthy": "全部正常",
+    "healthHasUnknown": "含未知状态",
+    "healthHasDegraded": "存在降级",
+    "healthNoTraffic": "无流量",
+    "healthLowBlockRate": "拦截率偏低",
+    "healthFilterActive": "过滤器活跃"
   },
   "rules": {
     "title": "规则列表",

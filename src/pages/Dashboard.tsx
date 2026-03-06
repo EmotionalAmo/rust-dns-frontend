@@ -9,6 +9,8 @@ import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
 import { UpstreamDistributionChart } from '@/components/dashboard/UpstreamDistributionChart';
 import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen } from 'lucide-react';
 import { ruleStatsApi } from '@/api/ruleStats';
+import { upstreamsApi } from '@/api/upstreams';
+import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -125,6 +127,14 @@ export default function DashboardPage() {
     .sort((a, b) => b.hit_count - a.hit_count)
     .slice(0, 10);
 
+  // Fetch upstreams list for NetworkHealthCard
+  const { data: upstreamsList = [], isLoading: upstreamsListLoading } = useQuery({
+    queryKey: ['upstreams', 'list'],
+    queryFn: () => upstreamsApi.list(),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
   // Fetch upstream distribution data
   const { data: upstreamDistribution = [], isLoading: upstreamDistributionLoading } = useQuery({
     queryKey: ['dashboard', 'upstream-distribution', hours],
@@ -213,6 +223,13 @@ export default function DashboardPage() {
           {t('dashboard.refreshStatus')}
         </button>
       </div>
+      {/* Network Health Summary Card */}
+      <NetworkHealthCard
+        stats={stats}
+        upstreams={upstreamsList}
+        isLoading={isLoading}
+        upstreamsLoading={upstreamsListLoading}
+      />
       {/* Zero-traffic onboarding guide */}
       {showOnboarding && (
         <Card className="border-blue-200 bg-blue-50">
