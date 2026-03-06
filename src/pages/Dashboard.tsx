@@ -6,7 +6,8 @@ import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
 import { UpstreamDistributionChart } from '@/components/dashboard/UpstreamDistributionChart';
-import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe } from 'lucide-react';
+import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen } from 'lucide-react';
+import { ruleStatsApi } from '@/api/ruleStats';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -17,12 +18,6 @@ function getTimeRangeLabel(hours: number, t: (key: string) => string): string {
   return t('dashboard.timeRanges.720');
 }
 
-/**
- * Get short time range label for card subtitles (e.g., "最近 7 天")
- */
-function getShortTimeRangeLabel(hours: number, t: (key: string) => string): string {
-  return getTimeRangeLabel(hours, t);
-}
 
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -41,27 +36,20 @@ export default function DashboardPage() {
   useEffect(() => {
     const handleStorageChange = () => {
       const v = localStorage.getItem('dashboard-time-range');
-      if (v) {
-        const newHours = Number(v);
-        setHours(newHours);
-      }
+      if (v) setHours(Number(v));
     };
 
-    // Listen for storage events (from other tabs/windows)
-    window.addEventListener('storage', handleStorageChange);
+    const handleCustomChange = (e: Event) => {
+      setHours((e as CustomEvent<number>).detail);
+    };
 
-    // Also check periodically for same-tab changes
-    const interval = setInterval(() => {
-      const v = localStorage.getItem('dashboard-time-range');
-      if (v) {
-        const newHours = Number(v);
-        setHours(prev => prev !== newHours ? newHours : prev);
-      }
-    }, 1000);
+    // Cross-tab sync via storage event; same-tab sync via CustomEvent
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('dashboard-time-range-change', handleCustomChange);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('dashboard-time-range-change', handleCustomChange);
     };
   }, []);
 
@@ -116,6 +104,19 @@ export default function DashboardPage() {
   const upstreamTrendData = upstreamTrendResponse?.data ?? [];
   const activeUpstreams = upstreamTrendResponse?.total_upstreams ?? 0;
 
+  // Fetch rule hit stats
+  const { data: ruleStatsResponse, isLoading: ruleStatsLoading } = useQuery({
+    queryKey: ['dashboard', 'rule-stats', hours],
+    queryFn: () => ruleStatsApi.getStats(hours),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
+  const topRules = (ruleStatsResponse?.data ?? [])
+    .filter(r => r.hit_count > 0)
+    .sort((a, b) => b.hit_count - a.hit_count)
+    .slice(0, 10);
+
   // Fetch upstream distribution data
   const { data: upstreamDistribution = [], isLoading: upstreamDistributionLoading } = useQuery({
     queryKey: ['dashboard', 'upstream-distribution', hours],
@@ -153,7 +154,7 @@ export default function DashboardPage() {
     {
       title: t('dashboard.totalQueries'),
       value: formatNumber(totalQueries),
-      subtitle: getShortTimeRangeLabel(hours, t),
+      subtitle: getTimeRangeLabel(hours, t),
       icon: Activity,
     },
     {
@@ -185,7 +186,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
           {t('dashboard.dataRange')}
-          {getShortTimeRangeLabel(hours, t)}
+          {getTimeRangeLabel(hours, t)}
           {t('dashboard.adjustableInSettings')}
         </p>
         <button
@@ -534,6 +535,54 @@ export default function DashboardPage() {
                           {entry.domain}
                         </span>
                         <span className="text-muted-foreground shrink-0 ml-2">{formatNumber(entry.count)}</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary/40"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Rule Hit Leaderboard */}
+      <div className="grid gap-6 md:grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              {t('dashboard.top10RuleHits')}
+            </CardTitle>
+            <CardDescription>{t('dashboard.top10RuleHitsDesc', { timeRange: timeRangeLabel })}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {ruleStatsLoading ? (
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-6 animate-pulse bg-muted rounded" />
+                ))}
+              </div>
+            ) : topRules.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">{t('dashboard.noRuleHitData')}</p>
+            ) : (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {topRules.map((entry, i) => {
+                  const maxCount = topRules[0]?.hit_count ?? 1;
+                  const pct = Math.round((entry.hit_count / maxCount) * 100);
+                  return (
+                    <div key={entry.id} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="truncate font-mono text-xs max-w-[70%]" title={entry.rule}>
+                          <span className="text-muted-foreground mr-1.5">{i + 1}.</span>
+                          {entry.rule}
+                        </span>
+                        <span className="text-muted-foreground shrink-0 ml-2">{formatNumber(entry.hit_count)}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                         <div

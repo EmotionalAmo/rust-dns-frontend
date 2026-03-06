@@ -204,6 +204,7 @@ export default function SettingsPage() {
     const n = Number(v);
     setDashHours(n);
     localStorage.setItem('dashboard-time-range', String(n));
+    window.dispatchEvent(new CustomEvent('dashboard-time-range-change', { detail: n }));
     toast.success(t('settings.dashboardTimeRangeSaved'));
   };
 

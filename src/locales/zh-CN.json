@@ -158,6 +158,9 @@
     "noBlockData": "暂无拦截数据",
     "noClientData": "暂无客户端数据",
     "noQueryData": "暂无查询数据",
+    "top10RuleHits": "规则命中排行",
+    "top10RuleHitsDesc": "{{timeRange}}命中次数最多的规则",
+    "noRuleHitData": "暂无规则命中记录",
     "gettingStartedTitle": "开始使用 rust-dns",
     "gettingStartedDesc": "看起来您的 DNS 服务已经正常运行，但还没有收到任何查询。请按照以下步骤设置您的设备。",
     "step1Title": "1. 配置路由器或设备",
@@ -169,6 +172,7 @@
     "trendTotal": "总查询",
     "trendBlocked": "拦截",
     "trendAllowed": "允许",
+    "trendCached": "缓存命中",
     "trendLoading": "加载中...",
     "trendNoData": "暂无查询数据",
     "timeRanges": {

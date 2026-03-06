@@ -7,6 +7,7 @@ export interface QueryTrendData {
   queries: number;
   blocked: number;
   allowed: number;
+  cached: number;
 }
 
 interface QueryTrendChartProps {
@@ -96,6 +97,16 @@ export function QueryTrendChart({ data, isLoading }: QueryTrendChartProps) {
           strokeWidth={2}
           dot={false}
           name={t('dashboard.trendAllowed')}
+          activeDot={{ r: 4 }}
+        />
+        <Line
+          type="monotone"
+          dataKey="cached"
+          stroke="#22c55e"
+          strokeWidth={2}
+          dot={false}
+          strokeDasharray="4 2"
+          name={t('dashboard.trendCached')}
           activeDot={{ r: 4 }}
         />
       </LineChart>

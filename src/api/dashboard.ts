@@ -22,6 +22,7 @@ export async function getQueryTrend(hours = 24): Promise<QueryTrendData[]> {
     total: number;
     blocked: number;
     allowed: number;
+    cached: number;
   }>>(`/api/v1/dashboard/query-trend?hours=${hours}`);
 
   return response.data.map((row) => ({
@@ -29,6 +30,7 @@ export async function getQueryTrend(hours = 24): Promise<QueryTrendData[]> {
     queries: row.total,
     blocked: row.blocked,
     allowed: row.allowed,
+    cached: row.cached,
   }));
 }
 

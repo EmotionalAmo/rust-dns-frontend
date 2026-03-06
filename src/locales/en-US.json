@@ -158,6 +158,9 @@
     "noBlockData": "No blocked data available",
     "noClientData": "No client data available",
     "noQueryData": "No query data available",
+    "top10RuleHits": "Top Active Rules",
+    "top10RuleHitsDesc": "Rules with the most hits in {{timeRange}}",
+    "noRuleHitData": "No rule hits recorded yet",
     "gettingStartedTitle": "Get Started with rust-dns",
     "gettingStartedDesc": "It looks like your DNS service is running, but hasn't received any queries yet. Follow these steps to set up your devices.",
     "step1Title": "1. Configure Router or Device",
@@ -169,6 +172,7 @@
     "trendTotal": "Total",
     "trendBlocked": "Blocked",
     "trendAllowed": "Allowed",
+    "trendCached": "Cached",
     "trendLoading": "Loading...",
     "trendNoData": "No query data available",
     "timeRanges": {
