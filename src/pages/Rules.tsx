@@ -1282,13 +1282,16 @@ export default function RulesPage() {
                           <TableCell className="text-right">
                             {(() => {
                               const hits = hitCountMap.get(rule.id);
-                              if (hits === undefined || hits === 0) {
-                                return <span className="text-xs text-muted-foreground">-</span>;
+                              if (hits === undefined) {
+                                return <span className="text-xs text-muted-foreground">?</span>;
+                              }
+                              if (hits === 0) {
+                                return <span className="text-xs text-muted-foreground">0</span>;
                               }
                               const isAllowRule = rule.rule.trim().startsWith('@@');
                               return (
-                                <span className={`text-sm font-medium ${isAllowRule ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
-                                  {hits}
+                                <span className={`text-sm font-medium tabular-nums ${isAllowRule ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+                                  {hits.toLocaleString()}
                                 </span>
                               );
                             })()}
