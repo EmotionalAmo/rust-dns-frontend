@@ -18,6 +18,9 @@ function computeOverallStatus(
 ): OverallStatus {
   const activeUpstreams = upstreams.filter((u) => u.is_active);
 
+  // No active upstreams means DNS forwarding is misconfigured
+  if (activeUpstreams.length === 0) return 'warning';
+
   const hasDegraded = activeUpstreams.some(
     (u) => u.health_status === 'degraded' || u.health_status === 'down',
   );
@@ -40,7 +43,7 @@ function computeUpstreamAvailability(upstreams: DnsUpstream[]): {
 } {
   const active = upstreams.filter((u) => u.is_active);
   if (active.length === 0) {
-    return { ratio: '0/0', label: 'healthAllHealthy', color: 'green' };
+    return { ratio: '0/0', label: 'healthNoUpstreams', color: 'yellow' };
   }
 
   const healthy = active.filter((u) => u.health_status === 'healthy').length;
@@ -76,7 +79,8 @@ function computeBlockRateInfo(
   if (totalQueries === 0) {
     return { value: '0.0%', label: 'healthNoTraffic', color: 'red' };
   }
-  return { value: `${blockRate.toFixed(1)}%`, label: 'healthNoTraffic', color: 'red' };
+  // Has traffic but nothing is being blocked — filter may be inactive or misconfigured
+  return { value: `${blockRate.toFixed(1)}%`, label: 'healthFilterInactive', color: 'red' };
 }
 
 const COLOR_CLASSES = {

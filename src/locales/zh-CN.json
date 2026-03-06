@@ -200,7 +200,9 @@
     "healthHasDegraded": "存在降级",
     "healthNoTraffic": "无流量",
     "healthLowBlockRate": "拦截率偏低",
-    "healthFilterActive": "过滤器活跃"
+    "healthFilterActive": "过滤器活跃",
+    "healthNoUpstreams": "无激活上游",
+    "healthFilterInactive": "过滤器未生效"
   },
   "rules": {
     "title": "规则列表",

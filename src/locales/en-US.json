@@ -200,7 +200,9 @@
     "healthHasDegraded": "Has Degraded",
     "healthNoTraffic": "No Traffic",
     "healthLowBlockRate": "Low Block Rate",
-    "healthFilterActive": "Filter Active"
+    "healthFilterActive": "Filter Active",
+    "healthNoUpstreams": "No Active Upstreams",
+    "healthFilterInactive": "Filter Inactive"
   },
   "rules": {
     "title": "Rules",
