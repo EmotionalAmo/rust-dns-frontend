@@ -546,7 +546,7 @@
     "dashboardSettings": "Dashboard Settings",
     "dashboardSettingsDesc": "Adjust the time range for dashboard data.",
     "dashboardTimeRange": "Data Time Range",
-    "dashboardTimeRangeDesc": "Time range for trend charts and leaderboards on the dashboard.",
+    "dashboardTimeRangeDesc": "Time range for trend charts and leaderboards. Can also be changed directly from the Dashboard header.",
     "dashboardTimeRangeSaved": "Dashboard time range saved successfully.",
     "healthCheckFailed": "Health check failed: {{error}}",
     "createFailed": "Creation failed: {{msg}}",

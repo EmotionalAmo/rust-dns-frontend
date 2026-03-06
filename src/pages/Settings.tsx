@@ -200,6 +200,15 @@ export default function SettingsPage() {
     return v ? Number(v) : 24;
   });
 
+  // Sync when user changes time range directly on the Dashboard page
+  useEffect(() => {
+    const handleCustomChange = (e: Event) => {
+      setDashHours((e as CustomEvent<number>).detail);
+    };
+    window.addEventListener('dashboard-time-range-change', handleCustomChange);
+    return () => window.removeEventListener('dashboard-time-range-change', handleCustomChange);
+  }, []);
+
   const handleDashHoursChange = (v: string) => {
     const n = Number(v);
     setDashHours(n);

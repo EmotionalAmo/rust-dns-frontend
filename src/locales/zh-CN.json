@@ -556,7 +556,7 @@
     "dashboardSettings": "仪表盘设置",
     "dashboardSettingsDesc": "调整仪表盘数据的时间范围",
     "dashboardTimeRange": "数据时间范围",
-    "dashboardTimeRangeDesc": "仪表盘中趋势图和排行榜的时间范围",
+    "dashboardTimeRangeDesc": "仪表盘中趋势图和排行榜的时间范围，也可在仪表盘页面顶部直接切换",
     "dashboardTimeRangeSaved": "仪表盘时间范围已保存",
     "healthCheckFailed": "健康检查失败：{{error}}",
     "createFailed": "创建失败: {{msg}}",

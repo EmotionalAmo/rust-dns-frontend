@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
@@ -31,6 +32,13 @@ export default function DashboardPage() {
 
   // Get time range label for UI display (computed from hours)
   const timeRangeLabel = getTimeRangeLabel(hours, t);
+
+  const handleHoursChange = (v: string) => {
+    const n = Number(v);
+    setHours(n);
+    localStorage.setItem('dashboard-time-range', String(n));
+    window.dispatchEvent(new CustomEvent('dashboard-time-range-change', { detail: n }));
+  };
 
   // Sync hours state with localStorage changes (when user changes in Settings)
   useEffect(() => {
@@ -182,13 +190,21 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* 时间范围标签 */}
+      {/* 时间范围选择器 */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">
-          {t('dashboard.dataRange')}
-          {getTimeRangeLabel(hours, t)}
-          {t('dashboard.adjustableInSettings')}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{t('dashboard.dataRange')}</span>
+          <Select value={String(hours)} onValueChange={handleHoursChange}>
+            <SelectTrigger className="h-7 w-32 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24">{t('dashboard.timeRanges.24')}</SelectItem>
+              <SelectItem value="168">{t('dashboard.timeRanges.168')}</SelectItem>
+              <SelectItem value="720">{t('dashboard.timeRanges.720')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['dashboard'] })}
           className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors focus:outline-none"
