@@ -199,6 +199,7 @@
     "colType": "类型",
     "colNote": "备注",
     "colCreatedAt": "创建时间",
+    "colHits": "命中(24h)",
     "colActions": "操作",
     "typeAllow": "允许",
     "typeBlock": "阻断",

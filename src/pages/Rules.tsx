@@ -69,6 +69,7 @@ import {
 import { formatDateTimeShort } from '@/lib/datetime';
 import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
 import { domainCheckApi, type DomainCheckResult } from '@/api/domainCheck';
+import { ruleStatsApi } from '@/api/ruleStats';
 
 const PER_PAGE = 50;
 
@@ -892,6 +893,18 @@ export default function RulesPage() {
     placeholderData: (prev) => prev, // 翻页时保留旧数据避免闪烁
   });
 
+  // 规则命中统计：与规则列表并行加载，失败不影响主列表
+  const { data: statsData } = useQuery({
+    queryKey: ['rule-stats'],
+    queryFn: () => ruleStatsApi.getStats(24),
+    retry: false,
+  });
+
+  // id -> hit_count 快速查找 Map
+  const hitCountMap = new Map<string, number>(
+    (statsData?.data ?? []).map((entry) => [entry.id, entry.hit_count])
+  );
+
   const rules = data?.data ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
@@ -1143,13 +1156,14 @@ export default function RulesPage() {
                       <TableHead>{t('rules.colType')}</TableHead>
                       <TableHead>{t('rules.colNote')}</TableHead>
                       <TableHead>{t('rules.colCreatedAt')}</TableHead>
+                      <TableHead className="w-20 text-right">{t('rules.colHits')}</TableHead>
                       <TableHead className="w-20">{t('rules.colActions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {/* Inline quick-add row */}
                     <TableRow>
-                      <TableCell colSpan={7} className="py-2 px-3">
+                      <TableCell colSpan={8} className="py-2 px-3">
                         <div className="flex gap-2 items-center">
                           {/* Block / Allow toggle */}
                           <button
@@ -1264,6 +1278,20 @@ export default function RulesPage() {
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(rule.created_at)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {(() => {
+                              const hits = hitCountMap.get(rule.id);
+                              if (hits === undefined || hits === 0) {
+                                return <span className="text-xs text-muted-foreground">-</span>;
+                              }
+                              const isAllowRule = rule.rule.trim().startsWith('@@');
+                              return (
+                                <span className={`text-sm font-medium ${isAllowRule ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+                                  {hits}
+                                </span>
+                              );
+                            })()}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">

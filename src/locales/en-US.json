@@ -198,6 +198,7 @@
     "colType": "Type",
     "colNote": "Note",
     "colCreatedAt": "Created At",
+    "colHits": "Hits (24h)",
     "colActions": "Actions",
     "typeAllow": "Allow",
     "typeBlock": "Block",
