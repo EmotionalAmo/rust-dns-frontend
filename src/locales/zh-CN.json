@@ -288,7 +288,11 @@
     "sandboxRuleValid": "规则有效",
     "sandboxRuleInvalid": "规则无效",
     "sandboxTestBtn": "测试规则",
-    "sandboxMenuItem": "规则沙盒"
+    "sandboxMenuItem": "规则沙盒",
+    "inlineAddPlaceholder": "输入域名后按 Enter",
+    "inlineCommentPlaceholder": "备注（可选）",
+    "clickToDisable": "点击禁用",
+    "clickToEnable": "点击启用"
   },
   "filters": {
     "title": "过滤列表",

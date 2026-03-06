@@ -827,6 +827,34 @@ export default function RulesPage() {
   const [isExporting, setIsExporting] = useState(false);
   const toggleMutationRef = useRef<{ isPending: boolean }>({ isPending: false });
 
+  // Inline quick-add state
+  const [inlineAction, setInlineAction] = useState<RuleAction>('block');
+  const [inlineDomain, setInlineDomain] = useState('');
+  const [inlineComment, setInlineComment] = useState('');
+  const inlineDomainRef = useRef<HTMLInputElement>(null);
+
+  const inlineCreateMutation = useMutation({
+    mutationFn: (payload: { rule: string; comment?: string }) =>
+      rulesApi.createRule(payload),
+    onSuccess: () => {
+      toast.success(t('rules.createSuccess'));
+      queryClient.invalidateQueries({ queryKey: ['rules'] });
+      setInlineDomain('');
+      setInlineComment('');
+      setTimeout(() => inlineDomainRef.current?.focus(), 0);
+    },
+    onError: (error: Error) => {
+      toast.error(t('rules.createError', { msg: error.message || t('common.unknownError') }));
+    },
+  });
+
+  const handleInlineSubmit = () => {
+    const domain = inlineDomain.trim();
+    if (!domain) return;
+    const rule = buildSimpleRule(inlineAction, domain);
+    inlineCreateMutation.mutate({ rule, comment: inlineComment.trim() || undefined });
+  };
+
   const RULE_EXAMPLES = [
     {
       category: t('rules.exampleBasic'),
@@ -1119,6 +1147,71 @@ export default function RulesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
+                    {/* Inline quick-add row */}
+                    <TableRow>
+                      <TableCell colSpan={7} className="py-2 px-3">
+                        <div className="flex gap-2 items-center">
+                          {/* Block / Allow toggle */}
+                          <button
+                            type="button"
+                            onClick={() => setInlineAction('block')}
+                            className={`flex items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors ${
+                              inlineAction === 'block'
+                                ? 'border-red-400 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400'
+                                : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <XCircle size={12} />
+                            {t('rules.simpleActionBlock')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setInlineAction('allow')}
+                            className={`flex items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors ${
+                              inlineAction === 'allow'
+                                ? 'border-green-400 bg-green-50 text-green-700 dark:bg-green-950/30 dark:text-green-400'
+                                : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                            }`}
+                          >
+                            <CheckCircle2 size={12} />
+                            {t('rules.simpleActionAllow')}
+                          </button>
+                          {/* Domain input */}
+                          <Input
+                            ref={inlineDomainRef}
+                            value={inlineDomain}
+                            onChange={(e) => setInlineDomain(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInlineSubmit(); } }}
+                            placeholder={t('rules.inlineAddPlaceholder')}
+                            className="h-7 text-sm flex-1"
+                            disabled={inlineCreateMutation.isPending}
+                          />
+                          {/* Comment input */}
+                          <Input
+                            value={inlineComment}
+                            onChange={(e) => setInlineComment(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleInlineSubmit(); } }}
+                            placeholder={t('rules.inlineCommentPlaceholder')}
+                            className="h-7 text-sm w-40"
+                            disabled={inlineCreateMutation.isPending}
+                          />
+                          {/* Submit button */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 px-2"
+                            onClick={handleInlineSubmit}
+                            disabled={inlineCreateMutation.isPending || !inlineDomain.trim()}
+                          >
+                            {inlineCreateMutation.isPending ? (
+                              <RefreshCw size={12} className="animate-spin" />
+                            ) : (
+                              <Plus size={12} />
+                            )}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
                     {rules.map((rule: Rule) => {
                       const ruleType = inferRuleType(rule.rule);
                       return (
@@ -1137,6 +1230,7 @@ export default function RulesPage() {
                               onClick={() => handleToggleRule(rule)}
                               className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
                               disabled={toggleMutationRef.current.isPending}
+                              title={rule.is_enabled ? t('rules.clickToDisable') : t('rules.clickToEnable')}
                             >
                               {rule.is_enabled ? (
                                 <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50 dark:bg-green-950/20">

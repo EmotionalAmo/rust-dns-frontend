@@ -277,7 +277,11 @@
     "sandboxRuleValid": "Valid Rule",
     "sandboxRuleInvalid": "Invalid Rule",
     "sandboxTestBtn": "Test Rule",
-    "sandboxMenuItem": "Rule Sandbox"
+    "sandboxMenuItem": "Rule Sandbox",
+    "inlineAddPlaceholder": "Type domain and press Enter",
+    "inlineCommentPlaceholder": "Note (optional)",
+    "clickToDisable": "Click to disable",
+    "clickToEnable": "Click to enable"
   },
   "filters": {
     "title": "Filter Lists",
