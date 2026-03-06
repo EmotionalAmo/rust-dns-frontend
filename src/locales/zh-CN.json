@@ -857,7 +857,11 @@
     "clearSuccess": "告警历史已清除",
     "pageInfo": "第 {{page}} / {{total}} 页",
     "previous": "上一页",
-    "next": "下一页"
+    "next": "下一页",
+    "deleteAlert": "删除",
+    "deleteSuccess": "告警已删除",
+    "filterAll": "全部类型",
+    "filterType": "类型"
   },
   "auditLog": {
     "title": "审计日志",

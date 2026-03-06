@@ -847,7 +847,11 @@
     "clearSuccess": "Alerts history cleared",
     "pageInfo": "Page {{page}} of {{total}}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "deleteAlert": "Delete",
+    "deleteSuccess": "Alert deleted",
+    "filterAll": "All Types",
+    "filterType": "Type"
   },
   "auditLog": {
     "title": "Audit Log",

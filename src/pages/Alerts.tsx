@@ -6,18 +6,22 @@ import { Bell, BellRing, Check, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export default function AlertsPage() {
     const { t } = useTranslation();
     const [page, setPage] = useState(1);
+    const [filterType, setFilterType] = useState<string>('all');
     const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
     const pageSize = 20;
     const queryClient = useQueryClient();
 
+    const alertTypeParam = filterType === 'all' ? undefined : filterType;
+
     const { data, isLoading } = useQuery({
-        queryKey: ['alerts', 'all', page],
-        queryFn: () => alertsApi.getAlerts({ page, page_size: pageSize }),
+        queryKey: ['alerts', 'all', page, filterType],
+        queryFn: () => alertsApi.getAlerts({ page, page_size: pageSize, alert_type: alertTypeParam }),
         refetchInterval: 15000,
     });
 
@@ -38,7 +42,24 @@ export default function AlertsPage() {
         },
     });
 
+    const deleteAlertMutation = useMutation({
+        mutationFn: (id: string) => alertsApi.deleteAlert(id),
+        onSuccess: () => {
+            toast.success(t('alerts.deleteSuccess'));
+            queryClient.invalidateQueries({ queryKey: ['alerts'] });
+        },
+    });
+
     const alerts = data?.data || [];
+
+    // Collect unique alert types from current page for the filter dropdown
+    // We fetch all types from all pages by using a separate unfilterd query key
+    const { data: allTypesData } = useQuery({
+        queryKey: ['alerts', 'types'],
+        queryFn: () => alertsApi.getAlerts({ page: 1, page_size: 100 }),
+        refetchInterval: 60000,
+    });
+    const alertTypes = Array.from(new Set((allTypesData?.data || []).map(a => a.alert_type))).filter(Boolean);
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
 
     if (isLoading) {
@@ -63,6 +84,22 @@ export default function AlertsPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
+                    <Select
+                        value={filterType}
+                        onValueChange={(val) => { setFilterType(val); setPage(1); }}
+                    >
+                        <SelectTrigger className="h-9 w-40 text-sm">
+                            <SelectValue placeholder={t('alerts.filterAll')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">{t('alerts.filterAll')}</SelectItem>
+                            {alertTypes.map(type => (
+                                <SelectItem key={type} value={type}>
+                                    <span className="uppercase text-xs tracking-wider">{type}</span>
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Button
                         variant="outline"
                         size="sm"
@@ -131,8 +168,8 @@ export default function AlertsPage() {
                                     </div>
                                 </div>
 
-                                {!alert.is_read && (
-                                    <div className="shrink-0 self-start sm:self-center ml-auto">
+                                <div className="shrink-0 self-start sm:self-center ml-auto flex items-center gap-1">
+                                    {!alert.is_read && (
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -142,8 +179,18 @@ export default function AlertsPage() {
                                         >
                                             <Check className="h-4 w-4" />
                                         </Button>
-                                    </div>
-                                )}
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="p-2 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                        onClick={() => deleteAlertMutation.mutate(alert.id)}
+                                        disabled={deleteAlertMutation.isPending}
+                                        title={t('alerts.deleteAlert')}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                     </div>

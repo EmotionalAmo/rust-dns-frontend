@@ -13,6 +13,7 @@ export interface FetchAlertsParams {
     page?: number;
     page_size?: number;
     is_read?: boolean;
+    alert_type?: string;
 }
 
 export interface AlertsResponse {
@@ -37,6 +38,10 @@ export const alertsApi = {
     },
     clearAlerts: async () => {
         const { data } = await apiClient.delete('/api/v1/alerts');
+        return data;
+    },
+    deleteAlert: async (id: string) => {
+        const { data } = await apiClient.delete(`/api/v1/alerts/${id}`);
         return data;
     },
 };
