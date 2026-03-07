@@ -216,6 +216,11 @@ export default function DashboardPage() {
     const total = stats.total_queries ?? 0;
     const bRate = total > 0 ? ((stats.blocked_queries ?? 0) / total * 100).toFixed(1) : '0.0';
 
+    // Latest P50 latency from trend data
+    const latestP50 = latencyTrendData.length > 0
+      ? Math.round(latencyTrendData.filter(d => d.p50_ms > 0).at(-1)?.p50_ms ?? 0)
+      : 0;
+
     // Client anomaly stats (same thresholds as the top-clients table)
     const avgBlockRate = topClients.length > 0
       ? topClients.reduce((s, c) => s + (c.block_rate ?? 0), 0) / topClients.length
@@ -227,15 +232,29 @@ export default function DashboardPage() {
     const offlineUpstreams = upstreamsList.filter(u => u.health_status === 'down');
     const slowUpstreams = upstreamsList.filter(u => (u.avg_latency_30m_ms ?? 0) > 100);
 
+    // Build human-readable issue labels
+    const getClientLabel = (ip: string) => {
+      const record = clientsList.find(c => c.identifiers.includes(ip));
+      return record?.name ? `${record.name} (${ip})` : ip;
+    };
+
     if (dangerClients.length > 0 || offlineUpstreams.length > 0) {
       const count = dangerClients.length + offlineUpstreams.length;
-      return { level: 'danger' as const, count, total, blockRate: bRate };
+      const issues = [
+        ...dangerClients.map(c => getClientLabel(c.client_ip)),
+        ...offlineUpstreams.map(u => u.name),
+      ];
+      return { level: 'danger' as const, count, total, blockRate: bRate, latestP50, issues };
     }
     if (warningClients.length > 0 || slowUpstreams.length > 0) {
       const count = warningClients.length + slowUpstreams.length;
-      return { level: 'warning' as const, count, total, blockRate: bRate };
+      const issues = [
+        ...warningClients.map(c => getClientLabel(c.client_ip)),
+        ...slowUpstreams.map(u => u.name),
+      ];
+      return { level: 'warning' as const, count, total, blockRate: bRate, latestP50, issues };
     }
-    return { level: 'ok' as const, count: 0, total, blockRate: bRate };
+    return { level: 'ok' as const, count: 0, total, blockRate: bRate, latestP50, issues: [] as string[] };
   })();
 
   const totalQueries = stats?.total_queries ?? 0;
@@ -335,24 +354,41 @@ export default function DashboardPage() {
       )}
       {/* Health Summary Banner */}
       {healthBanner && (
-        <div className={`flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm ${
+        <div className={`rounded-md border px-4 py-2.5 text-sm ${
           healthBanner.level === 'ok'
             ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
             : healthBanner.level === 'warning'
               ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200'
               : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
         }`}>
-          <span className={`h-2 w-2 shrink-0 rounded-full ${
-            healthBanner.level === 'ok' ? 'bg-green-500' : healthBanner.level === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-          }`} />
-          <span>
-            {healthBanner.level === 'ok'
-              ? t('dashboard.healthBannerOk', { total: healthBanner.total.toLocaleString(), blockRate: healthBanner.blockRate })
-              : healthBanner.level === 'warning'
-                ? t('dashboard.healthBannerWarning', { count: healthBanner.count })
-                : t('dashboard.healthBannerDanger', { count: healthBanner.count })
-            }
-          </span>
+          <div className="flex items-start gap-2">
+            <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${
+              healthBanner.level === 'ok' ? 'bg-green-500' : healthBanner.level === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+            }`} />
+            <div>
+              <span>
+                {healthBanner.level === 'ok'
+                  ? t('dashboard.healthBannerOk', { total: healthBanner.total.toLocaleString(), blockRate: healthBanner.blockRate })
+                  : healthBanner.level === 'warning'
+                    ? t('dashboard.healthBannerWarning', { count: healthBanner.count })
+                    : t('dashboard.healthBannerDanger', { count: healthBanner.count })
+                }
+                {healthBanner.level === 'ok' && healthBanner.latestP50 > 0 && (
+                  <span className="ml-1 opacity-70">{t('dashboard.healthBannerLatency', { ms: healthBanner.latestP50 })}</span>
+                )}
+              </span>
+              {healthBanner.issues.length > 0 && (
+                <ul className="mt-1 space-y-0.5 text-xs opacity-80">
+                  {healthBanner.issues.map((issue, i) => (
+                    <li key={i} className="flex items-center gap-1">
+                      <span className="shrink-0">·</span>
+                      <span>{issue}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
       )}
       {/* 分组标题：网络概览 */}
@@ -588,6 +624,17 @@ export default function DashboardPage() {
                     <span className="text-sm font-medium">{qps} /s</span>
                   )}
                 </div>
+              </div>
+
+              {/* Quick Domain Check */}
+              <div className="pt-3 border-t border-border">
+                <Link
+                  to="/domain-lookup"
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  {t('dashboard.quickDomainCheck')}
+                </Link>
               </div>
 
             </CardContent>
