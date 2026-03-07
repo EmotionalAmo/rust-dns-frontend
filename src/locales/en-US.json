@@ -212,7 +212,10 @@
     "latencyVerySlow": "Very Slow",
     "latencyNoData": "Insufficient data",
     "latencyNoDataDesc": "Need more queries to compute latency stats",
-    "latencySampleCount": "{{count}} samples"
+    "latencySampleCount": "{{count}} samples",
+    "upstreamHealthHistory": "Upstream Availability History",
+    "upstreamHealthHistoryDesc": "Per-upstream success rate (%) in {{timeRange}}",
+    "upstreamHealthNoData": "No health check data in this period"
   },
   "rules": {
     "title": "Rules",

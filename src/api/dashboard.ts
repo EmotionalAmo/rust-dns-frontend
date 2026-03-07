@@ -1,6 +1,7 @@
 import { apiClient, type DashboardStats } from './';
 import type { QueryTrendData } from '@/components/dashboard/QueryTrendChart';
 import type { UpstreamTrendData } from '@/components/dashboard/UpstreamTrendChart';
+import type { UpstreamHealthHistoryData } from '@/components/dashboard/UpstreamHealthHistoryChart';
 import type { TopDomainEntry, TopClientEntry } from './types';
 
 /**
@@ -94,6 +95,20 @@ export async function getUpstreamDistribution(hours = 24): Promise<Array<{
   return response.data;
 }
 
+/**
+ * Get upstream availability history (success rate %) for past N hours
+ */
+export async function getUpstreamHealthHistory(hours = 24): Promise<{
+  data: UpstreamHealthHistoryData[];
+  upstreams: string[];
+}> {
+  const response = await apiClient.get<{
+    data: UpstreamHealthHistoryData[];
+    upstreams: string[];
+  }>(`/api/v1/dashboard/upstream-health-history?hours=${hours}`);
+  return response.data;
+}
+
 // Export API object
 export const dashboardApi = {
   getStats: getDashboardStats,
@@ -103,4 +118,5 @@ export const dashboardApi = {
   getTopClients,
   getUpstreamTrend,
   getUpstreamDistribution,
+  getUpstreamHealthHistory,
 };

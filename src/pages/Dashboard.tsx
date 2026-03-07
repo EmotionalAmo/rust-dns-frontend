@@ -12,6 +12,7 @@ import { ruleStatsApi } from '@/api/ruleStats';
 import { upstreamsApi } from '@/api/upstreams';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
+import { UpstreamHealthHistoryChart } from '@/components/dashboard/UpstreamHealthHistoryChart';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -143,6 +144,17 @@ export default function DashboardPage() {
     refetchInterval: 30000,
     staleTime: 20000,
   });
+
+  // Fetch upstream health history (availability % over time)
+  const { data: upstreamHealthResponse, isLoading: upstreamHealthLoading } = useQuery({
+    queryKey: ['dashboard', 'upstream-health-history', hours],
+    queryFn: () => dashboardApi.getUpstreamHealthHistory(hours),
+    refetchInterval: 60000,
+    staleTime: 30000,
+  });
+
+  const upstreamHealthData = upstreamHealthResponse?.data ?? [];
+  const upstreamHealthNames = upstreamHealthResponse?.upstreams ?? [];
 
   const totalQueries = stats?.total_queries ?? 0;
   const blockedQueries = stats?.blocked_queries ?? 0;
@@ -634,6 +646,21 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Upstream Health History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('dashboard.upstreamHealthHistory')}</CardTitle>
+          <CardDescription>{t('dashboard.upstreamHealthHistoryDesc', { timeRange: timeRangeLabel })}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UpstreamHealthHistoryChart
+            data={upstreamHealthData}
+            upstreams={upstreamHealthNames}
+            isLoading={upstreamHealthLoading}
+          />
+        </CardContent>
+      </Card>
 
       {/* Upstream Distribution */}
       <div className="grid gap-6 lg:grid-cols-2">
