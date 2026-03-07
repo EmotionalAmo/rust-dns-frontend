@@ -27,6 +27,7 @@ const UpstreamsPage = lazy(() => import('./pages/Upstreams'));
 const AlertsPage = lazy(() => import('./pages/Alerts'));
 const InsightsPage = lazy(() => import('./pages/Insights'));
 const AuditLogPage = lazy(() => import('./pages/AuditLog'));
+const DomainLookupPage = lazy(() => import('./pages/DomainLookup'));
 
 // Create Query Client
 const queryClient = new QueryClient({
@@ -239,6 +240,19 @@ function App() {
                   }
                 >
                   <Route index element={<AuditLogPage />} />
+                </Route>
+
+                <Route
+                  path="/domain-lookup"
+                  element={
+                    <ProtectedRoute>
+                      <DashboardLayout title="域名检查">
+                        <Outlet />
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route index element={<DomainLookupPage />} />
                 </Route>
 
                 {/* Catch all - redirect to dashboard */}

@@ -70,6 +70,7 @@
     "alerts": "威胁告警",
     "queryLogs": "查询日志",
     "insights": "网站洞察",
+    "domainLookup": "域名检查",
     "settings": "设置",
     "users": "用户管理",
     "auditLog": "审计日志",
@@ -151,6 +152,9 @@
     "refreshStatus": "刷新状态",
     "alertBanner": "您有 {{count}} 条未读告警",
     "alertBannerLink": "查看详情",
+    "healthBannerOk": "系统运行正常，今日已处理 {{total}} 次查询，拦截率 {{blockRate}}%",
+    "healthBannerWarning": "系统正常，但检测到 {{count}} 个客户端拦截率偏高",
+    "healthBannerDanger": "检测到 {{count}} 个异常客户端，建议检查告警",
     "top10Blocked": "Top 10 被拦截域名",
     "top10BlockedDesc": "{{timeRange}}拦截次数最多的域名",
     "top10Clients": "Top 10 活跃客户端",
@@ -930,5 +934,22 @@
       "session": "会话",
       "user": "用户"
     }
+  },
+  "domainLookup": {
+    "title": "域名检查",
+    "description": "输入域名，立即查看是否被拦截及触发的规则。每行一个域名，支持批量查询。",
+    "placeholder": "example.com\ngoogle.com\nad.doubleclick.net",
+    "check": "检查",
+    "checking": "检查中...",
+    "hint": "Ctrl+Enter 快速检查",
+    "error": "查询失败，请重试",
+    "statusBlocked": "已拦截",
+    "statusAllowed": "已放行",
+    "statusRewrite": "重写",
+    "resultsTitle": "检查结果",
+    "resultsDesc": "共 {{count}} 个域名",
+    "noResults": "没有返回结果",
+    "addWhitelist": "加入白名单",
+    "addBlacklist": "加入黑名单"
   }
 }

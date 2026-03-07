@@ -209,6 +209,35 @@ export default function DashboardPage() {
   const upstreamHealthData = upstreamHealthResponse?.data ?? [];
   const upstreamHealthNames = upstreamHealthResponse?.upstreams ?? [];
 
+  // ── Health Summary Banner computation ──
+  const healthBanner = (() => {
+    if (!stats) return null;
+
+    const total = stats.total_queries ?? 0;
+    const bRate = total > 0 ? ((stats.blocked_queries ?? 0) / total * 100).toFixed(1) : '0.0';
+
+    // Client anomaly stats (same thresholds as the top-clients table)
+    const avgBlockRate = topClients.length > 0
+      ? topClients.reduce((s, c) => s + (c.block_rate ?? 0), 0) / topClients.length
+      : 0;
+    const dangerClients = topClients.filter(c => avgBlockRate > 0 && (c.block_rate ?? 0) > avgBlockRate * 2);
+    const warningClients = topClients.filter(c => avgBlockRate > 0 && (c.block_rate ?? 0) > avgBlockRate * 1.5 && (c.block_rate ?? 0) <= avgBlockRate * 2);
+
+    // Upstream health stats
+    const offlineUpstreams = upstreamsList.filter(u => u.health_status === 'down');
+    const slowUpstreams = upstreamsList.filter(u => (u.avg_latency_30m_ms ?? 0) > 100);
+
+    if (dangerClients.length > 0 || offlineUpstreams.length > 0) {
+      const count = dangerClients.length + offlineUpstreams.length;
+      return { level: 'danger' as const, count, total, blockRate: bRate };
+    }
+    if (warningClients.length > 0 || slowUpstreams.length > 0) {
+      const count = warningClients.length + slowUpstreams.length;
+      return { level: 'warning' as const, count, total, blockRate: bRate };
+    }
+    return { level: 'ok' as const, count: 0, total, blockRate: bRate };
+  })();
+
   const totalQueries = stats?.total_queries ?? 0;
   const blockedQueries = stats?.blocked_queries ?? 0;
   const cachedQueries = stats?.cached_queries ?? 0;
@@ -302,6 +331,28 @@ export default function DashboardPage() {
           <button onClick={() => setShowAlertBanner(false)} className="text-amber-600 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-100 ml-4">
             <X className="h-4 w-4" />
           </button>
+        </div>
+      )}
+      {/* Health Summary Banner */}
+      {healthBanner && (
+        <div className={`flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm ${
+          healthBanner.level === 'ok'
+            ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+            : healthBanner.level === 'warning'
+              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200'
+              : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+        }`}>
+          <span className={`h-2 w-2 shrink-0 rounded-full ${
+            healthBanner.level === 'ok' ? 'bg-green-500' : healthBanner.level === 'warning' ? 'bg-amber-500' : 'bg-red-500'
+          }`} />
+          <span>
+            {healthBanner.level === 'ok'
+              ? t('dashboard.healthBannerOk', { total: healthBanner.total.toLocaleString(), blockRate: healthBanner.blockRate })
+              : healthBanner.level === 'warning'
+                ? t('dashboard.healthBannerWarning', { count: healthBanner.count })
+                : t('dashboard.healthBannerDanger', { count: healthBanner.count })
+            }
+          </span>
         </div>
       )}
       {/* 分组标题：网络概览 */}

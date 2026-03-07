@@ -70,6 +70,7 @@
     "alerts": "Alerts",
     "queryLogs": "Query Logs",
     "insights": "Insights",
+    "domainLookup": "Domain Lookup",
     "settings": "Settings",
     "users": "User Management",
     "auditLog": "Audit Log",
@@ -151,6 +152,9 @@
     "refreshStatus": "Refresh Status",
     "alertBanner": "You have {{count}} unread alert(s)",
     "alertBannerLink": "View details",
+    "healthBannerOk": "System is healthy. Processed {{total}} queries today with {{blockRate}}% block rate",
+    "healthBannerWarning": "System normal, but {{count}} client(s) have elevated block rates",
+    "healthBannerDanger": "{{count}} anomalous client(s) detected. Please review alerts",
     "top10Blocked": "Top 10 Blocked Domains",
     "top10BlockedDesc": "Most blocked domains in {{timeRange}}",
     "top10Clients": "Top 10 Active Clients",
@@ -920,5 +924,22 @@
       "session": "Session",
       "user": "User"
     }
+  },
+  "domainLookup": {
+    "title": "Domain Lookup",
+    "description": "Enter domain names to instantly check if they are blocked and which rule applies. One domain per line, batch queries supported.",
+    "placeholder": "example.com\ngoogle.com\nad.doubleclick.net",
+    "check": "Check",
+    "checking": "Checking...",
+    "hint": "Ctrl+Enter to check",
+    "error": "Query failed, please try again",
+    "statusBlocked": "Blocked",
+    "statusAllowed": "Allowed",
+    "statusRewrite": "Rewrite",
+    "resultsTitle": "Results",
+    "resultsDesc": "{{count}} domain(s) checked",
+    "noResults": "No results returned",
+    "addWhitelist": "Add to Whitelist",
+    "addBlacklist": "Add to Blacklist"
   }
 }

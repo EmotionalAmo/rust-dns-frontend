@@ -28,6 +28,7 @@ import {
   KeyRound,
   ClipboardList,
   Bell,
+  Search,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ const NAV_KEYS = [
   { path: '/alerts', key: 'nav.alerts', icon: <Bell size={16} /> },
   { path: '/logs', key: 'nav.queryLogs', icon: <FileText size={16} /> },
   { path: '/insights', key: 'nav.insights', icon: <BarChart2 size={16} /> },
+  { path: '/domain-lookup', key: 'nav.domainLookup', icon: <Search size={16} /> },
   { path: '/settings', key: 'nav.settings', icon: <Settings size={16} /> },
   { path: '/users', key: 'nav.users', icon: <Users size={16} />, adminOnly: true },
   { path: '/audit-log', key: 'nav.auditLog', icon: <ClipboardList size={16} />, adminOnly: true },
