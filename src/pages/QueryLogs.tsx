@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, Ban, ShieldCheck } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
@@ -537,7 +537,7 @@ export default function QueryLogsPage() {
                                 disabled={pendingActions.has(`block:${domain}`)}
                                 onClick={() => handleQuickRule(domain, 'block')}
                               >
-                                <Ban size={12} />
+                                <ShieldX size={12} />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -657,7 +657,7 @@ export default function QueryLogsPage() {
                                   disabled={pendingActions.has(`block:${domain}`)}
                                   onClick={() => handleQuickRule(domain, 'block')}
                                 >
-                                  <Ban size={13} />
+                                  <ShieldX size={13} />
                                 </Button>
                                 <Button
                                   variant="ghost"

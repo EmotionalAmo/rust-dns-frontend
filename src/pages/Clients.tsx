@@ -339,13 +339,18 @@ export default function ClientsPage() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[200px]">
                         <div className="flex flex-wrap gap-1">
-                          {client.identifiers?.map((id) => (
-                            <span key={id} className="text-xs bg-muted rounded px-1.5 py-0.5 font-mono">
+                          {(client.identifiers ?? []).slice(0, 3).map((id) => (
+                            <span key={id} className="text-xs bg-muted rounded px-1.5 py-0.5 font-mono truncate max-w-full">
                               {id}
                             </span>
                           ))}
+                          {(client.identifiers?.length ?? 0) > 3 && (
+                            <span className="text-xs bg-muted rounded px-1.5 py-0.5 text-muted-foreground">
+                              +{(client.identifiers?.length ?? 0) - 3}
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
@@ -403,7 +408,9 @@ export default function ClientsPage() {
                         {client.query_count != null && client.query_count > 0 ? client.query_count : '-'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })}
+                        {client.query_count != null && client.query_count > 0
+                          ? formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })
+                          : '-'}
                       </TableCell>
                       <TableCell>
                         {client.is_static !== false ? (

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DashboardStats } from '@/api/types';
 import type { DnsUpstream } from '@/api/upstreams';
@@ -115,6 +116,13 @@ export function NetworkHealthCard({ stats, upstreams, isLoading, upstreamsLoadin
 
   const anyLoading = isLoading || upstreamsLoading;
 
+  const actionLink =
+    !anyLoading && overallStatus !== 'healthy'
+      ? upstream.color !== 'green'
+        ? { to: '/upstreams', labelKey: 'goToUpstreams' }
+        : { to: '/filters', labelKey: 'goToFilters' }
+      : null;
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -185,6 +193,16 @@ export function NetworkHealthCard({ stats, upstreams, isLoading, upstreamsLoadin
             <span className="text-xs text-muted-foreground invisible">-</span>
           </div>
         </div>
+        {actionLink && (
+          <div className="mt-3 pt-3 border-t text-center">
+            <Link
+              to={actionLink.to}
+              className="text-xs text-primary hover:underline"
+            >
+              {t(`dashboard.${actionLink.labelKey}`)} →
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

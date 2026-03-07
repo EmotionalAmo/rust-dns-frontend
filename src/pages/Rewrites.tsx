@@ -46,6 +46,7 @@ import {
   User,
   Clock,
   Copy,
+  Terminal,
 } from 'lucide-react';
 import type { Rewrite, CreateRewriteRequest } from '@/api/types';
 
@@ -418,7 +419,7 @@ export default function RewritesPage() {
   const handleTestDns = (domain: string) => {
     const command = `dig @127.0.0.1 -p 15353 ${domain} A +short`;
     navigator.clipboard.writeText(command);
-    toast.success(t('rewrites.testCopied'));
+    toast.success(t('rewrites.testCopied'), { description: command });
   };
 
   // 计算统计
@@ -629,7 +630,7 @@ export default function RewritesPage() {
                               onClick={() => handleTestDns(rewrite.domain)}
                               title={t('rewrites.testResolve')}
                             >
-                              <Copy size={14} />
+                              <Terminal size={14} />
                             </Button>
                             <Button
                               variant="ghost"
