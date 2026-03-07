@@ -43,6 +43,8 @@ export interface TopDomainEntry {
 export interface TopClientEntry {
   client_ip: string;
   count: number;
+  blocked_count: number;
+  block_rate: number;
 }
 
 // Rules Types — matches backend: {id, rule, comment, is_enabled, created_by, created_at}

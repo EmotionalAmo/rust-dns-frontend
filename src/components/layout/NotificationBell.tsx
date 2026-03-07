@@ -6,6 +6,20 @@ import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+function getAlertActionLink(alertType: string): { label: string; href: string } | null {
+    switch (alertType) {
+        case 'high_frequency_block':
+            return { label: '审查拦截域名', href: '/query-logs?status=blocked' };
+        case 'high_query_rate':
+            return { label: '查看查询日志', href: '/query-logs' };
+        case 'upstream_failure':
+        case 'upstream_degraded':
+            return { label: '检查上游状态', href: '/upstreams' };
+        default:
+            return null;
+    }
+}
+
 export function NotificationBell() {
     const [isOpen, setIsOpen] = useState(false);
     const popoverRef = useRef<HTMLDivElement>(null);
@@ -59,9 +73,8 @@ export function NotificationBell() {
             >
                 <Bell size={18} />
                 {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive"></span>
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white leading-none">
+                        {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
             </button>
@@ -79,20 +92,37 @@ export function NotificationBell() {
                     <div className="max-h-[300px] overflow-y-auto">
                         {recentAlerts.length > 0 ? (
                             <ul className="divide-y">
-                                {recentAlerts.map(alert => (
+                                {recentAlerts.map(alert => {
+                                    const actionLink = getAlertActionLink(alert.alert_type);
+                                    return (
                                     <li
                                         key={alert.id}
-                                        className="p-3 hover:bg-muted/50 cursor-pointer transition-colors"
-                                        onClick={() => handleAlertClick(alert.id)}
+                                        className="p-3 hover:bg-muted/50 transition-colors"
                                     >
-                                        <div className="flex justify-between items-start gap-2 mb-1">
-                                            <p className="text-sm font-medium leading-tight">{alert.message}</p>
+                                        <div
+                                            className="cursor-pointer"
+                                            onClick={() => handleAlertClick(alert.id)}
+                                        >
+                                            <p className="text-sm font-medium leading-tight mb-1">{alert.message}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
+                                            </p>
                                         </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
-                                        </p>
+                                        {actionLink && (
+                                            <button
+                                                onClick={() => {
+                                                    markAsReadMutation.mutate(alert.id);
+                                                    setIsOpen(false);
+                                                    navigate(actionLink.href);
+                                                }}
+                                                className="mt-1.5 text-xs text-primary hover:underline font-medium"
+                                            >
+                                                → {actionLink.label}
+                                            </button>
+                                        )}
                                     </li>
-                                ))}
+                                    );
+                                })}
                             </ul>
                         ) : (
                             <div className="p-6 text-center text-muted-foreground flex flex-col items-center gap-2">
