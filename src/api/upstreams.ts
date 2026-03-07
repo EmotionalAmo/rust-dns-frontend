@@ -60,6 +60,7 @@ export interface FailoverResult {
 export interface FailoverLogEntry {
   id: string;
   upstream_id: string;
+  upstream_name?: string;
   action: string;
   reason: string | null;
   timestamp: string;

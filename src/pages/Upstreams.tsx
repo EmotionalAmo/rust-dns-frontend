@@ -286,7 +286,7 @@ function FailoverLogPanel() {
               <TableHeader>
                 <TableRow>
                   <TableHead>{t('upstreams.failoverColTime')}</TableHead>
-                  <TableHead>{t('upstreams.failoverColUpstreamId')}</TableHead>
+                  <TableHead>{t('upstreams.failoverColUpstream')}</TableHead>
                   <TableHead>{t('upstreams.failoverColAction')}</TableHead>
                   <TableHead>{t('upstreams.failoverColReason')}</TableHead>
                 </TableRow>
@@ -297,7 +297,7 @@ function FailoverLogPanel() {
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {formatDateTime(log.timestamp)}
                     </TableCell>
-                    <TableCell className="font-mono text-xs">{log.upstream_id.slice(0, 8)}…</TableCell>
+                    <TableCell className="text-sm">{log.upstream_name ?? `${log.upstream_id.slice(0, 8)}…`}</TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">{log.action}</Badge>
                     </TableCell>

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { settingsApi, type DnsSettingsRecord, type UpdateDnsSettingsPayload } from '@/api/settings';
+import { settingsApi, type DnsSettingsRecord, type UpdateDnsSettingsPayload, type CacheStats } from '@/api/settings';
 import { formatDateTime } from '@/lib/datetime';
 import { upstreamsApi, type DnsUpstream, type CreateUpstreamRequest, type UpdateUpstreamRequest, type HealthCheckResult } from '@/api/upstreams';
 import { toast } from 'sonner';
@@ -189,6 +189,21 @@ export default function SettingsPage() {
   const { data: failoverLog } = useQuery({
     queryKey: ['failover-log'],
     queryFn: upstreamsApi.getFailoverLog,
+  });
+
+  const { data: cacheStats, refetch: refetchCache } = useQuery<CacheStats>({
+    queryKey: ['cache-stats'],
+    queryFn: settingsApi.getCacheStats,
+    refetchInterval: 30000,
+  });
+
+  const flushCacheMutation = useMutation({
+    mutationFn: settingsApi.flushCache,
+    onSuccess: () => {
+      toast.success(t('settings.cacheFlushSuccess'));
+      refetchCache();
+    },
+    onError: (e: Error) => toast.error(t('settings.cacheFlushError', { msg: e.message })),
   });
 
   // Local form state
@@ -421,6 +436,38 @@ export default function SettingsPage() {
                   <span className="text-sm text-muted-foreground">{t('common.seconds')}</span>
                 </div>
               </SettingRow>
+              {cacheStats && (
+                <div className="mt-4 pt-4 border-t space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{t('settings.cacheUsage')}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {t('settings.cacheUsageDesc', {
+                          count: cacheStats.entry_count,
+                          max: cacheStats.max_capacity,
+                          pct: cacheStats.usage_percent,
+                        })}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => flushCacheMutation.mutate()}
+                      disabled={flushCacheMutation.isPending}
+                    >
+                      {flushCacheMutation.isPending
+                        ? <><RefreshCw size={12} className="mr-1 animate-spin" />{t('common.loading')}</>
+                        : t('settings.cacheFlush')}
+                    </Button>
+                  </div>
+                  <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${Math.min(cacheStats.usage_percent, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

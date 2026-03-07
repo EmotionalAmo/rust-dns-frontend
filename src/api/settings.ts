@@ -1,5 +1,11 @@
 import apiClient from './client';
 
+export interface CacheStats {
+  entry_count: number;
+  max_capacity: number;
+  usage_percent: number;
+}
+
 export interface DnsSettingsRecord {
   upstreams: string[];
   cache_ttl: number;
@@ -29,7 +35,18 @@ async function updateDnsSettings(payload: UpdateDnsSettingsPayload): Promise<voi
   await apiClient.put('/api/v1/settings/dns', payload);
 }
 
+async function getCacheStats(): Promise<CacheStats> {
+  const response = await apiClient.get<CacheStats>('/api/v1/settings/cache');
+  return response.data;
+}
+
+async function flushCache(): Promise<void> {
+  await apiClient.delete('/api/v1/settings/cache');
+}
+
 export const settingsApi = {
   getDns: getDnsSettings,
   updateDns: updateDnsSettings,
+  getCacheStats,
+  flushCache,
 };
