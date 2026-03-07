@@ -477,6 +477,7 @@
     "colDomain": "Domain",
     "colType": "Type",
     "colStatus": "Status",
+    "colReason": "Reason",
     "colClient": "Client",
     "colLatency": "Latency",
     "colResponse": "Response",

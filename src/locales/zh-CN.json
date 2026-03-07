@@ -488,6 +488,7 @@
     "colDomain": "域名",
     "colType": "类型",
     "colStatus": "状态",
+    "colReason": "原因",
     "colClient": "客户端",
     "colLatency": "耗时",
     "colResponse": "响应",

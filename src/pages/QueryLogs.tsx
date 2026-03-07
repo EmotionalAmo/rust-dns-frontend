@@ -597,6 +597,7 @@ export default function QueryLogsPage() {
                       <TableHead>{t('queryLogs.colDomain')}</TableHead>
                       <TableHead>{t('queryLogs.colType')}</TableHead>
                       <TableHead>{t('queryLogs.colStatus')}</TableHead>
+                      <TableHead>{t('queryLogs.colReason')}</TableHead>
                       <TableHead>{t('queryLogs.colClient')}</TableHead>
                       <TableHead>{t('queryLogs.colResponse')}</TableHead>
                       <TableHead>{t('queryLogs.colUpstream')}</TableHead>
@@ -620,6 +621,16 @@ export default function QueryLogsPage() {
                         </TableCell>
                         <TableCell>
                           <StatusBadge status={log.status} />
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-[160px]">
+                          {log.reason ? (
+                            <span
+                              className="block truncate font-mono"
+                              title={log.reason}
+                            >
+                              {log.reason}
+                            </span>
+                          ) : '-'}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {log.client_ip || '-'}
