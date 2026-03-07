@@ -7,10 +7,12 @@ import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
 import { UpstreamDistributionChart } from '@/components/dashboard/UpstreamDistributionChart';
-import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen, Pencil, Check, X } from 'lucide-react';
+import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen, Pencil, Check, X, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { ruleStatsApi } from '@/api/ruleStats';
 import { upstreamsApi } from '@/api/upstreams';
 import { clientsApi } from '@/api/clients';
+import { alertsApi } from '@/api/alerts';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
 import { UpstreamHealthHistoryChart } from '@/components/dashboard/UpstreamHealthHistoryChart';
@@ -114,6 +116,16 @@ export default function DashboardPage() {
     queryFn: () => clientsApi.list(),
     staleTime: 30000,
   });
+
+  // Unread alert count for banner
+  const { data: unreadAlertsData } = useQuery({
+    queryKey: ['alerts', 'unread-count'],
+    queryFn: () => alertsApi.getAlerts({ is_read: false, page_size: 1 }),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+  const unreadAlertCount = unreadAlertsData?.total ?? 0;
+  const [showAlertBanner, setShowAlertBanner] = useState(true);
 
   // Inline naming state: which client IP is being edited
   const [editingClientIp, setEditingClientIp] = useState<string | null>(null);
@@ -277,6 +289,21 @@ export default function DashboardPage() {
           {t('dashboard.refreshStatus')}
         </button>
       </div>
+      {/* Alert Banner */}
+      {showAlertBanner && unreadAlertCount > 0 && (
+        <div className="flex items-center justify-between rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 px-4 py-2.5 text-sm">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+            <Bell className="h-4 w-4 shrink-0" />
+            <span>{t('dashboard.alertBanner', { count: unreadAlertCount })}</span>
+            <Link to="/alerts" className="underline font-medium hover:text-amber-900 dark:hover:text-amber-100">
+              {t('dashboard.alertBannerLink')}
+            </Link>
+          </div>
+          <button onClick={() => setShowAlertBanner(false)} className="text-amber-600 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-100 ml-4">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
       {/* 分组标题：网络概览 */}
       <div className="flex items-center gap-3">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sectionNetworkOverview')}</h3>
@@ -596,12 +623,13 @@ export default function DashboardPage() {
                       const maxCount = topClients[0]?.count ?? 1;
                       const pct = Math.round((entry.count / maxCount) * 100);
                       const blockRate = entry.block_rate ?? 0;
-                      const isAnomalous = avgBlockRate > 0 && blockRate > avgBlockRate * 2;
+                      const isWarning = avgBlockRate > 0 && blockRate > avgBlockRate * 1.5 && blockRate <= avgBlockRate * 2;
+                      const isDanger = avgBlockRate > 0 && blockRate > avgBlockRate * 2;
                       const clientRecord = clientsList.find(c => c.identifiers.includes(entry.client_ip));
                       const clientName = clientRecord?.name;
                       const isEditing = editingClientIp === entry.client_ip;
                       return (
-                        <div key={entry.client_ip} className="space-y-1">
+                        <div key={entry.client_ip} className="space-y-1 group">
                           <div className="flex items-center justify-between text-sm gap-2">
                             <div className="flex items-center gap-1 min-w-0">
                               <span className="text-muted-foreground shrink-0">{i + 1}.</span>
@@ -635,7 +663,7 @@ export default function DashboardPage() {
                               )}
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className={`text-xs font-medium ${isAnomalous ? 'text-destructive' : 'text-muted-foreground'}`}>
+                              <span className={`text-xs font-medium ${isDanger ? 'text-destructive' : isWarning ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'}`}>
                                 {blockRate.toFixed(1)}%
                               </span>
                               <span className="text-muted-foreground text-xs">{formatNumber(entry.count)}</span>
@@ -643,7 +671,7 @@ export default function DashboardPage() {
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${isAnomalous ? 'bg-destructive/60' : 'bg-primary/50'}`}
+                              className={`h-full rounded-full ${isDanger ? 'bg-destructive/60' : isWarning ? 'bg-amber-400/60' : 'bg-primary/50'}`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>

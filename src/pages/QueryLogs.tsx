@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { queryLogApi, type QueryLogListParams } from '@/api/queryLog';
@@ -111,15 +112,18 @@ function WsStatusBadge({ status }: { status: string }) {
 
 export default function QueryLogsPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
+  const initialClient = searchParams.get('client') ?? '';
   const [domainFilter, setDomainFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'blocked' | 'allowed' | 'all'>('all');
-  const [clientFilter, setClientFilter] = useState('');
+  const [clientFilter, setClientFilter] = useState(initialClient);
   const [upstreamFilter, setUpstreamFilter] = useState<string>('all');
   const [page, setPage] = useState(0);
-  const [appliedFilters, setAppliedFilters] = useState<QueryLogListParams>({
+  const [appliedFilters, setAppliedFilters] = useState<QueryLogListParams>(() => ({
     limit: PAGE_SIZE,
     offset: 0,
-  });
+    ...(initialClient ? { filters: [{ field: 'client_ip', operator: 'like' as const, value: initialClient }] } : {}),
+  }));
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 

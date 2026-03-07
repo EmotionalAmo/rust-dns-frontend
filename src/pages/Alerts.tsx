@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { alertsApi } from '@/api/alerts';
-import { Bell, BellRing, Check, Trash2 } from 'lucide-react';
+import { Bell, BellRing, Check, Trash2, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -166,6 +167,17 @@ export default function AlertsPage() {
                                             {t('alerts.typeLabel')} <span className="uppercase text-xs tracking-wider">{alert.alert_type}</span>
                                         </div>
                                     </div>
+                                    {alert.alert_type === 'high_frequency_block' && alert.client_id && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <Link
+                                                to={`/query-logs?client=${encodeURIComponent(alert.client_id)}`}
+                                                className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 border border-border rounded px-2 py-1 hover:bg-muted/50 transition-colors"
+                                            >
+                                                <FileText className="h-3 w-3" />
+                                                {t('alerts.viewQueryLogs', { client: alert.client_id })}
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="shrink-0 self-start sm:self-center ml-auto flex items-center gap-1">
