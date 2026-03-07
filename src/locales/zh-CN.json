@@ -679,7 +679,8 @@
     "notFound": "客户端不存在",
     "static": "静态",
     "dynamic": "动态",
-    "promoteToStatic": "转为静态客户端"
+    "promoteToStatic": "转为静态客户端",
+    "dynamicFilterDisabledTip": "动态客户端无法修改过滤设置，请先转为静态客户端"
   },
   "clientGroups": {
     "title": "客户端分组",

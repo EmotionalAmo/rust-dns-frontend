@@ -669,7 +669,8 @@
     "notFound": "Client not found",
     "static": "Static",
     "dynamic": "Dynamic",
-    "promoteToStatic": "Promote to Static"
+    "promoteToStatic": "Promote to Static",
+    "dynamicFilterDisabledTip": "Dynamic clients cannot change filter settings. Promote to static first."
   },
   "clientGroups": {
     "title": "Client Groups",

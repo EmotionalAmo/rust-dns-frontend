@@ -38,6 +38,12 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Plus, Edit2, RefreshCw, Monitor, X, BookmarkPlus } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface FormData {
   name: string;
@@ -357,13 +363,33 @@ export default function ClientsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={client.filter_enabled}
-                          disabled={client.is_static === false}
-                          onCheckedChange={(checked) =>
-                            toggleFilterMutation.mutate({ id: client.id, filter_enabled: checked })
-                          }
-                        />
+                        {client.is_static === false ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex">
+                                  <Switch
+                                    checked={client.filter_enabled}
+                                    disabled
+                                    onCheckedChange={(checked) =>
+                                      toggleFilterMutation.mutate({ id: client.id, filter_enabled: checked })
+                                    }
+                                  />
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{t('clients.dynamicFilterDisabledTip')}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        ) : (
+                          <Switch
+                            checked={client.filter_enabled}
+                            onCheckedChange={(checked) =>
+                              toggleFilterMutation.mutate({ id: client.id, filter_enabled: checked })
+                            }
+                          />
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
