@@ -37,7 +37,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Plus, Edit2, RefreshCw, Monitor, X } from 'lucide-react';
+import { Plus, Edit2, RefreshCw, Monitor, X, BookmarkPlus } from 'lucide-react';
 
 interface FormData {
   name: string;
@@ -209,6 +209,7 @@ export default function ClientsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ClientRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClientRecord | null>(null);
+  const [search, setSearch] = useState('');
 
   const { data: clients = [], isLoading, error, refetch } = useQuery({
     queryKey: ['clients'],
@@ -252,6 +253,12 @@ export default function ClientsPage() {
           <p className="text-sm text-muted-foreground">{t('clients.desc')}</p>
         </div>
         <div className="flex gap-2">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('clients.searchPlaceholder')}
+            className="w-[200px]"
+          />
           <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
             <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
           </Button>
@@ -278,7 +285,16 @@ export default function ClientsPage() {
               <p className="text-muted-foreground">{t('clients.loadError')}</p>
               <Button variant="outline" onClick={() => refetch()}>{t('common.retry')}</Button>
             </div>
-          ) : clients.length === 0 ? (
+          ) : (() => {
+            const filtered = clients.filter((c) => {
+              if (!search.trim()) return true;
+              const q = search.toLowerCase();
+              return (
+                c.name.toLowerCase().includes(q) ||
+                (c.identifiers ?? []).join(' ').toLowerCase().includes(q)
+              );
+            });
+            return filtered.length === 0 ? (
             <div className="flex flex-col items-center py-12 gap-4">
               <Monitor size={48} className="text-muted-foreground" />
               <div className="text-center">
@@ -300,12 +316,13 @@ export default function ClientsPage() {
                     <TableHead>{t('clients.colUpstreams')}</TableHead>
                     <TableHead>{t('clients.colFilter')}</TableHead>
                     <TableHead>{t('clients.colTags')}</TableHead>
+                    <TableHead>{t('clients.colQueries')}</TableHead>
                     <TableHead>{t('clients.colCreatedAt')}</TableHead>
                     <TableHead className="w-20">{t('clients.colActions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {clients.map((client) => (
+                  {filtered.map((client) => (
                     <TableRow key={client.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -358,6 +375,9 @@ export default function ClientsPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
+                        {client.query_count != null && client.query_count > 0 ? client.query_count : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
                         {formatDate(client.created_at)}
                       </TableCell>
                       <TableCell>
@@ -394,7 +414,7 @@ export default function ClientsPage() {
                                 setDialogOpen(true);
                               }}
                             >
-                              <Plus size={14} />
+                              <BookmarkPlus size={14} />
                             </Button>
                           </div>
                         )}
@@ -404,7 +424,8 @@ export default function ClientsPage() {
                 </TableBody>
               </Table>
             </div>
-          )}
+          );
+          })()}
         </CardContent>
       </Card>
 
