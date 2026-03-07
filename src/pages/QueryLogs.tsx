@@ -22,6 +22,8 @@ import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Dow
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
+import { ExportDialog } from '@/components/query-log/ExportDialog';
+import type { Filter } from '@/components/query-log/FilterRow';
 
 const PAGE_SIZE = 50;
 
@@ -118,8 +120,7 @@ export default function QueryLogsPage() {
     limit: PAGE_SIZE,
     offset: 0,
   });
-  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
-  const [isExporting, setIsExporting] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
   // New filter states
@@ -243,24 +244,14 @@ export default function QueryLogsPage() {
     setAppliedFilters(newFilters);
   };
 
-  const handleExport = async () => {
-    setIsExporting(true);
-    try {
-      const blob = await queryLogApi.export({ format: exportFormat });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `query-logs-${new Date().toISOString().slice(0, 10)}.${exportFormat}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error: unknown) {
-      console.error('Export failed:', error);
-      toast.error(t('queryLogs.exportError'));
-    } finally {
-      setIsExporting(false);
-    }
+  const buildExportFilters = (): Filter[] => {
+    const filters: Filter[] = [];
+    if (appliedFilters.domain) filters.push({ field: 'question', operator: 'like', value: appliedFilters.domain });
+    if (appliedFilters.status) filters.push({ field: 'status', operator: 'eq', value: appliedFilters.status });
+    if (appliedFilters.client) filters.push({ field: 'client_ip', operator: 'like', value: appliedFilters.client });
+    if (appliedFilters.upstream) filters.push({ field: 'upstream', operator: 'eq', value: appliedFilters.upstream });
+    if (appliedFilters.qtype) filters.push({ field: 'qtype', operator: 'eq', value: appliedFilters.qtype });
+    return filters;
   };
 
   const handleQuickRule = async (domain: string, type: 'block' | 'allow') => {
@@ -461,29 +452,16 @@ export default function QueryLogsPage() {
             </form>
 
             {/* 导出按钮 */}
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-muted-foreground whitespace-nowrap">{t('queryLogs.exportFormat')}</label>
-              <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as 'csv' | 'json')}>
-                <SelectTrigger className="h-9 w-24">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="csv">CSV</SelectItem>
-                  <SelectItem value="json">JSON</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9"
-                onClick={handleExport}
-                disabled={isExporting}
-              >
-                <Download size={14} className="mr-1" />
-                {isExporting ? t('common.exporting') : t('common.export')}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9"
+              onClick={() => setShowExportDialog(true)}
+            >
+              <Download size={14} className="mr-1" />
+              {t('common.export')}
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -720,6 +698,13 @@ export default function QueryLogsPage() {
           )}
         </CardContent>
       </Card>
+
+      <ExportDialog
+        isOpen={showExportDialog}
+        onClose={() => setShowExportDialog(false)}
+        filters={buildExportFilters()}
+        estimatedCount={total}
+      />
     </div>
   );
 }
