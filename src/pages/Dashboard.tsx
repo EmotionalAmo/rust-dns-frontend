@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,12 +7,14 @@ import { dashboardApi } from '@/api/dashboard';
 import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { UpstreamTrendChart } from '@/components/dashboard/UpstreamTrendChart';
 import { UpstreamDistributionChart } from '@/components/dashboard/UpstreamDistributionChart';
-import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen } from 'lucide-react';
+import { Activity, Shield, Database, Server, Filter, Settings, TrendingUp, TrendingDown, Minus, Wifi, List, Eye, Users, RefreshCw, Globe, BookOpen, Pencil, Check, X } from 'lucide-react';
 import { ruleStatsApi } from '@/api/ruleStats';
 import { upstreamsApi } from '@/api/upstreams';
+import { clientsApi } from '@/api/clients';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
 import { UpstreamHealthHistoryChart } from '@/components/dashboard/UpstreamHealthHistoryChart';
+import { toast } from 'sonner';
 import { LatencyTrendChart } from '@/components/dashboard/LatencyTrendChart';
 
 /**
@@ -104,6 +106,36 @@ export default function DashboardPage() {
     queryFn: () => dashboardApi.getTopClients(hours),
     refetchInterval: 30000,
     staleTime: 20000,
+  });
+
+  // Fetch clients list for name lookup and inline naming
+  const { data: clientsList = [] } = useQuery({
+    queryKey: ['clients', 'list'],
+    queryFn: () => clientsApi.list(),
+    staleTime: 30000,
+  });
+
+  // Inline naming state: which client IP is being edited
+  const [editingClientIp, setEditingClientIp] = useState<string | null>(null);
+  const [editingClientName, setEditingClientName] = useState('');
+
+  const saveClientNameMutation = useMutation({
+    mutationFn: async ({ ip, name }: { ip: string; name: string }) => {
+      const existing = clientsList.find(c => c.identifiers.includes(ip));
+      if (existing) {
+        return clientsApi.update(existing.id, { name });
+      } else {
+        return clientsApi.create({ name, identifiers: [ip] });
+      }
+    },
+    onSuccess: () => {
+      toast.success('客户端已命名');
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      setEditingClientIp(null);
+    },
+    onError: () => {
+      toast.error('命名失败');
+    },
   });
 
   // Fetch upstream trend data
@@ -245,6 +277,11 @@ export default function DashboardPage() {
           {t('dashboard.refreshStatus')}
         </button>
       </div>
+      {/* 分组标题：网络概览 */}
+      <div className="flex items-center gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sectionNetworkOverview')}</h3>
+        <div className="flex-1 h-px bg-border" />
+      </div>
       {/* Network Health Summary Card */}
       <NetworkHealthCard
         stats={stats}
@@ -264,6 +301,11 @@ export default function DashboardPage() {
           <LatencyTrendChart data={latencyTrendData} isLoading={latencyTrendLoading} />
         </CardContent>
       </Card>
+      {/* 分组标题：查询统计 */}
+      <div className="flex items-center gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sectionQueryStats')}</h3>
+        <div className="flex-1 h-px bg-border" />
+      </div>
       {/* Zero-traffic onboarding guide */}
       {showOnboarding && (
         <Card className="border-blue-200 bg-blue-50">
@@ -475,6 +517,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
+      {/* 分组标题：Top 榜单 */}
+      <div className="flex items-center gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sectionTopLists')}</h3>
+        <div className="flex-1 h-px bg-border" />
+      </div>
       {/* Top 10 Row */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Top 10 Blocked Domains */}
@@ -541,31 +588,72 @@ export default function DashboardPage() {
               </div>
             ) : topClients.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">{t('dashboard.noClientData')}</p>
-            ) : (
-              <div className="space-y-2">
-                {topClients.map((entry, i) => {
-                  const maxCount = topClients[0]?.count ?? 1;
-                  const pct = Math.round((entry.count / maxCount) * 100);
-                  return (
-                    <div key={entry.client_ip} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-mono text-xs">
-                          <span className="text-muted-foreground mr-1.5">{i + 1}.</span>
-                          {entry.client_ip}
-                        </span>
-                        <span className="text-muted-foreground shrink-0 ml-2">{formatNumber(entry.count)}</span>
-                      </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-primary/50"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            ) : (() => {
+                const avgBlockRate = topClients.reduce((s, c) => s + (c.block_rate ?? 0), 0) / topClients.length;
+                return (
+                  <div className="space-y-2">
+                    {topClients.map((entry, i) => {
+                      const maxCount = topClients[0]?.count ?? 1;
+                      const pct = Math.round((entry.count / maxCount) * 100);
+                      const blockRate = entry.block_rate ?? 0;
+                      const isAnomalous = avgBlockRate > 0 && blockRate > avgBlockRate * 2;
+                      const clientRecord = clientsList.find(c => c.identifiers.includes(entry.client_ip));
+                      const clientName = clientRecord?.name;
+                      const isEditing = editingClientIp === entry.client_ip;
+                      return (
+                        <div key={entry.client_ip} className="space-y-1">
+                          <div className="flex items-center justify-between text-sm gap-2">
+                            <div className="flex items-center gap-1 min-w-0">
+                              <span className="text-muted-foreground shrink-0">{i + 1}.</span>
+                              {isEditing ? (
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    autoFocus
+                                    className="h-5 text-xs border rounded px-1 w-28 bg-background"
+                                    value={editingClientName}
+                                    onChange={e => setEditingClientName(e.target.value)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') saveClientNameMutation.mutate({ ip: entry.client_ip, name: editingClientName });
+                                      if (e.key === 'Escape') setEditingClientIp(null);
+                                    }}
+                                  />
+                                  <button onClick={() => saveClientNameMutation.mutate({ ip: entry.client_ip, name: editingClientName })} className="text-primary hover:text-primary/80"><Check className="h-3 w-3" /></button>
+                                  <button onClick={() => setEditingClientIp(null)} className="text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <span className="font-mono text-xs truncate" title={entry.client_ip}>{entry.client_ip}</span>
+                                  {clientName && <span className="text-xs text-muted-foreground truncate">({clientName})</span>}
+                                  <button
+                                    onClick={() => { setEditingClientIp(entry.client_ip); setEditingClientName(clientName ?? ''); }}
+                                    className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 shrink-0"
+                                    title="命名客户端"
+                                  >
+                                    <Pencil className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className={`text-xs font-medium ${isAnomalous ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                {blockRate.toFixed(1)}%
+                              </span>
+                              <span className="text-muted-foreground text-xs">{formatNumber(entry.count)}</span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${isAnomalous ? 'bg-destructive/60' : 'bg-primary/50'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()
+            }
           </CardContent>
         </Card>
       </div>
@@ -666,6 +754,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      {/* 分组标题：上游分析 */}
+      <div className="flex items-center gap-3">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{t('dashboard.sectionUpstreamAnalysis')}</h3>
+        <div className="flex-1 h-px bg-border" />
+      </div>
       {/* Upstream Health History */}
       <Card>
         <CardHeader>

@@ -221,7 +221,11 @@
     "latencyTrendNoData": "该时间段内无延迟数据",
     "upstreamHealthHistory": "上游可用性历史",
     "upstreamHealthHistoryDesc": "{{timeRange}} 内各上游成功率（%）",
-    "upstreamHealthNoData": "本时段内无健康检查数据"
+    "upstreamHealthNoData": "本时段内无健康检查数据",
+    "sectionNetworkOverview": "网络概览",
+    "sectionQueryStats": "查询统计",
+    "sectionTopLists": "Top 榜单",
+    "sectionUpstreamAnalysis": "上游分析"
   },
   "rules": {
     "title": "规则列表",
@@ -680,8 +684,8 @@
     "updateError": "更新失败: {{msg}}",
     "deleteError": "删除失败: {{msg}}",
     "notFound": "客户端不存在",
-    "static": "静态",
-    "dynamic": "动态",
+    "static": "已配置",
+    "dynamic": "自动发现",
     "promoteToStatic": "转为静态客户端",
     "dynamicFilterDisabledTip": "动态客户端无法修改过滤设置，请先转为静态客户端"
   },

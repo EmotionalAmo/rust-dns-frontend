@@ -221,7 +221,11 @@
     "latencyTrendNoData": "No latency data in this period",
     "upstreamHealthHistory": "Upstream Availability History",
     "upstreamHealthHistoryDesc": "Per-upstream success rate (%) in {{timeRange}}",
-    "upstreamHealthNoData": "No health check data in this period"
+    "upstreamHealthNoData": "No health check data in this period",
+    "sectionNetworkOverview": "Network Overview",
+    "sectionQueryStats": "Query Statistics",
+    "sectionTopLists": "Top Lists",
+    "sectionUpstreamAnalysis": "Upstream Analysis"
   },
   "rules": {
     "title": "Rules",
@@ -670,8 +674,8 @@
     "updateError": "Update failed: {{msg}}",
     "deleteError": "Delete failed: {{msg}}",
     "notFound": "Client not found",
-    "static": "Static",
-    "dynamic": "Dynamic",
+    "static": "Configured",
+    "dynamic": "Auto-discovered",
     "promoteToStatic": "Promote to Static",
     "dynamicFilterDisabledTip": "Dynamic clients cannot change filter settings. Promote to static first."
   },
