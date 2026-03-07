@@ -213,6 +213,9 @@
     "latencyNoData": "Insufficient data",
     "latencyNoDataDesc": "Need more queries to compute latency stats",
     "latencySampleCount": "{{count}} samples",
+    "latencyTrend": "Response Latency Trend",
+    "latencyTrendDesc": "P50 / P95 trend in {{timeRange}}",
+    "latencyTrendNoData": "No latency data in this period",
     "upstreamHealthHistory": "Upstream Availability History",
     "upstreamHealthHistoryDesc": "Per-upstream success rate (%) in {{timeRange}}",
     "upstreamHealthNoData": "No health check data in this period"

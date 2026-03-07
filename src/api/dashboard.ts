@@ -2,6 +2,7 @@ import { apiClient, type DashboardStats } from './';
 import type { QueryTrendData } from '@/components/dashboard/QueryTrendChart';
 import type { UpstreamTrendData } from '@/components/dashboard/UpstreamTrendChart';
 import type { UpstreamHealthHistoryData } from '@/components/dashboard/UpstreamHealthHistoryChart';
+import type { LatencyTrendData } from '@/components/dashboard/LatencyTrendChart';
 import type { TopDomainEntry, TopClientEntry } from './types';
 
 /**
@@ -109,6 +110,16 @@ export async function getUpstreamHealthHistory(hours = 24): Promise<{
   return response.data;
 }
 
+/**
+ * Get latency trend (P50/P95 per time bucket) for past N hours
+ */
+export async function getLatencyTrend(hours = 24): Promise<LatencyTrendData[]> {
+  const response = await apiClient.get<LatencyTrendData[]>(
+    `/api/v1/dashboard/latency-trend?hours=${hours}`
+  );
+  return response.data;
+}
+
 // Export API object
 export const dashboardApi = {
   getStats: getDashboardStats,
@@ -119,4 +130,5 @@ export const dashboardApi = {
   getUpstreamTrend,
   getUpstreamDistribution,
   getUpstreamHealthHistory,
+  getLatencyTrend,
 };

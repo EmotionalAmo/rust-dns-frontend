@@ -13,6 +13,7 @@ import { upstreamsApi } from '@/api/upstreams';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
 import { UpstreamHealthHistoryChart } from '@/components/dashboard/UpstreamHealthHistoryChart';
+import { LatencyTrendChart } from '@/components/dashboard/LatencyTrendChart';
 
 /**
  * Get time range label in Chinese or English based on hours
@@ -145,6 +146,14 @@ export default function DashboardPage() {
     staleTime: 20000,
   });
 
+  // Fetch latency trend (P50/P95 over time)
+  const { data: latencyTrendData = [], isLoading: latencyTrendLoading } = useQuery({
+    queryKey: ['dashboard', 'latency-trend', hours],
+    queryFn: () => dashboardApi.getLatencyTrend(hours),
+    refetchInterval: 30000,
+    staleTime: 20000,
+  });
+
   // Fetch upstream health history (availability % over time)
   const { data: upstreamHealthResponse, isLoading: upstreamHealthLoading } = useQuery({
     queryKey: ['dashboard', 'upstream-health-history', hours],
@@ -245,6 +254,16 @@ export default function DashboardPage() {
       />
       {/* Latency Stats Card */}
       <LatencyStatsCard hours={hours} />
+      {/* Latency Trend Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('dashboard.latencyTrend')}</CardTitle>
+          <CardDescription>{t('dashboard.latencyTrendDesc', { timeRange: timeRangeLabel })}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LatencyTrendChart data={latencyTrendData} isLoading={latencyTrendLoading} />
+        </CardContent>
+      </Card>
       {/* Zero-traffic onboarding guide */}
       {showOnboarding && (
         <Card className="border-blue-200 bg-blue-50">

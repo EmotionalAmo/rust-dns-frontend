@@ -213,6 +213,9 @@
     "latencyNoData": "数据不足",
     "latencyNoDataDesc": "需要更多查询才能计算延迟统计",
     "latencySampleCount": "{{count}} 个样本",
+    "latencyTrend": "响应延迟趋势",
+    "latencyTrendDesc": "{{timeRange}} 内 P50 / P95 趋势",
+    "latencyTrendNoData": "该时间段内无延迟数据",
     "upstreamHealthHistory": "上游可用性历史",
     "upstreamHealthHistoryDesc": "{{timeRange}} 内各上游成功率（%）",
     "upstreamHealthNoData": "本时段内无健康检查数据"
