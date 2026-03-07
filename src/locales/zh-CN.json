@@ -649,7 +649,7 @@
     "colFilter": "过滤",
     "colTags": "标签",
     "colQueries": "查询数",
-    "colCreatedAt": "创建时间",
+    "colLastActive": "最近活跃",
     "colActions": "操作",
     "searchPlaceholder": "搜索客户端...",
     "defaultUpstream": "默认",

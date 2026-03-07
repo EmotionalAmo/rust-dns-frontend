@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsApi, type ClientRecord, type CreateClientPayload } from '@/api/clients';
-import { formatDateTimeShort } from '@/lib/datetime';
+import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import {
@@ -207,7 +207,6 @@ function ClientDialog({
   );
 }
 
-const formatDate = formatDateTimeShort;
 
 export default function ClientsPage() {
   const { t } = useTranslation();
@@ -323,7 +322,7 @@ export default function ClientsPage() {
                     <TableHead>{t('clients.colFilter')}</TableHead>
                     <TableHead>{t('clients.colTags')}</TableHead>
                     <TableHead>{t('clients.colQueries')}</TableHead>
-                    <TableHead>{t('clients.colCreatedAt')}</TableHead>
+                    <TableHead>{t('clients.colLastActive')}</TableHead>
                     <TableHead className="w-20">{t('clients.colActions')}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -404,7 +403,7 @@ export default function ClientsPage() {
                         {client.query_count != null && client.query_count > 0 ? client.query_count : '-'}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {formatDate(client.created_at)}
+                        {formatDistanceToNow(new Date(client.updated_at), { addSuffix: true })}
                       </TableCell>
                       <TableCell>
                         {client.is_static !== false ? (

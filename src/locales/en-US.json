@@ -639,7 +639,7 @@
     "colFilter": "Filter",
     "colTags": "Tags",
     "colQueries": "Queries",
-    "colCreatedAt": "Created At",
+    "colLastActive": "Last Active",
     "colActions": "Actions",
     "searchPlaceholder": "Search clients...",
     "defaultUpstream": "Default",
