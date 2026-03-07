@@ -950,6 +950,9 @@
     "resultsDesc": "共 {{count}} 个域名",
     "noResults": "没有返回结果",
     "addWhitelist": "加入白名单",
-    "addBlacklist": "加入黑名单"
+    "addBlacklist": "加入黑名单",
+    "addedWhitelist": "{{domain}} 已加入白名单",
+    "addedBlacklist": "{{domain}} 已加入黑名单",
+    "addError": "操作失败，请重试"
   }
 }

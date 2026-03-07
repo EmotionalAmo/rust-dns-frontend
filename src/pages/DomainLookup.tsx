@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { domainCheckApi } from '@/api/domainCheck';
 import type { DomainCheckResult } from '@/api/domainCheck';
+import { rulesApi } from '@/api/rules';
+import { toast } from 'sonner';
 import { Search, Globe, ArrowRight, ShieldOff, ShieldCheck } from 'lucide-react';
 
 export default function DomainLookupPage() {
@@ -14,6 +16,7 @@ export default function DomainLookupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [addingRules, setAddingRules] = useState<Set<string>>(new Set());
 
   const handleCheck = async () => {
     const domains = input
@@ -44,6 +47,20 @@ export default function DomainLookupPage() {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       handleCheck();
+    }
+  };
+
+  const handleAddRule = async (domain: string, isWhitelist: boolean) => {
+    const key = `${domain}:${isWhitelist ? 'white' : 'black'}`;
+    setAddingRules(prev => new Set(prev).add(key));
+    try {
+      const rule = isWhitelist ? `@@||${domain}^` : `||${domain}^`;
+      await rulesApi.createRule({ rule, comment: 'Added from domain lookup' });
+      toast.success(t(isWhitelist ? 'domainLookup.addedWhitelist' : 'domainLookup.addedBlacklist', { domain }));
+    } catch {
+      toast.error(t('domainLookup.addError'));
+    } finally {
+      setAddingRules(prev => { const s = new Set(prev); s.delete(key); return s; });
     }
   };
 
@@ -126,7 +143,13 @@ export default function DomainLookupPage() {
                   <div className="flex items-center gap-2 shrink-0 ml-4">
                     {getActionBadge(result)}
                     <div className="flex gap-1.5">
-                      <Button variant="outline" size="sm" className="h-7 text-xs">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        disabled={addingRules.has(`${result.domain}:${result.blocked ? 'white' : 'black'}`)}
+                        onClick={() => handleAddRule(result.domain, result.blocked)}
+                      >
                         <Globe className="h-3 w-3 mr-1" />
                         {result.blocked ? t('domainLookup.addWhitelist') : t('domainLookup.addBlacklist')}
                       </Button>

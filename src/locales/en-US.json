@@ -940,6 +940,9 @@
     "resultsDesc": "{{count}} domain(s) checked",
     "noResults": "No results returned",
     "addWhitelist": "Add to Whitelist",
-    "addBlacklist": "Add to Blacklist"
+    "addBlacklist": "Add to Blacklist",
+    "addedWhitelist": "{{domain}} added to whitelist",
+    "addedBlacklist": "{{domain}} added to blacklist",
+    "addError": "Failed to add rule, please try again"
   }
 }
