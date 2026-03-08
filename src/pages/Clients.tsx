@@ -49,6 +49,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Plus, Edit2, RefreshCw, Monitor, X, BookmarkPlus, BarChart2 } from 'lucide-react';
 import { ClientSparkline } from '@/components/ClientSparkline';
+import { ClientDetailSheet } from '@/components/ClientDetailSheet';
 import {
   Tooltip,
   TooltipContent,
@@ -341,6 +342,8 @@ export default function ClientsPage() {
   const [editing, setEditing] = useState<ClientRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClientRecord | null>(null);
   const [activityClient, setActivityClient] = useState<ClientRecord | null>(null);
+  const [clientSheetIp, setClientSheetIp] = useState<string | null>(null);
+  const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [search, setSearch] = useState('');
 
   const { data: clients = [], isLoading, error, refetch } = useQuery({
@@ -459,7 +462,18 @@ export default function ClientsPage() {
                     <TableRow key={client.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          {client.name}
+                          <button
+                            className="hover:underline text-left cursor-pointer"
+                            onClick={() => {
+                              const ip = (client.identifiers ?? [])[0] ?? null;
+                              if (ip) {
+                                setClientSheetIp(ip);
+                                setClientSheetOpen(true);
+                              }
+                            }}
+                          >
+                            {client.name}
+                          </button>
                           {client.is_static !== false ? (
                             <Badge variant="secondary" className="text-[10px] h-4 px-1 rounded-sm">{t('clients.static') || 'Static'}</Badge>
                           ) : (
@@ -649,6 +663,13 @@ export default function ClientsPage() {
           onClose={() => setActivityClient(null)}
         />
       )}
+
+      {/* 客户端详情侧边栏 */}
+      <ClientDetailSheet
+        ip={clientSheetIp}
+        open={clientSheetOpen}
+        onOpenChange={setClientSheetOpen}
+      />
     </div>
   );
 }
