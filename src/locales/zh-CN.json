@@ -913,7 +913,13 @@
     "anomaly_all_normal": "所有设备请求量正常",
     "anomaly_current": "当前",
     "anomaly_avg": "均值",
-    "anomaly_sigma": "偏差"
+    "anomaly_sigma": "偏差",
+    "anomaly_register": "注册管控",
+    "anomaly_register_loading": "注册中...",
+    "anomaly_registered": "设备 {{ip}} 已注册为管控设备",
+    "anomaly_register_failed": "注册失败",
+    "anomaly_already_managed": "已管控",
+    "anomaly_viewClients": "前往设备页面"
   },
   "alerts": {
     "title": "威胁告警中心",
@@ -936,7 +942,10 @@
     "deleteAlert": "删除",
     "deleteSuccess": "告警已删除",
     "filterAll": "全部类型",
-    "filterType": "类型"
+    "filterType": "类型",
+    "registerDevice": "注册管控",
+    "registerDeviceSuccess": "设备已注册为管控设备",
+    "registerDeviceFailed": "注册失败"
   },
   "auditLog": {
     "title": "审计日志",

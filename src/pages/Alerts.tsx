@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { alertsApi } from '@/api/alerts';
-import { Bell, BellRing, Check, Trash2, FileText } from 'lucide-react';
+import { clientsApi } from '@/api/clients';
+import { Bell, BellRing, Check, Trash2, FileText, ShieldCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -12,9 +13,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 export default function AlertsPage() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [page, setPage] = useState(1);
     const [filterType, setFilterType] = useState<string>('all');
     const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+    const [registeringAlertIds, setRegisteringAlertIds] = useState<Set<string>>(new Set());
+    const [registeredAlertIds, setRegisteredAlertIds] = useState<Set<string>>(new Set());
     const pageSize = 20;
     const queryClient = useQueryClient();
 
@@ -50,6 +54,41 @@ export default function AlertsPage() {
             queryClient.invalidateQueries({ queryKey: ['alerts'] });
         },
     });
+
+    const registerDeviceMutation = useMutation({
+        mutationFn: ({ ip }: { ip: string }) =>
+            clientsApi.create({ name: ip, identifiers: [ip], filter_enabled: true }),
+        onSuccess: (_, { ip: _ip }) => {
+            toast.success(t('alerts.registerDeviceSuccess'), {
+                action: {
+                    label: t('insights.anomaly_viewClients'),
+                    onClick: () => navigate('/clients'),
+                },
+            });
+        },
+        onError: () => {
+            toast.error(t('alerts.registerDeviceFailed'));
+        },
+    });
+
+    function handleRegisterDevice(alertId: string, ip: string) {
+        setRegisteringAlertIds((prev) => new Set(prev).add(alertId));
+        registerDeviceMutation.mutate(
+            { ip },
+            {
+                onSettled: () => {
+                    setRegisteringAlertIds((prev) => {
+                        const next = new Set(prev);
+                        next.delete(alertId);
+                        return next;
+                    });
+                },
+                onSuccess: () => {
+                    setRegisteredAlertIds((prev) => new Set(prev).add(alertId));
+                },
+            },
+        );
+    }
 
     const alerts = data?.data || [];
 
@@ -187,6 +226,25 @@ export default function AlertsPage() {
                                                 <FileText className="h-3 w-3" />
                                                 {t('alerts.viewInsights')}
                                             </Link>
+                                            {alert.client_id && (
+                                                registeredAlertIds.has(alert.id) ? (
+                                                    <span className="inline-flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700 rounded px-2 py-1 bg-green-50 dark:bg-green-950/30">
+                                                        <ShieldCheck className="h-3 w-3" />
+                                                        {t('insights.anomaly_already_managed')}
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleRegisterDevice(alert.id, alert.client_id!)}
+                                                        disabled={registeringAlertIds.has(alert.id)}
+                                                        className="inline-flex items-center gap-1.5 text-xs text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-700 rounded px-2 py-1 hover:bg-orange-50 dark:hover:bg-orange-950/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                    >
+                                                        <ShieldCheck className="h-3 w-3" />
+                                                        {registeringAlertIds.has(alert.id)
+                                                            ? t('insights.anomaly_register_loading')
+                                                            : t('alerts.registerDevice')}
+                                                    </button>
+                                                )
+                                            )}
                                         </div>
                                     )}
                                 </div>

@@ -1,11 +1,14 @@
 import { Fragment, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { insightsApi, type AppStatEntry, type DomainStatEntry, type AnomalyEntry } from '@/api/insights';
 import { dashboardApi } from '@/api/dashboard';
+import { clientsApi } from '@/api/clients';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const TIME_RANGES = [
@@ -111,6 +114,9 @@ function DomainSortIcon({ col, sortKey, sortDir }: { col: DomainSortKey; sortKey
 
 function AnomalyBanner() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [registeringIps, setRegisteringIps] = useState<Set<string>>(new Set());
+  const [registeredIps, setRegisteredIps] = useState<Set<string>>(new Set());
 
   const { data: anomalies = [] } = useQuery<AnomalyEntry[]>({
     queryKey: ['insights', 'anomalies'],
@@ -119,6 +125,28 @@ function AnomalyBanner() {
     refetchInterval: 60_000,
     retry: false,
   });
+
+  async function handleRegister(ip: string) {
+    setRegisteringIps((prev) => new Set(prev).add(ip));
+    try {
+      await clientsApi.create({ name: ip, identifiers: [ip], filter_enabled: true });
+      setRegisteredIps((prev) => new Set(prev).add(ip));
+      toast.success(t('insights.anomaly_registered', { ip }), {
+        action: {
+          label: t('insights.anomaly_viewClients'),
+          onClick: () => navigate('/clients'),
+        },
+      });
+    } catch {
+      toast.error(t('insights.anomaly_register_failed'));
+    } finally {
+      setRegisteringIps((prev) => {
+        const next = new Set(prev);
+        next.delete(ip);
+        return next;
+      });
+    }
+  }
 
   if (anomalies.length === 0) {
     return (
@@ -161,6 +189,23 @@ function AnomalyBanner() {
                   {t('insights.anomaly_sigma')}:{' '}
                   <span className="font-semibold tabular-nums">+{entry.sigma.toFixed(1)}σ</span>
                 </span>
+                {registeredIps.has(entry.client_ip) ? (
+                  <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700 rounded px-2 py-0.5 bg-green-50 dark:bg-green-950/30">
+                    <ShieldCheck className="h-3 w-3" />
+                    {t('insights.anomaly_already_managed')}
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleRegister(entry.client_ip)}
+                    disabled={registeringIps.has(entry.client_ip)}
+                    className="inline-flex items-center gap-1 text-xs text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700 rounded px-2 py-0.5 hover:bg-orange-100 dark:hover:bg-orange-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ShieldCheck className="h-3 w-3" />
+                    {registeringIps.has(entry.client_ip)
+                      ? t('insights.anomaly_register_loading')
+                      : t('insights.anomaly_register')}
+                  </button>
+                )}
               </div>
             ))}
           </div>

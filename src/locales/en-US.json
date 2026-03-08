@@ -903,7 +903,13 @@
     "anomaly_all_normal": "All devices within normal range",
     "anomaly_current": "Current",
     "anomaly_avg": "Avg",
-    "anomaly_sigma": "Deviation"
+    "anomaly_sigma": "Deviation",
+    "anomaly_register": "Register Device",
+    "anomaly_register_loading": "Registering...",
+    "anomaly_registered": "Device {{ip}} registered as managed client",
+    "anomaly_register_failed": "Failed to register device",
+    "anomaly_already_managed": "Managed",
+    "anomaly_viewClients": "Go to Clients"
   },
   "alerts": {
     "title": "Threat Alerts Center",
@@ -926,7 +932,10 @@
     "deleteAlert": "Delete",
     "deleteSuccess": "Alert deleted",
     "filterAll": "All Types",
-    "filterType": "Type"
+    "filterType": "Type",
+    "registerDevice": "Register Device",
+    "registerDeviceSuccess": "Device registered as managed client",
+    "registerDeviceFailed": "Failed to register device"
   },
   "auditLog": {
     "title": "Audit Log",
