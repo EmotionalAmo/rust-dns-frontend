@@ -678,6 +678,7 @@
     "colFilter": "Filter",
     "colTags": "Tags",
     "colQueries": "Queries",
+    "colTrend": "Trend",
     "colLastActive": "Last Active",
     "colActions": "Actions",
     "searchPlaceholder": "Search clients...",

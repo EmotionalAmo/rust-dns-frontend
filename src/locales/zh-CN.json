@@ -688,6 +688,7 @@
     "colFilter": "过滤",
     "colTags": "标签",
     "colQueries": "查询数",
+    "colTrend": "趋势",
     "colLastActive": "最近活跃",
     "colActions": "操作",
     "searchPlaceholder": "搜索客户端...",

@@ -48,6 +48,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Plus, Edit2, RefreshCw, Monitor, X, BookmarkPlus, BarChart2 } from 'lucide-react';
+import { ClientSparkline } from '@/components/ClientSparkline';
 import {
   Tooltip,
   TooltipContent,
@@ -448,6 +449,7 @@ export default function ClientsPage() {
                     <TableHead>{t('clients.colFilter')}</TableHead>
                     <TableHead>{t('clients.colTags')}</TableHead>
                     <TableHead>{t('clients.colQueries')}</TableHead>
+                    <TableHead>{t('clients.colTrend')}</TableHead>
                     <TableHead>{t('clients.colLastActive')}</TableHead>
                     <TableHead className="w-20">{t('clients.colActions')}</TableHead>
                   </TableRow>
@@ -532,6 +534,11 @@ export default function ClientsPage() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {client.query_count != null && client.query_count > 0 ? client.query_count : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {client.query_count != null && client.query_count > 0
+                          ? <ClientSparkline clientId={client.id} />
+                          : <span className="text-xs text-muted-foreground">-</span>}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {client.query_count != null && client.query_count > 0
