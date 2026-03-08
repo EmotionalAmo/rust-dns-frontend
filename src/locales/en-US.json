@@ -795,7 +795,12 @@
     "moveError": "Move failed: {{msg}}",
     "removeError": "Remove failed: {{msg}}",
     "bindError": "Bind failed: {{msg}}",
-    "unbindError": "Unbind failed: {{msg}}"
+    "unbindError": "Unbind failed: {{msg}}",
+    "quarantineBadge": "Quarantine",
+    "quarantineWarning": "This group is the system quarantine zone, blocking all DNS queries from anomalous devices.",
+    "quarantineDeleteWarning": "⚠️ Warning: This is the system quarantine zone! Deleting it will restore normal network access for all quarantined devices.",
+    "quarantineDeleteExtra": "Recommended: Remove members from the group instead of deleting the group itself.",
+    "quarantineCannotDelete": "Quarantine zone cannot be deleted"
   },
   "upstreams": {
     "title": "Upstream DNS Management",

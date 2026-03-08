@@ -6,6 +6,8 @@ import { clientsApi, type ClientRecord } from '@/api/clients';
 import { rulesApi } from '@/api/rules';
 import { rewritesApi } from '@/api/rewrites';
 import { GroupTree } from '@/components/GroupTree';
+
+const QUARANTINE_GROUP_NAME = '隔离区';
 import { ClientList } from '@/components/ClientList';
 import { GroupRulesPanel } from '@/components/GroupRulesPanel';
 import { Button } from '@/components/ui/button';
@@ -368,9 +370,21 @@ export default function ClientGroupsPage() {
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
           {selectedGroup ? (
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'clients' | 'rules')} className="flex-1 flex flex-col min-h-0">
-              <div className="border-b px-6 py-4 shrink-0">
-                <h1 className="text-2xl font-bold">{selectedGroup.name}</h1>
+              <div className={cn('border-b px-6 py-4 shrink-0', selectedGroup.name === QUARANTINE_GROUP_NAME && 'border-red-200 bg-red-50/30 dark:border-red-900 dark:bg-red-950/10')}>
+                <div className="flex items-center gap-2">
+                  <h1 className={cn('text-2xl font-bold', selectedGroup.name === QUARANTINE_GROUP_NAME && 'text-red-600 dark:text-red-400')}>{selectedGroup.name}</h1>
+                  {selectedGroup.name === QUARANTINE_GROUP_NAME && (
+                    <Badge className="bg-red-100 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800">
+                      {t('clientGroups.quarantineBadge')}
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground">{selectedGroup.description}</p>
+                {selectedGroup.name === QUARANTINE_GROUP_NAME && (
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {t('clientGroups.quarantineWarning')}
+                  </p>
+                )}
                 <div className="flex items-center gap-4 mt-2">
                   <Badge variant="secondary">{t('clientGroups.deviceCount', { count: selectedGroup.client_count })}</Badge>
                   <Badge variant="secondary">{t('clientGroups.rulesCount', { count: selectedGroup.rule_count })}</Badge>
@@ -556,15 +570,27 @@ export default function ClientGroupsPage() {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{t('clientGroups.deleteGroupTitle')}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {t('clientGroups.deleteGroupDesc', { name: showDeleteDialog?.name })}
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>{t('clientGroups.deleteGroupClients', { count: showDeleteDialog?.client_count ?? 0 })}</li>
-                  <li>{t('clientGroups.deleteGroupRules', { count: showDeleteDialog?.rule_count ?? 0 })}</li>
-                </ul>
-                <p className="mt-3 text-destructive font-medium">
-                  {t('clientGroups.deleteGroupConfirm')}
-                </p>
+              <AlertDialogDescription asChild>
+                <div>
+                  {showDeleteDialog?.name === QUARANTINE_GROUP_NAME && (
+                    <div className="mb-3 p-3 rounded-md bg-red-50 border border-red-200 dark:bg-red-950/30 dark:border-red-800">
+                      <p className="text-red-600 dark:text-red-400 font-semibold text-sm">
+                        {t('clientGroups.quarantineDeleteWarning')}
+                      </p>
+                      <p className="text-red-500 dark:text-red-500 text-xs mt-1">
+                        {t('clientGroups.quarantineDeleteExtra')}
+                      </p>
+                    </div>
+                  )}
+                  <span>{t('clientGroups.deleteGroupDesc', { name: showDeleteDialog?.name })}</span>
+                  <ul className="list-disc list-inside mt-2 space-y-1">
+                    <li>{t('clientGroups.deleteGroupClients', { count: showDeleteDialog?.client_count ?? 0 })}</li>
+                    <li>{t('clientGroups.deleteGroupRules', { count: showDeleteDialog?.rule_count ?? 0 })}</li>
+                  </ul>
+                  <p className="mt-3 text-destructive font-medium">
+                    {t('clientGroups.deleteGroupConfirm')}
+                  </p>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -592,33 +618,42 @@ export default function ClientGroupsPage() {
               <div>
                 <Label>{t('clientGroups.targetGroup')}</Label>
                 <div className="space-y-2 mt-2">
-                  {groups.map((group) => (
-                    <label
-                      key={group.id}
-                      className={cn(
-                        'flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors',
-                        moveToGroupId === group.id && 'bg-accent border-primary'
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="target-group"
-                        checked={moveToGroupId === group.id}
-                        onChange={() => setMoveToGroupId(group.id)}
-                        className="mt-0.5"
-                      />
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: group.color }}
+                  {groups.map((group) => {
+                    const isQ = group.name === QUARANTINE_GROUP_NAME;
+                    return (
+                      <label
+                        key={group.id}
+                        className={cn(
+                          'flex items-center gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent transition-colors',
+                          moveToGroupId === group.id && 'bg-accent border-primary',
+                          isQ && 'border-red-200 bg-red-50/50 hover:bg-red-100/50 dark:border-red-900 dark:bg-red-950/20'
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="target-group"
+                          checked={moveToGroupId === group.id}
+                          onChange={() => setMoveToGroupId(group.id)}
+                          className="mt-0.5"
                         />
-                        <span>{group.name}</span>
-                        <Badge variant="secondary" className="text-xs">
-                          {group.client_count}
-                        </Badge>
-                      </div>
-                    </label>
-                  ))}
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: group.color }}
+                          />
+                          <span className={cn(isQ && 'text-red-600 dark:text-red-400 font-medium')}>{group.name}</span>
+                          {isQ && (
+                            <Badge className="text-xs bg-red-100 text-red-600 border-red-200 dark:bg-red-950 dark:text-red-400">
+                              {t('clientGroups.quarantineBadge')}
+                            </Badge>
+                          )}
+                          <Badge variant="secondary" className="text-xs">
+                            {group.client_count}
+                          </Badge>
+                        </div>
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -805,7 +805,12 @@
     "moveError": "移动失败: {{msg}}",
     "removeError": "移除失败: {{msg}}",
     "bindError": "绑定失败: {{msg}}",
-    "unbindError": "解绑失败: {{msg}}"
+    "unbindError": "解绑失败: {{msg}}",
+    "quarantineBadge": "隔离区",
+    "quarantineWarning": "此分组为系统隔离区，用于封锁异常设备的所有 DNS 查询。",
+    "quarantineDeleteWarning": "⚠️ 警告：这是系统隔离区！删除后，被隔离设备将恢复正常网络访问。",
+    "quarantineDeleteExtra": "建议：移除组内设备并保留分组，而不是直接删除。",
+    "quarantineCannotDelete": "隔离区不可删除"
   },
   "upstreams": {
     "title": "上游 DNS 管理",
