@@ -63,6 +63,14 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
         retry: false,
     });
 
+    const { data: ptrRecord } = useQuery({
+        queryKey: ['client-ptr', ip],
+        queryFn: () => clientsApi.getPtr(ip!),
+        enabled: open && ip !== null,
+        staleTime: 1000 * 60 * 5, // 5 分钟缓存
+        retry: false,
+    });
+
     const { data: activityData, isLoading: activityLoading } = useQuery({
         queryKey: ['client-activity', client?.id, hours],
         queryFn: () => clientsApi.getActivity(client!.id, hours),
@@ -166,6 +174,11 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
                                         </>
                                     );
                                 })()}
+                                {ptrRecord && (
+                                    <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm">
+                                        <span className="font-mono text-xs text-muted-foreground">{ptrRecord}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

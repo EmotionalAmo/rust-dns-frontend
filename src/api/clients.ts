@@ -76,10 +76,18 @@ async function getClientActivity(id: string, hours = 24): Promise<ClientActivity
   return response.data;
 }
 
+async function getPtrRecord(ip: string): Promise<string | null> {
+  const response = await apiClient.get<{ ptr: string | null }>(
+    `/api/v1/clients/ptr?ip=${encodeURIComponent(ip)}`,
+  );
+  return response.data.ptr;
+}
+
 export const clientsApi = {
   list: listClients,
   create: createClient,
   update: updateClient,
   delete: deleteClient,
   getActivity: getClientActivity,
+  getPtr: getPtrRecord,
 };
