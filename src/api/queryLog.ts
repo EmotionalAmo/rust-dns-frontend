@@ -74,7 +74,15 @@ export async function exportQueryLogs(params: ExportParams): Promise<Blob> {
   return response.data;
 }
 
+export async function bulkDeleteQueryLogs(ids: number[]): Promise<{ deleted: number }> {
+  const response = await apiClient.delete<{ deleted: number }>('/api/v1/query-log/bulk', {
+    data: { ids },
+  });
+  return response.data;
+}
+
 export const queryLogApi = {
   list: listQueryLogs,
   export: exportQueryLogs,
+  bulkDelete: bulkDeleteQueryLogs,
 };

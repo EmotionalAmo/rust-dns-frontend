@@ -20,6 +20,17 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
@@ -128,6 +139,9 @@ export default function QueryLogsPage() {
     ...(initialClient ? { filters: [{ field: 'client_ip', operator: 'like' as const, value: initialClient }] } : {}),
   }));
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
   const [clientSheetIp, setClientSheetIp] = useState<string | null>(null);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
@@ -270,6 +284,44 @@ export default function QueryLogsPage() {
     };
     setPage(newPage);
     setAppliedFilters(newFilters);
+    setSelectedIds(new Set());
+  };
+
+  const isAllSelected = logs.length > 0 && logs.every((log) => selectedIds.has(log.id));
+  const isIndeterminate = logs.some((log) => selectedIds.has(log.id)) && !isAllSelected;
+
+  const toggleAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(logs.map((l) => l.id)));
+    }
+  };
+
+  const toggleOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    setIsBulkDeleting(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const result = await queryLogApi.bulkDelete(ids);
+      toast.success(t('queryLogs.bulkDeleteSuccess', { count: result.deleted }));
+      setSelectedIds(new Set());
+      setShowBulkDeleteDialog(false);
+      queryClient.invalidateQueries({ queryKey: ['query-logs'] });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('queryLogs.actionError', { msg }));
+    } finally {
+      setIsBulkDeleting(false);
+    }
   };
 
   const buildExportFilters = (): Filter[] => {
@@ -613,6 +665,21 @@ export default function QueryLogsPage() {
               <CardTitle>{t('queryLogs.tableTitle')}</CardTitle>
               <CardDescription>{t('queryLogs.tableCount', { count: total })}</CardDescription>
             </div>
+            {selectedIds.size > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {t('queryLogs.selected', { count: selectedIds.size })}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowBulkDeleteDialog(true)}
+                >
+                  <Trash2 size={14} className="mr-1" />
+                  {t('common.delete')}
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -636,6 +703,13 @@ export default function QueryLogsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-px px-3">
+                        <Checkbox
+                          checked={isIndeterminate ? 'indeterminate' : isAllSelected}
+                          onCheckedChange={toggleAll}
+                          aria-label="Select all"
+                        />
+                      </TableHead>
                       <TableHead>{t('queryLogs.colTime')}</TableHead>
                       <TableHead>{t('queryLogs.colDomain')}</TableHead>
                       <TableHead>{t('queryLogs.colType')}</TableHead>
@@ -654,6 +728,13 @@ export default function QueryLogsPage() {
                       const ruleType = domainRuleMap.get(logDomain);
                       return (
                       <TableRow key={log.id}>
+                        <TableCell className="px-3">
+                          <Checkbox
+                            checked={selectedIds.has(log.id)}
+                            onCheckedChange={() => toggleOne(log.id)}
+                            aria-label={`Select log ${log.id}`}
+                          />
+                        </TableCell>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                           {formatTime(log.time)}
                         </TableCell>
@@ -776,6 +857,27 @@ export default function QueryLogsPage() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('queryLogs.bulkDeleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('queryLogs.bulkDeleteDesc', { count: selectedIds.size })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBulkDeleting}>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBulkDeleting ? t('common.deleting') : t('common.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <ExportDialog
         isOpen={showExportDialog}

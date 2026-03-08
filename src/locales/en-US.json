@@ -540,7 +540,11 @@
     "actionError": "Action failed: {{msg}}",
     "viewRules": "View Rules",
     "badgeBlocked": "Blocked",
-    "badgeAllowed": "Allowed"
+    "badgeAllowed": "Allowed",
+    "selected": "{{count}} selected",
+    "bulkDeleteTitle": "Confirm Bulk Delete",
+    "bulkDeleteDesc": "Are you sure you want to delete {{count}} selected log entries? This action cannot be undone.",
+    "bulkDeleteSuccess": "Deleted {{count}} log entries"
   },
   "settings": {
     "title": "System Settings",

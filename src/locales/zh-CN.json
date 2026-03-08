@@ -551,7 +551,11 @@
     "actionError": "操作失败：{{msg}}",
     "viewRules": "查看规则",
     "badgeBlocked": "已屏蔽",
-    "badgeAllowed": "已放行"
+    "badgeAllowed": "已放行",
+    "selected": "已选 {{count}} 条",
+    "bulkDeleteTitle": "确认批量删除",
+    "bulkDeleteDesc": "确定要删除选中的 {{count}} 条日志记录吗？此操作不可撤销。",
+    "bulkDeleteSuccess": "已删除 {{count}} 条日志"
   },
   "settings": {
     "title": "系统设置",
