@@ -132,7 +132,7 @@ export default function QueryLogsPage() {
   const [statusFilter, setStatusFilter] = useState<'blocked' | 'allowed' | 'all'>('all');
   const [clientFilter, setClientFilter] = useState(initialClient);
   const [upstreamFilter, setUpstreamFilter] = useState<string>('all');
-  const [page, setPage] = useState(0);
+  const [cursorStack, setCursorStack] = useState<number[]>([]);
   const [appliedFilters, setAppliedFilters] = useState<QueryLogListParams>(() => ({
     limit: PAGE_SIZE,
     offset: 0,
@@ -231,6 +231,8 @@ export default function QueryLogsPage() {
   const logs = data?.data ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const currentPage = cursorStack.length + 1;
+  const hasMore = data?.has_more ?? false;
 
   // 预加载已有规则，构建 domain -> type 映射，用于显示 badge
   const { data: rulesData } = useQuery({
@@ -257,33 +259,48 @@ export default function QueryLogsPage() {
     { value: 'allowed' as const, label: t('queryLogs.statusAllowed') },
   ];
 
-  const applyFilters = () => {
-    const newFilters: QueryLogListParams = {
-      limit: PAGE_SIZE,
-      offset: page * PAGE_SIZE,
-    };
+  const buildBaseFilters = (): QueryLogListParams => {
+    const newFilters: QueryLogListParams = { limit: PAGE_SIZE };
     if (domainFilter) newFilters.domain = domainFilter;
     if (statusFilter && statusFilter !== 'all') newFilters.status = statusFilter;
     if (clientFilter) newFilters.client = clientFilter;
     if (upstreamFilter && upstreamFilter !== 'all') newFilters.upstream = upstreamFilter;
     if (qtypeFilter && qtypeFilter !== 'all') newFilters.qtype = qtypeFilter;
     if (timeRange && timeRange !== 'all') newFilters.time_range = timeRange;
-    setAppliedFilters(newFilters);
+    return newFilters;
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(0);
-    applyFilters();
+    setCursorStack([]);
+    setAppliedFilters({ ...buildBaseFilters(), offset: 0 });
   };
 
+  const goNext = () => {
+    // cursor 模式用 next_cursor；第一页（offset 模式）用最后一条记录的 id
+    const nextCursor = data?.next_cursor ?? (logs.length > 0 ? logs[logs.length - 1].id : undefined);
+    if (!nextCursor) return;
+    setCursorStack((prev) => [...prev, nextCursor]);
+    setAppliedFilters({ ...buildBaseFilters(), cursor: nextCursor });
+    setSelectedIds(new Set());
+  };
+
+  const goPrev = () => {
+    const newStack = cursorStack.slice(0, -1);
+    setCursorStack(newStack);
+    const prevCursor = newStack[newStack.length - 1];
+    if (prevCursor !== undefined) {
+      setAppliedFilters({ ...buildBaseFilters(), cursor: prevCursor });
+    } else {
+      setAppliedFilters({ ...buildBaseFilters(), offset: 0 });
+    }
+    setSelectedIds(new Set());
+  };
+
+  // 保留 goToPage 供旧 offset 模式兼容（目前未使用）
   const goToPage = (newPage: number) => {
-    const newFilters = {
-      ...appliedFilters,
-      offset: newPage * PAGE_SIZE,
-    };
-    setPage(newPage);
-    setAppliedFilters(newFilters);
+    setCursorStack([]);
+    setAppliedFilters({ ...buildBaseFilters(), offset: newPage * PAGE_SIZE });
     setSelectedIds(new Set());
   };
 
@@ -828,25 +845,41 @@ export default function QueryLogsPage() {
               </div>
 
               {/* 分页 */}
-              {totalPages > 1 && (
+              {(currentPage > 1 || hasMore || totalPages > 1) && (
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
-                    {t('common.pageInfo', { page: page + 1, total: totalPages, count: total })}
+                    {cursorStack.length > 0
+                      ? t('common.pageNum', { page: currentPage })
+                      : t('common.pageInfo', { page: currentPage, total: totalPages, count: total })}
                   </p>
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => goToPage(Math.max(0, page - 1))}
-                      disabled={page === 0}
+                      onClick={() => {
+                        if (cursorStack.length > 0) {
+                          goPrev();
+                        } else {
+                          const curPage = (appliedFilters.offset ?? 0) / PAGE_SIZE;
+                          goToPage(Math.max(0, curPage - 1));
+                        }
+                      }}
+                      disabled={currentPage === 1}
                     >
                       <ChevronLeft size={16} />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => goToPage(Math.min(totalPages - 1, page + 1))}
-                      disabled={page >= totalPages - 1}
+                      onClick={() => {
+                        if (cursorStack.length > 0 || hasMore) {
+                          goNext();
+                        } else {
+                          const curPage = (appliedFilters.offset ?? 0) / PAGE_SIZE;
+                          goToPage(Math.min(totalPages - 1, curPage + 1));
+                        }
+                      }}
+                      disabled={cursorStack.length > 0 ? !hasMore : currentPage >= totalPages}
                     >
                       <ChevronRight size={16} />
                     </Button>

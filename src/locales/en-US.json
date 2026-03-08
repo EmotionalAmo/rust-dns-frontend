@@ -36,6 +36,7 @@
     "selectItem": "Select {{name}}",
     "total": "Total {{count}} items",
     "pageInfo": "Page {{page}} / {{total}}, {{count}} items",
+    "pageNum": "Page {{page}}",
     "itemsPerPage": "{{count}} per page",
     "firstPage": "First",
     "lastPage": "Last",

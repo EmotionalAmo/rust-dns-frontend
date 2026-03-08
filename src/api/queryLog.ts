@@ -19,6 +19,7 @@ export interface QueryLogEntry {
 export interface QueryLogListParams {
   limit?: number;
   offset?: number;
+  cursor?: number;
   domain?: string;
   status?: 'blocked' | 'allowed';
   client?: string;
@@ -29,16 +30,25 @@ export interface QueryLogListParams {
 
 export interface QueryLogResponse {
   data: QueryLogEntry[];
-  total: number;
+  // offset 模式
+  total?: number;
+  offset?: number;
+  limit?: number;
+  // cursor 模式
+  has_more?: boolean;
+  next_cursor?: number | null;
+  // 两种模式都有
   returned: number;
-  offset: number;
-  limit: number;
 }
 
 export async function listQueryLogs(params: QueryLogListParams = {}): Promise<QueryLogResponse> {
   const query = new URLSearchParams();
   if (params.limit !== undefined) query.set('limit', String(params.limit));
-  if (params.offset !== undefined) query.set('offset', String(params.offset));
+  if (params.cursor !== undefined) {
+    query.set('cursor', String(params.cursor));
+  } else if (params.offset !== undefined) {
+    query.set('offset', String(params.offset));
+  }
   if (params.domain) query.set('domain', params.domain);
   if (params.status) query.set('status', params.status);
   if (params.client) query.set('client', params.client);
