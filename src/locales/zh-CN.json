@@ -959,7 +959,11 @@
     "registerDeviceFailed": "注册失败",
     "quarantineDevice": "隔离设备",
     "quarantineDeviceSuccess": "设备已加入隔离区",
-    "quarantineDeviceFailed": "隔离失败"
+    "quarantineDeviceFailed": "隔离失败",
+    "statsTotal": "总告警",
+    "statsUnread": "未读",
+    "statsTopDevice": "最活跃设备",
+    "statsNoDevice": "无"
   },
   "clientDetail": {
     "title": "设备详情",

@@ -117,13 +117,36 @@ export default function AlertsPage() {
 
     // Collect unique alert types from current page for the filter dropdown
     // We fetch all types from all pages by using a separate unfilterd query key
-    const { data: allTypesData } = useQuery({
+    const { data: allTypesData, isLoading: allTypesLoading } = useQuery({
         queryKey: ['alerts', 'types'],
         queryFn: () => alertsApi.getAlerts({ page: 1, page_size: 100 }),
         refetchInterval: 60000,
     });
     const alertTypes = Array.from(new Set((allTypesData?.data || []).map(a => a.alert_type))).filter(Boolean);
     const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
+
+    // Stats computed from allTypesData (first 100 alerts)
+    const allItems = allTypesData?.data || [];
+    const unreadCount = allItems.filter(a => a.is_read === 0).length;
+
+    const topDevice = (() => {
+        if (allItems.length === 0) return null;
+        const freq: Record<string, number> = {};
+        for (const a of allItems) {
+            if (a.client_id) freq[a.client_id] = (freq[a.client_id] || 0) + 1;
+        }
+        const entries = Object.entries(freq);
+        if (entries.length === 0) return null;
+        return entries.reduce((best, cur) => cur[1] > best[1] ? cur : best)[0];
+    })();
+
+    const typeDistribution = (() => {
+        const dist: Record<string, number> = {};
+        for (const a of allItems) {
+            if (a.alert_type) dist[a.alert_type] = (dist[a.alert_type] || 0) + 1;
+        }
+        return Object.entries(dist).sort((a, b) => b[1] - a[1]);
+    })();
 
     if (isLoading) {
         return (
@@ -184,6 +207,70 @@ export default function AlertsPage() {
                     </Button>
                 </div>
             </div>
+
+            {/* Stats summary bar */}
+            {allTypesLoading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {[0, 1, 2, 3].map(i => (
+                        <div key={i} className="bg-muted/40 rounded-lg px-4 py-3 animate-pulse">
+                            <div className="h-3 w-16 bg-muted-foreground/20 rounded mb-2" />
+                            <div className="h-6 w-10 bg-muted-foreground/20 rounded" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* Total alerts */}
+                    <div className="bg-muted/40 rounded-lg px-4 py-3">
+                        <p className="text-xs text-muted-foreground mb-1">{t('alerts.statsTotal')}</p>
+                        <p className="text-2xl font-bold tabular-nums">{data?.total ?? '—'}</p>
+                    </div>
+
+                    {/* Unread */}
+                    <div className="bg-muted/40 rounded-lg px-4 py-3">
+                        <p className="text-xs text-muted-foreground mb-1">{t('alerts.statsUnread')}</p>
+                        <p className={`text-2xl font-bold tabular-nums ${unreadCount > 0 ? 'text-destructive' : ''}`}>
+                            {unreadCount}
+                        </p>
+                    </div>
+
+                    {/* Top device */}
+                    <div className="bg-muted/40 rounded-lg px-4 py-3">
+                        <p className="text-xs text-muted-foreground mb-1">{t('alerts.statsTopDevice')}</p>
+                        {topDevice ? (
+                            <button
+                                onClick={() => { setDetailIp(topDevice); setDetailOpen(true); }}
+                                className="text-sm font-mono font-semibold text-primary hover:underline truncate max-w-full text-left"
+                                title={topDevice}
+                            >
+                                {topDevice}
+                            </button>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{t('alerts.statsNoDevice')}</p>
+                        )}
+                    </div>
+
+                    {/* Type distribution */}
+                    <div className="bg-muted/40 rounded-lg px-4 py-3">
+                        <p className="text-xs text-muted-foreground mb-1.5">{t('alerts.filterType')}</p>
+                        {typeDistribution.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">—</p>
+                        ) : (
+                            <div className="flex flex-wrap gap-1">
+                                {typeDistribution.map(([type, count]) => (
+                                    <span
+                                        key={type}
+                                        className="inline-flex items-center gap-1 bg-background border border-border/60 rounded px-1.5 py-0.5 text-xs font-mono"
+                                    >
+                                        <span className="uppercase tracking-wider text-foreground/70">{type}</span>
+                                        <span className="font-semibold text-foreground">{count}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
                 {alerts.length === 0 ? (

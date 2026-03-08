@@ -949,7 +949,11 @@
     "registerDeviceFailed": "Failed to register device",
     "quarantineDevice": "Quarantine Device",
     "quarantineDeviceSuccess": "Device added to quarantine",
-    "quarantineDeviceFailed": "Failed to quarantine device"
+    "quarantineDeviceFailed": "Failed to quarantine device",
+    "statsTotal": "Total Alerts",
+    "statsUnread": "Unread",
+    "statsTopDevice": "Most Active Device",
+    "statsNoDevice": "None"
   },
   "clientDetail": {
     "title": "Device Details",
