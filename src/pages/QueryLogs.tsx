@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
 import { ExportDialog } from '@/components/query-log/ExportDialog';
 import type { Filter } from '@/components/query-log/FilterRow';
+import { ClientDetailSheet } from '@/components/ClientDetailSheet';
 
 const PAGE_SIZE = 50;
 
@@ -128,6 +129,8 @@ export default function QueryLogsPage() {
   }));
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
+  const [clientSheetIp, setClientSheetIp] = useState<string | null>(null);
+  const [clientSheetOpen, setClientSheetOpen] = useState(false);
 
   // New filter states
   const [timeRange, setTimeRange] = useState<string>('all');
@@ -549,7 +552,17 @@ export default function QueryLogsPage() {
                       <TableCell className="py-1.5">
                         <StatusBadge status={entry.status} />
                       </TableCell>
-                      <TableCell className="text-muted-foreground py-1.5">{entry.client_ip || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground py-1.5">
+                        {entry.client_ip ? (
+                          <button
+                            type="button"
+                            className="font-mono text-xs text-foreground/70 hover:text-primary hover:underline transition-colors"
+                            onClick={() => { setClientSheetIp(entry.client_ip); setClientSheetOpen(true); }}
+                          >
+                            {entry.client_ip}
+                          </button>
+                        ) : '-'}
+                      </TableCell>
                       <TableCell className="text-muted-foreground py-1.5">{entry.upstream || '-'}</TableCell>
                       <TableCell className="py-1.5">
                         <TimingCell elapsedNs={entry.elapsed_ns} upstreamNs={entry.upstream_ns} status={entry.status} />
@@ -678,7 +691,15 @@ export default function QueryLogsPage() {
                           ) : '-'}
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {log.client_ip || '-'}
+                          {log.client_ip ? (
+                            <button
+                              type="button"
+                              className="font-mono text-xs text-foreground/70 hover:text-primary hover:underline transition-colors"
+                              onClick={() => { setClientSheetIp(log.client_ip); setClientSheetOpen(true); }}
+                            >
+                              {log.client_ip}
+                            </button>
+                          ) : '-'}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
                           {log.answer || '-'}
@@ -761,6 +782,12 @@ export default function QueryLogsPage() {
         onClose={() => setShowExportDialog(false)}
         filters={buildExportFilters()}
         estimatedCount={total}
+      />
+
+      <ClientDetailSheet
+        ip={clientSheetIp}
+        open={clientSheetOpen}
+        onOpenChange={setClientSheetOpen}
       />
     </div>
   );
