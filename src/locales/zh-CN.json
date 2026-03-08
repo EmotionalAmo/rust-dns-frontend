@@ -961,6 +961,17 @@
     "quarantineDeviceSuccess": "设备已加入隔离区",
     "quarantineDeviceFailed": "隔离失败"
   },
+  "clientDetail": {
+    "title": "设备详情",
+    "registered": "已注册",
+    "unregistered": "未注册",
+    "filterEnabled": "已开启过滤",
+    "filterDisabled": "过滤已关闭",
+    "recentQueries": "最近查询",
+    "viewAllLogs": "查看全部日志",
+    "noQueries": "暂无查询记录",
+    "loading": "加载中..."
+  },
   "auditLog": {
     "title": "审计日志",
     "desc": "记录所有管理操作，仅管理员可查看",

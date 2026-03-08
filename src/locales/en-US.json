@@ -951,6 +951,17 @@
     "quarantineDeviceSuccess": "Device added to quarantine",
     "quarantineDeviceFailed": "Failed to quarantine device"
   },
+  "clientDetail": {
+    "title": "Device Details",
+    "registered": "Registered",
+    "unregistered": "Unregistered",
+    "filterEnabled": "Filtering Enabled",
+    "filterDisabled": "Filtering Disabled",
+    "recentQueries": "Recent Queries",
+    "viewAllLogs": "View All Logs",
+    "noQueries": "No queries found",
+    "loading": "Loading..."
+  },
   "auditLog": {
     "title": "Audit Log",
     "desc": "Record of all management operations, visible only to administrators",

@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ClientDetailSheet } from '@/components/ClientDetailSheet';
 
 export default function AlertsPage() {
     const { t } = useTranslation();
@@ -18,6 +19,8 @@ export default function AlertsPage() {
     const [page, setPage] = useState(1);
     const [filterType, setFilterType] = useState<string>('all');
     const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+    const [detailIp, setDetailIp] = useState<string | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
     const [registeringAlertIds, setRegisteringAlertIds] = useState<Set<string>>(new Set());
     const [registeredAlertIds, setRegisteredAlertIds] = useState<Set<string>>(new Set());
     const [quarantiningAlertIds, setQuarantiningAlertIds] = useState<Set<string>>(new Set());
@@ -218,9 +221,12 @@ export default function AlertsPage() {
 
                                     <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                         {alert.client_id && (
-                                            <div className="flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded border border-border/50">
+                                            <button
+                                                onClick={() => { setDetailIp(alert.client_id!); setDetailOpen(true); }}
+                                                className="flex items-center gap-1.5 bg-muted/50 px-2 py-0.5 rounded border border-border/50 hover:bg-primary/10 hover:border-primary/40 transition-colors cursor-pointer"
+                                            >
                                                 <span className="font-mono text-xs text-foreground/80">{alert.client_id}</span>
-                                            </div>
+                                            </button>
                                         )}
                                         <div className="flex items-center gap-1">
                                             {t('alerts.typeLabel')} <span className="uppercase text-xs tracking-wider">{alert.alert_type}</span>
@@ -361,6 +367,12 @@ export default function AlertsPage() {
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+
+        <ClientDetailSheet
+            ip={detailIp}
+            open={detailOpen}
+            onOpenChange={setDetailOpen}
+        />
         </>
     );
 }

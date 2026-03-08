@@ -1,0 +1,165 @@
+import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
+import { Monitor, ExternalLink, Shield, ShieldOff, Loader2 } from 'lucide-react';
+import { clientsApi } from '@/api/clients';
+import { listQueryLogs } from '@/api/queryLog';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Badge } from '@/components/ui/badge';
+
+interface ClientDetailSheetProps {
+    ip: string | null;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetProps) {
+    const { t } = useTranslation();
+
+    const { data: clients, isLoading: clientsLoading } = useQuery({
+        queryKey: ['clients', 'list'],
+        queryFn: () => clientsApi.list(),
+        enabled: open && ip !== null,
+    });
+
+    const { data: logsData, isLoading: logsLoading } = useQuery({
+        queryKey: ['queryLogs', 'client-detail', ip],
+        queryFn: () => listQueryLogs({ client: ip!, limit: 20 }),
+        enabled: open && ip !== null,
+    });
+
+    const client = clients?.find((c) => c.identifiers.includes(ip ?? ''));
+    const logs = logsData?.data ?? [];
+    const isLoading = clientsLoading || logsLoading;
+
+    const displayName = client?.name ?? ip ?? '';
+    const tags = client?.tags ?? [];
+
+    return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            <SheetContent side="right" className="w-[480px] sm:max-w-[480px] flex flex-col gap-0 p-0">
+                <SheetHeader className="px-6 py-5 border-b border-border/60">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted">
+                            <Monitor className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <SheetTitle className="flex flex-wrap items-center gap-2 text-base font-semibold">
+                                <span className="truncate">{displayName}</span>
+                                <Badge variant={client ? 'default' : 'secondary'} className="shrink-0 text-xs">
+                                    {client ? t('clientDetail.registered') : t('clientDetail.unregistered')}
+                                </Badge>
+                            </SheetTitle>
+                            {tags.length > 0 && (
+                                <SheetDescription className="mt-1 flex flex-wrap gap-1">
+                                    {tags.map((tag) => (
+                                        <Badge key={tag} variant="outline" className="text-xs font-normal">
+                                            {tag}
+                                        </Badge>
+                                    ))}
+                                </SheetDescription>
+                            )}
+                            {tags.length === 0 && (
+                                <SheetDescription className="mt-1 font-mono text-xs">
+                                    {ip}
+                                </SheetDescription>
+                            )}
+                        </div>
+                    </div>
+                </SheetHeader>
+
+                {isLoading ? (
+                    <div className="flex flex-1 items-center justify-center py-16">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="ml-2 text-sm text-muted-foreground">{t('clientDetail.loading')}</span>
+                    </div>
+                ) : (
+                    <div className="flex-1 overflow-y-auto">
+                        {/* 状态卡片 */}
+                        <div className="px-6 py-4 border-b border-border/40">
+                            <div className="flex flex-wrap gap-2">
+                                {client ? (
+                                    <>
+                                        <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm">
+                                            {client.filter_enabled ? (
+                                                <>
+                                                    <Shield className="h-3.5 w-3.5 text-green-500" />
+                                                    <span className="text-green-700 dark:text-green-400">{t('clientDetail.filterEnabled')}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <ShieldOff className="h-3.5 w-3.5 text-orange-500" />
+                                                    <span className="text-orange-700 dark:text-orange-400">{t('clientDetail.filterDisabled')}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm font-mono text-xs text-muted-foreground">
+                                            {ip}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm text-muted-foreground">
+                                        <Monitor className="h-3.5 w-3.5" />
+                                        <span className="font-mono text-xs">{ip}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 最近查询 */}
+                        <div className="px-6 py-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="text-sm font-medium">{t('clientDetail.recentQueries')}</h3>
+                                {ip && (
+                                    <Link
+                                        to={`/query-logs?client=${encodeURIComponent(ip)}`}
+                                        onClick={() => onOpenChange(false)}
+                                        className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                                    >
+                                        <ExternalLink className="h-3 w-3" />
+                                        {t('clientDetail.viewAllLogs')}
+                                    </Link>
+                                )}
+                            </div>
+
+                            {logs.length === 0 ? (
+                                <div className="rounded-lg border border-dashed border-border/60 py-8 text-center text-sm text-muted-foreground">
+                                    {t('clientDetail.noQueries')}
+                                </div>
+                            ) : (
+                                <div className="space-y-1">
+                                    {logs.map((log) => (
+                                        <div
+                                            key={log.id}
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm hover:bg-muted/50 transition-colors"
+                                        >
+                                            <Badge
+                                                variant="outline"
+                                                className={`shrink-0 text-xs px-1.5 py-0 ${
+                                                    log.status === 'blocked'
+                                                        ? 'border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/30 dark:text-red-400'
+                                                        : 'border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/30 dark:text-green-400'
+                                                }`}
+                                            >
+                                                {log.status === 'blocked'
+                                                    ? t('queryLogs.statusBlocked2')
+                                                    : t('queryLogs.statusAllowed2')}
+                                            </Badge>
+                                            <span className="flex-1 truncate font-mono text-xs text-foreground/90">
+                                                {log.question}
+                                            </span>
+                                            <span className="shrink-0 text-xs text-muted-foreground">
+                                                {formatDistanceToNow(new Date(log.time), { addSuffix: true })}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </SheetContent>
+        </Sheet>
+    );
+}
