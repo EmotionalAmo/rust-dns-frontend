@@ -34,6 +34,14 @@ export interface DomainStatEntry {
   last_seen: string | null;
 }
 
+export interface AnomalyEntry {
+  client_ip: string;
+  current_count: number;
+  mean: number;
+  stddev: number;
+  sigma: number;
+}
+
 export const insightsApi = {
   async getTopApps(params: {
     hours?: number;
@@ -84,6 +92,11 @@ export const insightsApi = {
     const response = await apiClient.get<AppCatalogEntry[]>(
       `/api/v1/insights/catalog${qs ? `?${qs}` : ''}`
     );
+    return response.data;
+  },
+
+  async getAnomalies(): Promise<AnomalyEntry[]> {
+    const response = await apiClient.get<AnomalyEntry[]>('/api/v1/insights/anomalies');
     return response.data;
   },
 };

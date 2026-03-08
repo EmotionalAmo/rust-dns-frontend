@@ -897,7 +897,13 @@
     "domain": "Domain",
     "block_rate": "Block Rate",
     "show_more": "Show More",
-    "show_less": "Show Less"
+    "show_less": "Show Less",
+    "anomaly_title": "{{count}} device(s) with abnormal request volume",
+    "anomaly_desc": "Current hour requests exceed historical average by 2σ",
+    "anomaly_all_normal": "All devices within normal range",
+    "anomaly_current": "Current",
+    "anomaly_avg": "Avg",
+    "anomaly_sigma": "Deviation"
   },
   "alerts": {
     "title": "Threat Alerts Center",

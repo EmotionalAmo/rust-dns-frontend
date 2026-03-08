@@ -2,9 +2,9 @@ import { Fragment, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { insightsApi, type AppStatEntry, type DomainStatEntry } from '@/api/insights';
+import { insightsApi, type AppStatEntry, type DomainStatEntry, type AnomalyEntry } from '@/api/insights';
 import { dashboardApi } from '@/api/dashboard';
 import { cn } from '@/lib/utils';
 
@@ -107,6 +107,67 @@ function DomainSortIcon({ col, sortKey, sortDir }: { col: DomainSortKey; sortKey
   return sortDir === 'desc'
     ? <ArrowDown className="ml-1 inline h-3 w-3 text-primary" />
     : <ArrowUp className="ml-1 inline h-3 w-3 text-primary" />;
+}
+
+function AnomalyBanner() {
+  const { t } = useTranslation();
+
+  const { data: anomalies = [] } = useQuery<AnomalyEntry[]>({
+    queryKey: ['insights', 'anomalies'],
+    queryFn: () => insightsApi.getAnomalies(),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+    retry: false,
+  });
+
+  if (anomalies.length === 0) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950/30 dark:text-green-400">
+        <CheckCircle2 className="h-4 w-4 shrink-0" />
+        <span>{t('insights.anomaly_all_normal')}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900 dark:bg-orange-950/30">
+      <div className="flex items-start gap-2">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+        <div className="flex-1 space-y-2">
+          <div>
+            <p className="text-sm font-medium text-orange-700 dark:text-orange-400">
+              {t('insights.anomaly_title', { count: anomalies.length })}
+            </p>
+            <p className="text-xs text-orange-600/80 dark:text-orange-500/80">
+              {t('insights.anomaly_desc')}
+            </p>
+          </div>
+          <div className="space-y-1">
+            {anomalies.map((entry) => (
+              <div
+                key={entry.client_ip}
+                className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-orange-700 dark:text-orange-300"
+              >
+                <span className="font-mono font-medium">{entry.client_ip}</span>
+                <span className="text-orange-600/70 dark:text-orange-400/70">
+                  {t('insights.anomaly_current')}:{' '}
+                  <span className="font-semibold tabular-nums">{entry.current_count}</span>
+                </span>
+                <span className="text-orange-600/70 dark:text-orange-400/70">
+                  {t('insights.anomaly_avg')}:{' '}
+                  <span className="tabular-nums">{entry.mean.toFixed(1)}</span>
+                </span>
+                <span className="text-orange-600/70 dark:text-orange-400/70">
+                  {t('insights.anomaly_sigma')}:{' '}
+                  <span className="font-semibold tabular-nums">+{entry.sigma.toFixed(1)}σ</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function TopDomainsCard({ hours }: { hours: number }) {
@@ -433,6 +494,9 @@ export default function InsightsPage() {
           </button>
         </div>
       </div>
+
+      {/* Anomaly banner */}
+      <AnomalyBanner />
 
       {/* Summary stat cards */}
       {!appsLoading && topAppsRaw.length > 0 && (

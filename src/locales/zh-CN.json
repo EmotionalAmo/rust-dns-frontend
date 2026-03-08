@@ -907,7 +907,13 @@
     "domain": "域名",
     "block_rate": "拦截率",
     "show_more": "显示更多",
-    "show_less": "收起"
+    "show_less": "收起",
+    "anomaly_title": "检测到 {{count}} 个设备请求异常",
+    "anomaly_desc": "当前小时请求量超过历史均值 2σ",
+    "anomaly_all_normal": "所有设备请求量正常",
+    "anomaly_current": "当前",
+    "anomaly_avg": "均值",
+    "anomaly_sigma": "偏差"
   },
   "alerts": {
     "title": "威胁告警中心",
