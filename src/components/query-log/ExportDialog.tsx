@@ -16,8 +16,16 @@ interface ExportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   filters: Filter[];
+  time_range?: string;
   estimatedCount?: number;
 }
+
+const TIME_RANGE_LABELS: Record<string, string> = {
+  '1h': '最近 1 小时',
+  '6h': '最近 6 小时',
+  '24h': '最近 24 小时',
+  '7d': '最近 7 天',
+};
 
 const AVAILABLE_FIELDS = [
   { key: 'id', label: 'ID', default: false },
@@ -33,7 +41,7 @@ const AVAILABLE_FIELDS = [
   { key: 'elapsed_ms', label: '响应时间 (ms)', default: false },
 ];
 
-export function ExportDialog({ isOpen, onClose, filters, estimatedCount }: ExportDialogProps) {
+export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCount }: ExportDialogProps) {
   const [format, setFormat] = useState<'csv' | 'json'>('csv');
   const [selectedFields, setSelectedFields] = useState<string[]>(
     AVAILABLE_FIELDS.filter(f => f.default).map(f => f.key)
@@ -68,6 +76,11 @@ export function ExportDialog({ isOpen, onClose, filters, estimatedCount }: Expor
     // Include filters if any
     if (filters.length > 0) {
       params.append('filters_json', JSON.stringify(filters));
+    }
+
+    // Include time_range if set
+    if (time_range && time_range !== 'all') {
+      params.append('time_range', time_range);
     }
 
     const url = `${baseUrl}?${params.toString()}`;
@@ -246,7 +259,11 @@ export function ExportDialog({ isOpen, onClose, filters, estimatedCount }: Expor
               <div className="text-sm space-y-1">
                 <div>
                   <span className="font-medium">导出条件：</span>
-                  {filters.length > 0
+                  {time_range && time_range !== 'all' && filters.length > 0
+                    ? `${TIME_RANGE_LABELS[time_range] ?? time_range}，${filters.length} 个过滤器`
+                    : time_range && time_range !== 'all'
+                    ? TIME_RANGE_LABELS[time_range] ?? time_range
+                    : filters.length > 0
                     ? `${filters.length} 个过滤器`
                     : '无过滤条件（导出全部）'}
                 </div>

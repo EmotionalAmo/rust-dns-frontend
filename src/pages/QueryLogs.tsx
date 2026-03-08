@@ -883,6 +883,7 @@ export default function QueryLogsPage() {
         isOpen={showExportDialog}
         onClose={() => setShowExportDialog(false)}
         filters={buildExportFilters()}
+        time_range={appliedFilters.time_range}
         estimatedCount={total}
       />
 
