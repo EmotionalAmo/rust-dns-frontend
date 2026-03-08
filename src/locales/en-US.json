@@ -404,7 +404,18 @@
     "intervalMonthly": "Monthly (30 days)",
     "aboutLocal": "Local list: Add custom rules manually after creation",
     "aboutAdguardFormat": "AdGuard format: Supports ||domain.com^ advanced syntax",
-    "aboutHostsFormat": "Hosts format: Standard hosts file format (127.0.0.1 domain.com)"
+    "aboutHostsFormat": "Hosts format: Standard hosts file format (127.0.0.1 domain.com)",
+    "recommendedTitle": "Recommended Lists",
+    "recommendedDesc": "Popular ad blocking and privacy filter lists, one-click subscribe",
+    "recommendedExpand": "Expand",
+    "recommendedCollapse": "Collapse",
+    "recommendedAdd": "Add",
+    "recommendedAdded": "Added",
+    "recommendedEasyList": "The most widely used ad blocking list",
+    "recommendedEasyListChina": "Ad blocking for Chinese websites",
+    "recommendedEasyPrivacy": "Block privacy trackers",
+    "recommendedAdGuardDns": "AdGuard official DNS filter list",
+    "recommendedStevenBlack": "Combined ad and malware blocking"
   },
   "rewrites": {
     "title": "DNS Rewrites",
@@ -429,6 +440,10 @@
     "emptyState": "No rewrite rules",
     "emptySearch": "No matching rewrite rules found",
     "emptyHint": "Add DNS rewrite rules to override domain resolution",
+    "usageExamplesTitle": "Usage Examples",
+    "usageExampleNas": "(access local NAS)",
+    "usageExampleRouter": "(access router admin panel)",
+    "usageExamplePrinter": "(access LAN printer)",
     "loadError": "Failed to load rewrite rules, please try again later",
     "createTitle": "Add Rewrite Rule",
     "createDesc": "Create a domain-to-IP mapping",
@@ -522,7 +537,10 @@
     "actionAllow": "Allow",
     "blockSuccess": "Block rule added: {{domain}}",
     "allowSuccess": "Allow rule added: {{domain}}",
-    "actionError": "Action failed: {{msg}}"
+    "actionError": "Action failed: {{msg}}",
+    "viewRules": "View Rules",
+    "badgeBlocked": "Blocked",
+    "badgeAllowed": "Allowed"
   },
   "settings": {
     "title": "System Settings",

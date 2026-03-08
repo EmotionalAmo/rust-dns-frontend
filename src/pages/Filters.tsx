@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { filtersApi } from '@/api';
@@ -83,6 +83,40 @@ const POPULAR_FILTERS = [
     url: 'https://raw.githubusercontent.com/AdAway/adaway.github.io/master/hosts.txt',
     type: 'hosts' as const,
     description: 'AdAway 默认阻止列表',
+  },
+];
+
+// 精选推荐 Filter Lists（页面内直接一键添加）
+const RECOMMENDED_FILTERS = [
+  {
+    name: 'EasyList',
+    url: 'https://easylist.to/easylist/easylist.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedEasyList',
+  },
+  {
+    name: 'EasyList China',
+    url: 'https://easylist-downloads.adblockplus.org/easylistchina.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedEasyListChina',
+  },
+  {
+    name: 'EasyPrivacy',
+    url: 'https://easylist.to/easylist/easyprivacy.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedEasyPrivacy',
+  },
+  {
+    name: 'AdGuard DNS Filter',
+    url: 'https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedAdGuardDns',
+  },
+  {
+    name: "Steven Black's Hosts",
+    url: 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts',
+    type: 'hosts' as const,
+    descKey: 'filters.recommendedStevenBlack',
   },
 ];
 
@@ -469,6 +503,7 @@ export default function FiltersPage() {
   const [editingFilter, setEditingFilter] = useState<Filter | null>(null);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [refreshingAll, setRefreshingAll] = useState(false);
+  const [showRecommended, setShowRecommended] = useState(false);
 
   // 查询过滤列表
   const { data: filters = [], isLoading, error, refetch } = useQuery({
@@ -597,6 +632,22 @@ export default function FiltersPage() {
     setRefreshingAll(true);
     refreshAllMutation.mutate();
   };
+
+  // 已有 URL 集合，用于推荐区块判断是否已添加
+  const existingUrls = useMemo(() => new Set(filters.map(f => f.url).filter(Boolean)), [filters]);
+
+  // 一键添加推荐 filter
+  const addRecommendedMutation = useMutation({
+    mutationFn: (item: typeof RECOMMENDED_FILTERS[number]) =>
+      filtersApi.createFilter({ name: item.name, url: item.url, is_enabled: true, update_interval_hours: 0 }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['filters'] });
+      toast.success(t('filters.createSuccess'));
+    },
+    onError: (error: Error) => {
+      toast.error(t('filters.createError', { msg: error.message || '未知错误' }));
+    },
+  });
 
   // 格式化时间
   const formatDate = (dateStr: string) => {
@@ -879,6 +930,65 @@ export default function FiltersPage() {
             </div>
           )}
         </CardContent>
+      </Card>
+
+      {/* 精选推荐 Filter Lists */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">{t('filters.recommendedTitle')}</CardTitle>
+              <CardDescription>{t('filters.recommendedDesc')}</CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowRecommended((v) => !v)}
+              className="shrink-0"
+            >
+              {showRecommended ? t('filters.recommendedCollapse') : t('filters.recommendedExpand')}
+            </Button>
+          </div>
+        </CardHeader>
+        {showRecommended && (
+          <CardContent>
+            <div className="space-y-2">
+              {RECOMMENDED_FILTERS.map((item) => {
+                const isAdded = existingUrls.has(item.url);
+                return (
+                  <div
+                    key={item.url}
+                    className="flex items-center justify-between rounded-md border px-3 py-2.5 gap-3"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">{item.name}</span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {item.type === 'hosts' ? 'Hosts' : 'AdGuard'}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{t(item.descKey)}</div>
+                      <div className="text-xs text-muted-foreground/70 truncate font-mono mt-0.5">{item.url}</div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={isAdded ? 'secondary' : 'outline'}
+                      disabled={isAdded || addRecommendedMutation.isPending}
+                      onClick={() => !isAdded && addRecommendedMutation.mutate(item)}
+                      className="shrink-0 h-8"
+                    >
+                      {isAdded ? (
+                        <><CheckCircle2 size={13} className="mr-1 text-green-600" />{t('filters.recommendedAdded')}</>
+                      ) : (
+                        <><Plus size={13} className="mr-1" />{t('filters.recommendedAdd')}</>
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       {/* 创建过滤器对话框 */}

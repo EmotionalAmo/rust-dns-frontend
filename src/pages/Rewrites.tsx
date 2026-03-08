@@ -546,10 +546,27 @@ export default function RewritesPage() {
                   </p>
                 </div>
                 {!searchQuery && (
-                  <Button onClick={() => setCreateDialogOpen(true)}>
-                    <Plus size={16} className="mr-1" />
-                    {t('rewrites.addRewrite')}
-                  </Button>
+                  <>
+                    <Button onClick={() => setCreateDialogOpen(true)}>
+                      <Plus size={16} className="mr-1" />
+                      {t('rewrites.addRewrite')}
+                    </Button>
+                    <div className="mt-4 w-full text-left space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">{t('rewrites.usageExamplesTitle')}</p>
+                      {[
+                        { domain: 'nas.local', ip: '192.168.1.100', desc: t('rewrites.usageExampleNas') },
+                        { domain: 'router.home', ip: '192.168.1.1', desc: t('rewrites.usageExampleRouter') },
+                        { domain: 'printer.local', ip: '192.168.1.200', desc: t('rewrites.usageExamplePrinter') },
+                      ].map((ex) => (
+                        <div key={ex.domain} className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+                          <code className="font-mono text-foreground">{ex.domain}</code>
+                          <span className="mx-1.5">→</span>
+                          <code className="font-mono">{ex.ip}</code>
+                          <span className="ml-2 text-muted-foreground/70">{ex.desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

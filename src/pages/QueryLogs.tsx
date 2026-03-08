@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { queryLogApi, type QueryLogListParams } from '@/api/queryLog';
 import { rulesApi } from '@/api/rules';
 import { upstreamsApi } from '@/api/upstreams';
@@ -112,6 +112,8 @@ function WsStatusBadge({ status }: { status: string }) {
 
 export default function QueryLogsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const initialClient = searchParams.get('client') ?? '';
   const [domainFilter, setDomainFilter] = useState('');
@@ -213,6 +215,25 @@ export default function QueryLogsPage() {
   const total = data?.total ?? 0;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // 预加载已有规则，构建 domain -> type 映射，用于显示 badge
+  const { data: rulesData } = useQuery({
+    queryKey: ['rules-for-badge'],
+    queryFn: () => rulesApi.listRules({ per_page: 500 }),
+    staleTime: 10000,
+  });
+
+  const domainRuleMap = useMemo(() => {
+    const map = new Map<string, 'block' | 'allow'>();
+    for (const rule of rulesData?.data ?? []) {
+      // ||example.com^ -> block, @@||example.com^ -> allow
+      const blockMatch = rule.rule.match(/^\|\|([^/^*\s]+)\^?$/);
+      const allowMatch = rule.rule.match(/^@@\|\|([^/^*\s]+)\^?$/);
+      if (blockMatch) map.set(blockMatch[1], 'block');
+      else if (allowMatch) map.set(allowMatch[1], 'allow');
+    }
+    return map;
+  }, [rulesData]);
+
   const STATUS_OPTIONS = [
     { value: 'all' as const, label: t('queryLogs.statusAll') },
     { value: 'blocked' as const, label: t('queryLogs.statusBlocked') },
@@ -265,11 +286,16 @@ export default function QueryLogsPage() {
     try {
       const rule = type === 'block' ? `||${domain}^` : `@@||${domain}^`;
       await rulesApi.createRule({ rule });
-      toast.success(
-        type === 'block'
-          ? t('queryLogs.blockSuccess', { domain })
-          : t('queryLogs.allowSuccess', { domain })
-      );
+      queryClient.invalidateQueries({ queryKey: ['rules-for-badge'] });
+      const message = type === 'block'
+        ? t('queryLogs.blockSuccess', { domain })
+        : t('queryLogs.allowSuccess', { domain });
+      toast.success(message, {
+        action: {
+          label: t('queryLogs.viewRules'),
+          onClick: () => navigate('/rules'),
+        },
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast.error(t('queryLogs.actionError', { msg }));
@@ -610,13 +636,28 @@ export default function QueryLogsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {logs.map((log) => (
+                    {logs.map((log) => {
+                      const logDomain = log.question.replace(/\.$/, '');
+                      const ruleType = domainRuleMap.get(logDomain);
+                      return (
                       <TableRow key={log.id}>
                         <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                           {formatTime(log.time)}
                         </TableCell>
                         <TableCell>
-                          <code className="text-sm font-mono">{log.question}</code>
+                          <div className="flex items-center gap-1.5">
+                            <code className="text-sm font-mono">{log.question}</code>
+                            {ruleType === 'block' && (
+                              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700 dark:bg-red-950 dark:text-red-400">
+                                {t('queryLogs.badgeBlocked')}
+                              </span>
+                            )}
+                            {ruleType === 'allow' && (
+                              <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-950 dark:text-green-400">
+                                {t('queryLogs.badgeAllowed')}
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-xs">
                           <span className="rounded bg-muted px-1.5 py-0.5 font-mono">
@@ -678,7 +719,8 @@ export default function QueryLogsPage() {
                           })()}
                         </TableCell>
                       </TableRow>
-                    ))}
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

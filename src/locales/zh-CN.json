@@ -415,7 +415,18 @@
     "intervalMonthly": "每月更新（30天）",
     "aboutLocal": "本地列表：创建后可以手动添加自定义规则",
     "aboutAdguardFormat": "AdGuard 格式：支持 ||domain.com^ 等高级语法",
-    "aboutHostsFormat": "Hosts 格式：标准 hosts 文件格式（127.0.0.1 domain.com）"
+    "aboutHostsFormat": "Hosts 格式：标准 hosts 文件格式（127.0.0.1 domain.com）",
+    "recommendedTitle": "精选推荐",
+    "recommendedDesc": "常用的广告拦截与隐私保护过滤列表，一键订阅",
+    "recommendedExpand": "展开",
+    "recommendedCollapse": "收起",
+    "recommendedAdd": "添加",
+    "recommendedAdded": "已添加",
+    "recommendedEasyList": "最广泛使用的广告拦截列表",
+    "recommendedEasyListChina": "针对中文网站的广告拦截",
+    "recommendedEasyPrivacy": "防止各类隐私追踪器",
+    "recommendedAdGuardDns": "AdGuard 官方 DNS 过滤列表",
+    "recommendedStevenBlack": "综合广告和恶意软件拦截"
   },
   "rewrites": {
     "title": "DNS 重写规则",
@@ -440,6 +451,10 @@
     "emptyState": "暂无重写规则",
     "emptySearch": "没有找到匹配的重写规则",
     "emptyHint": "添加 DNS 重写规则来覆盖域名解析",
+    "usageExamplesTitle": "使用场景示例",
+    "usageExampleNas": "（访问本地 NAS）",
+    "usageExampleRouter": "（访问路由器后台）",
+    "usageExamplePrinter": "（访问局域网打印机）",
     "loadError": "加载重写规则失败，请稍后重试",
     "createTitle": "添加重写规则",
     "createDesc": "创建域名到 IP 地址的映射",
@@ -533,7 +548,10 @@
     "actionAllow": "允许",
     "blockSuccess": "已添加屏蔽规则：{{domain}}",
     "allowSuccess": "已添加允许规则：{{domain}}",
-    "actionError": "操作失败：{{msg}}"
+    "actionError": "操作失败：{{msg}}",
+    "viewRules": "查看规则",
+    "badgeBlocked": "已屏蔽",
+    "badgeAllowed": "已放行"
   },
   "settings": {
     "title": "系统设置",
