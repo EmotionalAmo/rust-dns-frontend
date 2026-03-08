@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { alertsApi } from '@/api/alerts';
 import { clientsApi } from '@/api/clients';
-import { Bell, BellRing, Check, Trash2, FileText, ShieldCheck } from 'lucide-react';
+import { quarantineDevice } from '@/lib/quarantine';
+import { Bell, BellRing, Check, Trash2, FileText, ShieldCheck, ShieldOff } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,8 @@ export default function AlertsPage() {
     const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
     const [registeringAlertIds, setRegisteringAlertIds] = useState<Set<string>>(new Set());
     const [registeredAlertIds, setRegisteredAlertIds] = useState<Set<string>>(new Set());
+    const [quarantiningAlertIds, setQuarantiningAlertIds] = useState<Set<string>>(new Set());
+    const [quarantinedAlertIds, setQuarantinedAlertIds] = useState<Set<string>>(new Set());
     const pageSize = 20;
     const queryClient = useQueryClient();
 
@@ -70,6 +73,23 @@ export default function AlertsPage() {
             toast.error(t('alerts.registerDeviceFailed'));
         },
     });
+
+    async function handleQuarantineDevice(alertId: string, ip: string) {
+        setQuarantiningAlertIds((prev) => new Set(prev).add(alertId));
+        try {
+            await quarantineDevice(ip);
+            setQuarantinedAlertIds((prev) => new Set(prev).add(alertId));
+            toast.success(t('alerts.quarantineDeviceSuccess'));
+        } catch {
+            toast.error(t('alerts.quarantineDeviceFailed'));
+        } finally {
+            setQuarantiningAlertIds((prev) => {
+                const next = new Set(prev);
+                next.delete(alertId);
+                return next;
+            });
+        }
+    }
 
     function handleRegisterDevice(alertId: string, ip: string) {
         setRegisteringAlertIds((prev) => new Set(prev).add(alertId));
@@ -242,6 +262,25 @@ export default function AlertsPage() {
                                                         {registeringAlertIds.has(alert.id)
                                                             ? t('insights.anomaly_register_loading')
                                                             : t('alerts.registerDevice')}
+                                                    </button>
+                                                )
+                                            )}
+                                            {alert.client_id && (
+                                                quarantinedAlertIds.has(alert.id) ? (
+                                                    <span className="inline-flex items-center gap-1.5 text-xs text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 rounded px-2 py-1 bg-red-50 dark:bg-red-950/30">
+                                                        <ShieldOff className="h-3 w-3" />
+                                                        {t('insights.anomaly_already_quarantined')}
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleQuarantineDevice(alert.id, alert.client_id!)}
+                                                        disabled={quarantiningAlertIds.has(alert.id)}
+                                                        className="inline-flex items-center gap-1.5 text-xs text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 rounded px-2 py-1 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                    >
+                                                        <ShieldOff className="h-3 w-3" />
+                                                        {quarantiningAlertIds.has(alert.id)
+                                                            ? t('insights.anomaly_quarantine_loading')
+                                                            : t('alerts.quarantineDevice')}
                                                     </button>
                                                 )
                                             )}

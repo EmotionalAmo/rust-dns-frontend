@@ -919,7 +919,12 @@
     "anomaly_registered": "设备 {{ip}} 已注册为管控设备",
     "anomaly_register_failed": "注册失败",
     "anomaly_already_managed": "已管控",
-    "anomaly_viewClients": "前往设备页面"
+    "anomaly_viewClients": "前往设备页面",
+    "anomaly_quarantine": "隔离设备",
+    "anomaly_quarantine_loading": "隔离中...",
+    "anomaly_quarantined": "设备 {{ip}} 已加入隔离区",
+    "anomaly_quarantine_failed": "隔离失败",
+    "anomaly_already_quarantined": "已隔离"
   },
   "alerts": {
     "title": "威胁告警中心",
@@ -945,7 +950,10 @@
     "filterType": "类型",
     "registerDevice": "注册管控",
     "registerDeviceSuccess": "设备已注册为管控设备",
-    "registerDeviceFailed": "注册失败"
+    "registerDeviceFailed": "注册失败",
+    "quarantineDevice": "隔离设备",
+    "quarantineDeviceSuccess": "设备已加入隔离区",
+    "quarantineDeviceFailed": "隔离失败"
   },
   "auditLog": {
     "title": "审计日志",

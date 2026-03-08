@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { BarChart2, RefreshCw, Globe, ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown, AlertTriangle, CheckCircle2, ShieldCheck, ShieldOff } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { insightsApi, type AppStatEntry, type DomainStatEntry, type AnomalyEntry } from '@/api/insights';
 import { dashboardApi } from '@/api/dashboard';
 import { clientsApi } from '@/api/clients';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { quarantineDevice } from '@/lib/quarantine';
 
 const TIME_RANGES = [
   { label: '1h', hours: 1 },
@@ -117,6 +118,8 @@ function AnomalyBanner() {
   const navigate = useNavigate();
   const [registeringIps, setRegisteringIps] = useState<Set<string>>(new Set());
   const [registeredIps, setRegisteredIps] = useState<Set<string>>(new Set());
+  const [quarantiningIps, setQuarantiningIps] = useState<Set<string>>(new Set());
+  const [quarantinedIps, setQuarantinedIps] = useState<Set<string>>(new Set());
 
   const { data: anomalies = [] } = useQuery<AnomalyEntry[]>({
     queryKey: ['insights', 'anomalies'],
@@ -141,6 +144,23 @@ function AnomalyBanner() {
       toast.error(t('insights.anomaly_register_failed'));
     } finally {
       setRegisteringIps((prev) => {
+        const next = new Set(prev);
+        next.delete(ip);
+        return next;
+      });
+    }
+  }
+
+  async function handleQuarantine(ip: string) {
+    setQuarantiningIps((prev) => new Set(prev).add(ip));
+    try {
+      await quarantineDevice(ip);
+      setQuarantinedIps((prev) => new Set(prev).add(ip));
+      toast.success(t('insights.anomaly_quarantined', { ip }));
+    } catch {
+      toast.error(t('insights.anomaly_quarantine_failed'));
+    } finally {
+      setQuarantiningIps((prev) => {
         const next = new Set(prev);
         next.delete(ip);
         return next;
@@ -204,6 +224,23 @@ function AnomalyBanner() {
                     {registeringIps.has(entry.client_ip)
                       ? t('insights.anomaly_register_loading')
                       : t('insights.anomaly_register')}
+                  </button>
+                )}
+                {quarantinedIps.has(entry.client_ip) ? (
+                  <span className="inline-flex items-center gap-1 text-xs text-red-700 dark:text-red-400 border border-red-300 dark:border-red-700 rounded px-2 py-0.5 bg-red-50 dark:bg-red-950/30">
+                    <ShieldOff className="h-3 w-3" />
+                    {t('insights.anomaly_already_quarantined')}
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => handleQuarantine(entry.client_ip)}
+                    disabled={quarantiningIps.has(entry.client_ip)}
+                    className="inline-flex items-center gap-1 text-xs text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 rounded px-2 py-0.5 hover:bg-red-50 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ShieldOff className="h-3 w-3" />
+                    {quarantiningIps.has(entry.client_ip)
+                      ? t('insights.anomaly_quarantine_loading')
+                      : t('insights.anomaly_quarantine')}
                   </button>
                 )}
               </div>

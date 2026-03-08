@@ -909,7 +909,12 @@
     "anomaly_registered": "Device {{ip}} registered as managed client",
     "anomaly_register_failed": "Failed to register device",
     "anomaly_already_managed": "Managed",
-    "anomaly_viewClients": "Go to Clients"
+    "anomaly_viewClients": "Go to Clients",
+    "anomaly_quarantine": "Quarantine Device",
+    "anomaly_quarantine_loading": "Quarantining...",
+    "anomaly_quarantined": "Device {{ip}} added to quarantine",
+    "anomaly_quarantine_failed": "Failed to quarantine device",
+    "anomaly_already_quarantined": "Quarantined"
   },
   "alerts": {
     "title": "Threat Alerts Center",
@@ -935,7 +940,10 @@
     "filterType": "Type",
     "registerDevice": "Register Device",
     "registerDeviceSuccess": "Device registered as managed client",
-    "registerDeviceFailed": "Failed to register device"
+    "registerDeviceFailed": "Failed to register device",
+    "quarantineDevice": "Quarantine Device",
+    "quarantineDeviceSuccess": "Device added to quarantine",
+    "quarantineDeviceFailed": "Failed to quarantine device"
   },
   "auditLog": {
     "title": "Audit Log",
