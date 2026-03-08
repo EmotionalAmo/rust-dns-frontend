@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import { Monitor, ExternalLink, Shield, ShieldOff, Loader2 } from 'lucide-react';
+import { Monitor, ExternalLink, Shield, ShieldOff, Loader2, MapPin } from 'lucide-react';
 import {
     BarChart,
     Bar,
@@ -18,6 +18,14 @@ import { clientsApi } from '@/api/clients';
 import { listQueryLogs } from '@/api/queryLog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+
+function isPrivateIp(ip: string): boolean {
+    if (!ip || ip === 'localhost' || ip === '::1') return true;
+    const parts = ip.split('.').map(Number);
+    if (parts.length !== 4) return true; // IPv6 等视为私有
+    const [a, b] = parts;
+    return a === 127 || a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+}
 
 interface ClientDetailSheetProps {
     ip: string | null;
@@ -42,6 +50,18 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
     });
 
     const client = clients?.find((c) => c.identifiers.includes(ip ?? ''));
+
+    const { data: geoData } = useQuery({
+        queryKey: ['ip-geo', ip],
+        queryFn: async () => {
+            const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,city,country,countryCode,isp,org`);
+            if (!res.ok) throw new Error('geo fetch failed');
+            return res.json() as Promise<{ status: string; city: string; country: string; countryCode: string; isp: string; org: string }>;
+        },
+        enabled: open && ip !== null && !isPrivateIp(ip ?? ''),
+        staleTime: 1000 * 60 * 60, // 1 小时
+        retry: false,
+    });
 
     const { data: activityData, isLoading: activityLoading } = useQuery({
         queryKey: ['client-activity', client?.id, hours],
@@ -123,6 +143,29 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
                                         <span className="font-mono text-xs">{ip}</span>
                                     </div>
                                 )}
+                                {geoData?.status === 'success' && (() => {
+                                    const flag = geoData.countryCode
+                                        .toUpperCase()
+                                        .split('')
+                                        .map((c: string) => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
+                                        .join('');
+                                    const ispOrg = geoData.org || geoData.isp;
+                                    const location = geoData.city ? `${geoData.city}, ${geoData.country}` : geoData.country;
+                                    return (
+                                        <>
+                                            <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm">
+                                                <span>{flag}</span>
+                                                <span className="text-muted-foreground">{location}</span>
+                                            </div>
+                                            {ispOrg && (
+                                                <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm">
+                                                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                                    <span className="text-muted-foreground">{ispOrg}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
 

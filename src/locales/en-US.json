@@ -973,7 +973,9 @@
     "activityEmpty": "No queries in this time range",
     "activityAllowed": "Allowed",
     "activityBlocked": "Blocked",
-    "activityTopDomains": "Top 10 Domains"
+    "activityTopDomains": "Top 10 Domains",
+    "geoCity": "Location",
+    "geoIsp": "ISP"
   },
   "auditLog": {
     "title": "Audit Log",

@@ -983,7 +983,9 @@
     "activityEmpty": "该时间段内没有查询记录",
     "activityAllowed": "放行",
     "activityBlocked": "拦截",
-    "activityTopDomains": "Top 10 查询域名"
+    "activityTopDomains": "Top 10 查询域名",
+    "geoCity": "位置",
+    "geoIsp": "ISP"
   },
   "auditLog": {
     "title": "审计日志",
