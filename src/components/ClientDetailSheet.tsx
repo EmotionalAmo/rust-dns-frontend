@@ -1,8 +1,19 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { Monitor, ExternalLink, Shield, ShieldOff, Loader2 } from 'lucide-react';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip as RechartsTooltip,
+    ResponsiveContainer,
+    Legend,
+} from 'recharts';
 import { clientsApi } from '@/api/clients';
 import { listQueryLogs } from '@/api/queryLog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -16,6 +27,7 @@ interface ClientDetailSheetProps {
 
 export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetProps) {
     const { t } = useTranslation();
+    const [hours, setHours] = useState(24);
 
     const { data: clients, isLoading: clientsLoading } = useQuery({
         queryKey: ['clients', 'list'],
@@ -30,6 +42,13 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
     });
 
     const client = clients?.find((c) => c.identifiers.includes(ip ?? ''));
+
+    const { data: activityData, isLoading: activityLoading } = useQuery({
+        queryKey: ['client-activity', client?.id, hours],
+        queryFn: () => clientsApi.getActivity(client!.id, hours),
+        enabled: open && !!client?.id,
+    });
+
     const logs = logsData?.data ?? [];
     const isLoading = clientsLoading || logsLoading;
 
@@ -106,6 +125,64 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
                                 )}
                             </div>
                         </div>
+
+                        {/* 查询活动 */}
+                        {client?.id && (
+                            <div className="px-6 py-4 border-b border-border/40">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-sm font-medium">{t('clientDetail.activityTitle')}</h3>
+                                    <div className="flex gap-1">
+                                        {([6, 24, 72, 168] as const).map((h) => (
+                                            <button
+                                                key={h}
+                                                onClick={() => setHours(h)}
+                                                className={`text-xs px-2 py-0.5 rounded transition-colors ${hours === h ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                {h < 24 ? `${h}h` : h === 24 ? '24h' : h === 72 ? '3d' : '7d'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {activityLoading ? (
+                                    <div className="h-[160px] flex items-center justify-center">
+                                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : !activityData || activityData.data.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground py-6 text-center">{t('clientDetail.activityEmpty')}</p>
+                                ) : (
+                                    <>
+                                        <ResponsiveContainer width="100%" height={160}>
+                                            <BarChart data={activityData.data.map(b => ({
+                                                hour: b.hour.slice(11, 16),
+                                                [t('clientDetail.activityAllowed')]: b.total - b.blocked,
+                                                [t('clientDetail.activityBlocked')]: b.blocked,
+                                            }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                                                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                                                <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={hours <= 24 ? 3 : hours <= 72 ? 11 : 23} />
+                                                <YAxis tick={{ fontSize: 10 }} />
+                                                <RechartsTooltip />
+                                                <Legend wrapperStyle={{ fontSize: 11 }} />
+                                                <Bar dataKey={t('clientDetail.activityAllowed')} stackId="a" fill="hsl(var(--chart-2))" />
+                                                <Bar dataKey={t('clientDetail.activityBlocked')} stackId="a" fill="hsl(var(--chart-5))" radius={[2, 2, 0, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                        {activityData.top_domains.length > 0 && (
+                                            <div className="mt-3">
+                                                <p className="text-xs font-medium text-muted-foreground mb-2">{t('clientDetail.activityTopDomains')}</p>
+                                                <div className="space-y-1 max-h-32 overflow-y-auto">
+                                                    {activityData.top_domains.map((d) => (
+                                                        <div key={d.domain} className="flex items-center justify-between text-xs">
+                                                            <span className="font-mono truncate max-w-[80%]">{d.domain}</span>
+                                                            <span className="text-muted-foreground shrink-0">{d.count}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        )}
 
                         {/* 最近查询 */}
                         <div className="px-6 py-4">

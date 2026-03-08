@@ -974,7 +974,12 @@
     "recentQueries": "最近查询",
     "viewAllLogs": "查看全部日志",
     "noQueries": "暂无查询记录",
-    "loading": "加载中..."
+    "loading": "加载中...",
+    "activityTitle": "查询活动",
+    "activityEmpty": "该时间段内没有查询记录",
+    "activityAllowed": "放行",
+    "activityBlocked": "拦截",
+    "activityTopDomains": "Top 10 查询域名"
   },
   "auditLog": {
     "title": "审计日志",

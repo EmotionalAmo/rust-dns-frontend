@@ -1,16 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientsApi, type ClientRecord, type CreateClientPayload } from '@/api/clients';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  Legend,
-} from 'recharts';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -57,120 +47,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-function ClientActivityDialog({
-  client,
-  onClose,
-}: {
-  client: ClientRecord;
-  onClose: () => void;
-}) {
-  const { t } = useTranslation();
-  const [hours, setHours] = useState(24);
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['client-activity', client.id, hours],
-    queryFn: () => clientsApi.getActivity(client.id, hours),
-  });
-
-  const chartData =
-    data?.data.map((b) => ({
-      hour: b.hour.slice(11, 16), // HH:MM
-      [t('clients.activityAllowed')]: b.total - b.blocked,
-      [t('clients.activityBlocked')]: b.blocked,
-    })) ?? [];
-
-  return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {t('clients.activityTitle', { name: client.name })}
-          </DialogTitle>
-          <DialogDescription>{t('clients.activityDesc')}</DialogDescription>
-        </DialogHeader>
-
-        {/* Time range selector */}
-        <div className="flex gap-2">
-          {[6, 24, 72, 168].map((h) => (
-            <Button
-              key={h}
-              variant={hours === h ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setHours(h)}
-            >
-              {h < 24 ? `${h}h` : h === 24 ? '24h' : h === 72 ? '3d' : '7d'}
-            </Button>
-          ))}
-        </div>
-
-        {isLoading ? (
-          <div className="flex justify-center py-12">
-            <RefreshCw size={28} className="animate-spin text-muted-foreground" />
-          </div>
-        ) : error ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
-            {t('common.loadError')}
-          </p>
-        ) : chartData.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">
-            {t('clients.activityEmpty')}
-          </p>
-        ) : (
-          <>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis
-                  dataKey="hour"
-                  tick={{ fontSize: 11 }}
-                  interval={hours <= 24 ? 3 : hours <= 72 ? 11 : 23}
-                />
-                <YAxis tick={{ fontSize: 11 }} />
-                <RechartsTooltip />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar
-                  dataKey={t('clients.activityAllowed')}
-                  stackId="a"
-                  fill="hsl(var(--chart-2))"
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  dataKey={t('clients.activityBlocked')}
-                  stackId="a"
-                  fill="hsl(var(--chart-5))"
-                  radius={[2, 2, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-
-            {/* Top domains */}
-            {data && data.top_domains.length > 0 && (
-              <div className="mt-2">
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  {t('clients.activityTopDomains')}
-                </p>
-                <div className="space-y-1 max-h-40 overflow-y-auto">
-                  {data.top_domains.map((d) => (
-                    <div key={d.domain} className="flex items-center justify-between text-xs">
-                      <span className="font-mono truncate max-w-[80%]">{d.domain}</span>
-                      <span className="text-muted-foreground shrink-0">{d.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            {t('common.close')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 interface FormData {
   name: string;
@@ -341,7 +217,6 @@ export default function ClientsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ClientRecord | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClientRecord | null>(null);
-  const [activityClient, setActivityClient] = useState<ClientRecord | null>(null);
   const [clientSheetIp, setClientSheetIp] = useState<string | null>(null);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -566,7 +441,10 @@ export default function ClientsPage() {
                               variant="ghost"
                               size="sm"
                               title={t('clients.activityButtonTip')}
-                              onClick={() => setActivityClient(client)}
+                              onClick={() => {
+                                const ip = (client.identifiers ?? [])[0] ?? null;
+                                if (ip) { setClientSheetIp(ip); setClientSheetOpen(true); }
+                              }}
                             >
                               <BarChart2 size={14} />
                             </Button>
@@ -592,7 +470,10 @@ export default function ClientsPage() {
                               variant="ghost"
                               size="sm"
                               title={t('clients.activityButtonTip')}
-                              onClick={() => setActivityClient(client)}
+                              onClick={() => {
+                                const ip = (client.identifiers ?? [])[0] ?? null;
+                                if (ip) { setClientSheetIp(ip); setClientSheetOpen(true); }
+                              }}
                             >
                               <BarChart2 size={14} />
                             </Button>
@@ -655,14 +536,6 @@ export default function ClientsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* 活动时间线 */}
-      {activityClient && (
-        <ClientActivityDialog
-          client={activityClient}
-          onClose={() => setActivityClient(null)}
-        />
-      )}
 
       {/* 客户端详情侧边栏 */}
       <ClientDetailSheet

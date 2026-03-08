@@ -964,7 +964,12 @@
     "recentQueries": "Recent Queries",
     "viewAllLogs": "View All Logs",
     "noQueries": "No queries found",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "activityTitle": "Query Activity",
+    "activityEmpty": "No queries in this time range",
+    "activityAllowed": "Allowed",
+    "activityBlocked": "Blocked",
+    "activityTopDomains": "Top 10 Domains"
   },
   "auditLog": {
     "title": "Audit Log",
