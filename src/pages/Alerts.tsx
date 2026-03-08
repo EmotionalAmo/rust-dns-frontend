@@ -178,6 +178,17 @@ export default function AlertsPage() {
                                             </Link>
                                         </div>
                                     )}
+                                    {alert.alert_type === 'anomaly_detection' && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <Link
+                                                to="/insights"
+                                                className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 border border-border rounded px-2 py-1 hover:bg-muted/50 transition-colors"
+                                            >
+                                                <FileText className="h-3 w-3" />
+                                                {t('alerts.viewInsights')}
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="shrink-0 self-start sm:self-center ml-auto flex items-center gap-1">

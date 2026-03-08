@@ -927,6 +927,7 @@
     "typeLabel": "类型：",
     "markAsRead": "标记为已读",
     "viewQueryLogs": "查看 {{client}} 的查询日志",
+    "viewInsights": "查看异常 Insights",
     "markAllReadSuccess": "所有告警已标记为已读",
     "clearSuccess": "告警历史已清除",
     "pageInfo": "第 {{page}} / {{total}} 页",

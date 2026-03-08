@@ -917,6 +917,7 @@
     "typeLabel": "Type:",
     "markAsRead": "Mark as read",
     "viewQueryLogs": "View query logs for {{client}}",
+    "viewInsights": "View Anomaly Insights",
     "markAllReadSuccess": "All alerts marked as read",
     "clearSuccess": "Alerts history cleared",
     "pageInfo": "Page {{page}} of {{total}}",
