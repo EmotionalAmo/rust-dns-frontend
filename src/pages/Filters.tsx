@@ -876,14 +876,26 @@ export default function FiltersPage() {
                           />
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            {filter.last_updated ? (
-                              <>
-                                <Clock size={12} />
-                                {formatDate(filter.last_updated)}
-                              </>
-                            ) : (
-                              <span>-</span>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1">
+                              {filter.last_updated ? (
+                                <>
+                                  <Clock size={12} />
+                                  {formatDate(filter.last_updated)}
+                                </>
+                              ) : (
+                                <span>-</span>
+                              )}
+                            </div>
+                            {filter.url && (filter.update_interval_hours ?? 0) > 0 && (
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 gap-0.5">
+                                <RefreshCw size={9} />
+                                {filter.update_interval_hours === 24
+                                  ? t('filters.intervalDaily')
+                                  : filter.update_interval_hours === 168
+                                  ? t('filters.intervalWeekly')
+                                  : t('filters.intervalMonthly')}
+                              </Badge>
                             )}
                           </div>
                         </TableCell>
