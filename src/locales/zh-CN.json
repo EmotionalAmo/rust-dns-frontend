@@ -57,7 +57,8 @@
     "error": "错误：{{msg}}",
     "success": "成功",
     "failed": "失败",
-    "unknownError": "未知错误"
+    "unknownError": "未知错误",
+    "loadError": "加载失败"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -700,7 +701,14 @@
     "static": "已配置",
     "dynamic": "自动发现",
     "promoteToStatic": "转为静态客户端",
-    "dynamicFilterDisabledTip": "动态客户端无法修改过滤设置，请先转为静态客户端"
+    "dynamicFilterDisabledTip": "动态客户端无法修改过滤设置，请先转为静态客户端",
+    "activityTitle": "{{name}} 活动时间线",
+    "activityDesc": "查看该设备过去一段时间的 DNS 查询活动",
+    "activityEmpty": "该时间段内没有查询记录",
+    "activityAllowed": "放行",
+    "activityBlocked": "拦截",
+    "activityTopDomains": "Top 10 查询域名",
+    "activityButtonTip": "查看活动时间线"
   },
   "clientGroups": {
     "title": "客户端分组",

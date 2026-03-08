@@ -57,7 +57,8 @@
     "error": "Error: {{msg}}",
     "success": "Success",
     "failed": "Failed",
-    "unknownError": "Unknown error"
+    "unknownError": "Unknown error",
+    "loadError": "Load failed"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -690,7 +691,14 @@
     "static": "Configured",
     "dynamic": "Auto-discovered",
     "promoteToStatic": "Promote to Static",
-    "dynamicFilterDisabledTip": "Dynamic clients cannot change filter settings. Promote to static first."
+    "dynamicFilterDisabledTip": "Dynamic clients cannot change filter settings. Promote to static first.",
+    "activityTitle": "{{name}} Activity Timeline",
+    "activityDesc": "DNS query activity for this device over a selected time range",
+    "activityEmpty": "No query records in this time range",
+    "activityAllowed": "Allowed",
+    "activityBlocked": "Blocked",
+    "activityTopDomains": "Top 10 Queried Domains",
+    "activityButtonTip": "View activity timeline"
   },
   "clientGroups": {
     "title": "Client Groups",

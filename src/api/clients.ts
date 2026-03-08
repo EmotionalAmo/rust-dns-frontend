@@ -1,5 +1,21 @@
 import apiClient from './client';
 
+export interface ClientActivityBucket {
+  hour: string;
+  total: number;
+  blocked: number;
+}
+
+export interface ClientTopDomain {
+  domain: string;
+  count: number;
+}
+
+export interface ClientActivityData {
+  data: ClientActivityBucket[];
+  top_domains: ClientTopDomain[];
+}
+
 export interface ClientRecord {
   id: string;
   name: string;
@@ -53,9 +69,17 @@ async function deleteClient(id: string): Promise<void> {
   await apiClient.delete(`/api/v1/clients/${id}`);
 }
 
+async function getClientActivity(id: string, hours = 24): Promise<ClientActivityData> {
+  const response = await apiClient.get<ClientActivityData>(
+    `/api/v1/clients/${id}/activity?hours=${hours}`,
+  );
+  return response.data;
+}
+
 export const clientsApi = {
   list: listClients,
   create: createClient,
   update: updateClient,
   delete: deleteClient,
+  getActivity: getClientActivity,
 };
