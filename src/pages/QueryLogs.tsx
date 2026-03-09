@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck, Plus } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { formatDateTime } from '@/lib/datetime';
 import { ExportDialog } from '@/components/query-log/ExportDialog';
 import type { Filter } from '@/components/query-log/FilterRow';
+import { FilterBuilder } from '@/components/query-log/FilterBuilder';
 import { ClientDetailSheet } from '@/components/ClientDetailSheet';
 
 const PAGE_SIZE = 50;
@@ -139,6 +140,7 @@ export default function QueryLogsPage() {
     ...(initialClient ? { filters: [{ field: 'client_ip', operator: 'like' as const, value: initialClient }] } : {}),
   }));
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -274,6 +276,29 @@ export default function QueryLogsPage() {
     e.preventDefault();
     setCursorStack([]);
     setAppliedFilters({ ...buildBaseFilters(), offset: 0 });
+  };
+
+  const handleAdvancedSearch = (filters: Filter[]) => {
+    const params: QueryLogListParams = { limit: PAGE_SIZE, offset: 0 };
+    for (const f of filters) {
+      if (f.field === 'question' && (f.operator === 'like' || f.operator === 'eq')) {
+        params.domain = f.value as string;
+      } else if (f.field === 'status' && f.operator === 'eq') {
+        params.status = f.value as 'blocked' | 'allowed';
+      } else if (f.field === 'client_ip' && (f.operator === 'like' || f.operator === 'eq')) {
+        params.client = f.value as string;
+      } else if (f.field === 'upstream' && (f.operator === 'eq' || f.operator === 'like')) {
+        params.upstream = f.value as string;
+      } else if (f.field === 'qtype' && f.operator === 'eq') {
+        params.qtype = f.value as string;
+      } else if (f.field === 'time' && f.operator === 'relative') {
+        const v = (f.value as string).replace(/^-/, '');
+        params.time_range = v;
+      }
+    }
+    setCursorStack([]);
+    setSelectedIds(new Set());
+    setAppliedFilters(params);
   };
 
   const goNext = () => {
@@ -565,8 +590,24 @@ export default function QueryLogsPage() {
               {t('common.export')}
             </Button>
           </div>
+          <div className="mt-3 border-t pt-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground h-7 gap-1"
+              onClick={() => setShowAdvancedFilters(v => !v)}
+            >
+              <Plus size={12} className={showAdvancedFilters ? 'rotate-45 transition-transform' : 'transition-transform'} />
+              {showAdvancedFilters ? '收起高级过滤器' : '展开高级过滤器'}
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {showAdvancedFilters && (
+        <FilterBuilder onSearch={handleAdvancedSearch} isLoading={isFetching} />
+      )}
 
       {/* 实时推送面板 */}
       <Card>

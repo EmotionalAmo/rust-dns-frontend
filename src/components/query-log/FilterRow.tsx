@@ -31,7 +31,7 @@ const FIELD_OPTIONS = [
   { value: 'status', label: '状态', icon: Zap },
   { value: 'reason', label: '原因', icon: Shield },
   { value: 'upstream', label: '上游', icon: Globe },
-  { value: 'elapsed_ms', label: '响应时间', icon: Clock },
+  { value: 'elapsed_ns', label: '响应时间 (ns)', icon: Clock },
 ];
 
 // 根据字段获取可用操作符
@@ -60,7 +60,7 @@ function getOperatorsForField(field: string) {
         { value: 'eq', label: '等于' },
         { value: 'in', label: '包含多个' },
       ];
-    case 'elapsed_ms':
+    case 'elapsed_ns':
       return [
         { value: 'gt', label: '大于' },
         { value: 'lt', label: '小于' },
@@ -131,7 +131,7 @@ function ValueInput({ field, operator, value, onChange }: { field: string; opera
   }
 
   // 数值输入
-  if (field === 'elapsed_ms') {
+  if (field === 'elapsed_ns') {
     return (
       <div className="flex items-center gap-1">
         <Input
@@ -139,9 +139,9 @@ function ValueInput({ field, operator, value, onChange }: { field: string; opera
           value={(value as number) || ''}
           onChange={(e) => onChange(parseInt(e.target.value) || 0)}
           className="w-24 h-9"
-          placeholder="ms"
+          placeholder="ns"
         />
-        <span className="text-xs text-muted-foreground">ms</span>
+        <span className="text-xs text-muted-foreground">ns</span>
       </div>
     );
   }
@@ -250,7 +250,7 @@ export function QuickFilters({ onApply }: { onApply: (filters: Filter[]) => void
       icon: Clock,
       color: 'text-orange-600 bg-orange-50 hover:bg-orange-100 dark:text-orange-400 dark:bg-orange-950 dark:hover:bg-orange-900',
       filters: [
-        { field: 'elapsed_ms', operator: 'gt', value: 100 },
+        { field: 'elapsed_ns', operator: 'gt', value: 100000000 },
         { field: 'time', operator: 'relative', value: '-24h' },
       ],
     },
