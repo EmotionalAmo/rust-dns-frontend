@@ -74,8 +74,9 @@ export interface SuggestionResponse {
 
 export const queryLogAdvancedApi = {
   // ===== 高级查询 =====
+  // 使用 POST + JSON body，避免 Axios 对复杂嵌套 filters 的序列化问题
   list: async (params: AdvancedQueryParams): Promise<QueryLogListResponse> => {
-    const response = await apiClient.get('/query-log/advanced', { params });
+    const response = await apiClient.post('/query-log/advanced', params);
     return response.data;
   },
 
