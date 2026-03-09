@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck, Plus } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, Globe, ChevronLeft, ChevronRight, Download, Radio, Trash2, ShieldX, ShieldCheck, Plus, Undo2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   AlertDialog,
@@ -147,6 +147,9 @@ export default function QueryLogsPage() {
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
   const [clientSheetIp, setClientSheetIp] = useState<string | null>(null);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
+
+  // 最近创建的规则记录，用于撤销功能
+  const [recentRule, setRecentRule] = useState<{ id: string; domain: string; type: 'block' | 'allow' } | null>(null);
 
   // New filter states
   const [timeRange, setTimeRange] = useState<string>('all');
@@ -382,11 +385,16 @@ export default function QueryLogsPage() {
     setPendingActions((prev) => new Set(prev).add(key));
     try {
       const rule = type === 'block' ? `||${domain}^` : `@@||${domain}^`;
-      await rulesApi.createRule({ rule });
+      const result = await rulesApi.createRule({ rule });
       queryClient.invalidateQueries({ queryKey: ['rules-for-badge'] });
       const message = type === 'block'
         ? t('queryLogs.blockSuccess', { domain })
         : t('queryLogs.allowSuccess', { domain });
+      // 保存最近创建的规则信息（假设返回数据包含 id）
+      const ruleId = (result as any)?.id || '';
+      setRecentRule({ id: ruleId, domain, type });
+      // 30 秒后自动清除撤销记录
+      setTimeout(() => setRecentRule(null), 30000);
       toast.success(message, {
         action: {
           label: t('queryLogs.viewRules'),
@@ -405,8 +413,49 @@ export default function QueryLogsPage() {
     }
   };
 
+  // 撤销最近创建的规则
+  const handleUndo = async () => {
+    if (!recentRule) return;
+    try {
+      await rulesApi.deleteRule(recentRule.id);
+      queryClient.invalidateQueries({ queryKey: ['rules-for-badge'] });
+      toast.success(t('queryLogs.undoSuccess', { domain: recentRule.domain }));
+      setRecentRule(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(t('queryLogs.actionError', { msg }));
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* 撤销操作提示 */}
+      {recentRule && (
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={16} className="text-primary" />
+                <span className="text-sm">
+                  {recentRule.type === 'block'
+                    ? t('queryLogs.blockSuccess', { domain: recentRule.domain })
+                    : t('queryLogs.allowSuccess', { domain: recentRule.domain })}
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUndo}
+                className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Undo2 size={12} />
+                {t('queryLogs.undo')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 过滤器 */}
       <Card>
         <CardHeader>

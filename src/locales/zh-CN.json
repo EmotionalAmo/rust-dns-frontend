@@ -551,6 +551,8 @@
     "allowSuccess": "已添加允许规则：{{domain}}",
     "actionError": "操作失败：{{msg}}",
     "viewRules": "查看规则",
+    "undo": "撤销",
+    "undoSuccess": "已撤销规则：{{domain}}",
     "badgeBlocked": "已屏蔽",
     "badgeAllowed": "已放行",
     "selected": "已选 {{count}} 条",
