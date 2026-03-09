@@ -89,7 +89,7 @@ export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCo
     // Trigger download
     const link = document.createElement('a');
     link.href = url;
-    link.download = `query-logs.${format}`;
+    link.download = `query-logs-${new Date().toISOString().slice(0, 10)}.${format}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
