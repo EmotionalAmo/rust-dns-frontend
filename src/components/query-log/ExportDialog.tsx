@@ -38,7 +38,8 @@ const AVAILABLE_FIELDS = [
   { key: 'status', label: '状态', default: true },
   { key: 'reason', label: '原因', default: false },
   { key: 'upstream', label: '上游服务器', default: false },
-  { key: 'elapsed_ms', label: '响应时间 (ms)', default: false },
+  { key: 'elapsed_ns', label: '响应时间 (ns)', default: false },
+  { key: 'upstream_ns', label: '上游响应时间 (ns)', default: false },
 ];
 
 export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCount }: ExportDialogProps) {
