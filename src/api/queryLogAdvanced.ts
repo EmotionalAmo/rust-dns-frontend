@@ -56,7 +56,7 @@ export interface QueryLogListResponse {
     status: string;
     reason: string | null;
     upstream: string | null;
-    elapsedMs: number | null;
+    elapsed_ns: number | null;
   }>;
   total: number;
   returned: number;
