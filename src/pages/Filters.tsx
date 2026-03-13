@@ -89,22 +89,10 @@ const POPULAR_FILTERS = [
 // 精选推荐 Filter Lists（页面内直接一键添加）
 const RECOMMENDED_FILTERS = [
   {
-    name: 'EasyList',
-    url: 'https://easylist.to/easylist/easylist.txt',
+    name: 'OISD Basic',
+    url: 'https://basic.oisd.nl/',
     type: 'adguard' as const,
-    descKey: 'filters.recommendedEasyList',
-  },
-  {
-    name: 'EasyList China',
-    url: 'https://easylist-downloads.adblockplus.org/easylistchina.txt',
-    type: 'adguard' as const,
-    descKey: 'filters.recommendedEasyListChina',
-  },
-  {
-    name: 'EasyPrivacy',
-    url: 'https://easylist.to/easylist/easyprivacy.txt',
-    type: 'adguard' as const,
-    descKey: 'filters.recommendedEasyPrivacy',
+    descKey: 'filters.recommendedOisdBasic',
   },
   {
     name: 'AdGuard DNS Filter',
@@ -113,10 +101,22 @@ const RECOMMENDED_FILTERS = [
     descKey: 'filters.recommendedAdGuardDns',
   },
   {
-    name: "Steven Black's Hosts",
-    url: 'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts',
+    name: 'EasyList China',
+    url: 'https://easylist-downloads.adblockplus.org/easylistchina.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedEasyListChina',
+  },
+  {
+    name: "HaGeZi's Pro++ Blocklist",
+    url: 'https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/pro.plus.txt',
+    type: 'adguard' as const,
+    descKey: 'filters.recommendedHagezi',
+  },
+  {
+    name: '1Hosts (Lite)',
+    url: 'https://raw.githubusercontent.com/nicholaswilde/block-lists/main/1hosts_lite.txt',
     type: 'hosts' as const,
-    descKey: 'filters.recommendedStevenBlack',
+    descKey: 'filters.recommendedOneHostsLite',
   },
 ];
 

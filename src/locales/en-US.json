@@ -412,11 +412,11 @@
     "recommendedCollapse": "Collapse",
     "recommendedAdd": "Add",
     "recommendedAdded": "Added",
-    "recommendedEasyList": "The most widely used ad blocking list",
-    "recommendedEasyListChina": "Ad blocking for Chinese websites",
-    "recommendedEasyPrivacy": "Block privacy trackers",
+    "recommendedOisdBasic": "Comprehensive ad and tracker blocking with low false positives",
     "recommendedAdGuardDns": "AdGuard official DNS filter list",
-    "recommendedStevenBlack": "Combined ad and malware blocking"
+    "recommendedEasyListChina": "Ad blocking optimized for Chinese websites",
+    "recommendedHagezi": "High-strength privacy and security protection",
+    "recommendedOneHostsLite": "Lightweight, suitable for performance-sensitive environments"
   },
   "rewrites": {
     "title": "DNS Rewrites",
@@ -444,7 +444,7 @@
     "usageExamplesTitle": "Usage Examples",
     "usageExampleNas": "(access local NAS)",
     "usageExampleRouter": "(access router admin panel)",
-    "usageExamplePrinter": "(access LAN printer)",
+    "usageExamplePihole": "(keep Pi-hole accessible by hostname)",
     "loadError": "Failed to load rewrite rules, please try again later",
     "createTitle": "Add Rewrite Rule",
     "createDesc": "Create a domain-to-IP mapping",

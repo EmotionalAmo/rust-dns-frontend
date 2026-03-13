@@ -423,11 +423,11 @@
     "recommendedCollapse": "收起",
     "recommendedAdd": "添加",
     "recommendedAdded": "已添加",
-    "recommendedEasyList": "最广泛使用的广告拦截列表",
-    "recommendedEasyListChina": "针对中文网站的广告拦截",
-    "recommendedEasyPrivacy": "防止各类隐私追踪器",
+    "recommendedOisdBasic": "综合广告和追踪器拦截，误报率低",
     "recommendedAdGuardDns": "AdGuard 官方 DNS 过滤列表",
-    "recommendedStevenBlack": "综合广告和恶意软件拦截"
+    "recommendedEasyListChina": "专为中文网站优化的广告拦截列表",
+    "recommendedHagezi": "高强度隐私和安全保护",
+    "recommendedOneHostsLite": "轻量级，适合性能敏感场景"
   },
   "rewrites": {
     "title": "DNS 重写规则",
@@ -455,7 +455,7 @@
     "usageExamplesTitle": "使用场景示例",
     "usageExampleNas": "（访问本地 NAS）",
     "usageExampleRouter": "（访问路由器后台）",
-    "usageExamplePrinter": "（访问局域网打印机）",
+    "usageExamplePihole": "（让 Pi-hole 可以用主机名访问，保持兼容性）",
     "loadError": "加载重写规则失败，请稍后重试",
     "createTitle": "添加重写规则",
     "createDesc": "创建域名到 IP 地址的映射",

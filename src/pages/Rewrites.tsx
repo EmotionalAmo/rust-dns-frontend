@@ -554,9 +554,9 @@ export default function RewritesPage() {
                     <div className="mt-4 w-full text-left space-y-2">
                       <p className="text-xs text-muted-foreground font-medium">{t('rewrites.usageExamplesTitle')}</p>
                       {[
-                        { domain: 'nas.local', ip: '192.168.1.100', desc: t('rewrites.usageExampleNas') },
+                        { domain: 'nas.home', ip: '192.168.1.100', desc: t('rewrites.usageExampleNas') },
                         { domain: 'router.home', ip: '192.168.1.1', desc: t('rewrites.usageExampleRouter') },
-                        { domain: 'printer.local', ip: '192.168.1.200', desc: t('rewrites.usageExamplePrinter') },
+                        { domain: 'pihole', ip: '192.168.1.50', desc: t('rewrites.usageExamplePihole') },
                       ].map((ex) => (
                         <div key={ex.domain} className="rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
                           <code className="font-mono text-foreground">{ex.domain}</code>
