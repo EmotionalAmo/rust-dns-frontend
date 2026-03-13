@@ -33,5 +33,8 @@ jobs:
       - name: Check TypeScript types
         run: npx tsc --noEmit
 
+      - name: Run Unit Tests
+        run: npm run test:unit -- --run
+
       - name: Test Production Build
         run: npm run build

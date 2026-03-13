@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
         // Set up callbacks for API client after hydration
         setAuthStoreCallbacks(
           () => state?.token || null,
-          () => state?.clearAuth() || (() => {})
+          () => { state?.clearAuth(); }
         );
       },
     }
