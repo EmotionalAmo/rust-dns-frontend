@@ -633,7 +633,13 @@
     "upstreamRoutingStrategyDesc": "Choose how queries are distributed across active upstreams.",
     "strategyPriority": "Priority (Strict Failover)",
     "strategyLoadBalance": "Load Balancing (Round-Robin)",
-    "strategyFastest": "Fastest (Lowest Latency)"
+    "strategyFastest": "Fastest (Lowest Latency)",
+    "backupTitle": "Data Backup",
+    "backupDesc": "Download a full PostgreSQL database backup (pg_dump custom format)",
+    "backupDownload": "Download Backup",
+    "backupInProgress": "Backing up...",
+    "backupSuccess": "Backup downloaded successfully",
+    "backupError": "Backup failed: {{msg}}"
   },
   "users": {
     "title": "User Management",

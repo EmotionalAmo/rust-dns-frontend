@@ -19,7 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3 } from 'lucide-react';
+import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3, Download } from 'lucide-react';
 
 function SettingRow({
   label,
@@ -311,6 +311,20 @@ export default function SettingsPage() {
     onError: (e: Error) => toast.error(t('settings.deleteFailed', { msg: e.message })),
   });
 
+  const [isBackingUp, setIsBackingUp] = useState(false);
+
+  const handleDownloadBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      await settingsApi.downloadBackup();
+      toast.success(t('settings.backupSuccess'));
+    } catch (e: unknown) {
+      toast.error(t('settings.backupError', { msg: (e as Error).message }));
+    } finally {
+      setIsBackingUp(false);
+    }
+  };
+
   const failoverMutation = useMutation({
     mutationFn: () => upstreamsApi.triggerFailover(),
     onSuccess: (result) => {
@@ -500,6 +514,30 @@ export default function SettingsPage() {
                   onCheckedChange={(v) => setForm({ ...form, parental_control_enabled: v })}
                 />
               </SettingRow>
+            </CardContent>
+          </Card>
+          {/* 数据备份 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Download size={16} />
+                {t('settings.backupTitle')}
+              </CardTitle>
+              <CardDescription>{t('settings.backupDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                onClick={handleDownloadBackup}
+                disabled={isBackingUp}
+                className="w-full"
+              >
+                {isBackingUp ? (
+                  <><RefreshCw size={16} className="mr-2 animate-spin" />{t('settings.backupInProgress')}</>
+                ) : (
+                  <><Download size={16} className="mr-2" />{t('settings.backupDownload')}</>
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>

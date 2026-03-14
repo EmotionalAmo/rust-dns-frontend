@@ -44,9 +44,32 @@ async function flushCache(): Promise<void> {
   await apiClient.delete('/api/v1/settings/cache');
 }
 
+async function downloadBackup(): Promise<void> {
+  const response = await apiClient.get('/api/v1/admin/backup', {
+    responseType: 'blob',
+  });
+
+  const disposition = response.headers['content-disposition'] as string | undefined;
+  let filename = 'rust-dns-backup.dump';
+  if (disposition) {
+    const match = disposition.match(/filename="([^"]+)"/);
+    if (match) filename = match[1];
+  }
+
+  const url = URL.createObjectURL(response.data as Blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export const settingsApi = {
   getDns: getDnsSettings,
   updateDns: updateDnsSettings,
   getCacheStats,
   flushCache,
+  downloadBackup,
 };
