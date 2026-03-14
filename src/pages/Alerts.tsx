@@ -280,7 +280,7 @@ export default function AlertsPage() {
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className={`grid gap-3 grid-cols-2 ${mutedCount > 0 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`}>
                     {/* Total alerts */}
                     <div className="bg-muted/40 rounded-lg px-4 py-3">
                         <p className="text-xs text-muted-foreground mb-1">{t('alerts.statsTotal')}</p>
@@ -330,6 +330,14 @@ export default function AlertsPage() {
                             </div>
                         )}
                     </div>
+
+                    {/* Muted count (only shown when > 0) */}
+                    {mutedCount > 0 && (
+                        <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
+                            <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">{t('alerts.statsMuted')}</p>
+                            <p className="text-2xl font-bold tabular-nums text-amber-600 dark:text-amber-400">{mutedCount}</p>
+                        </div>
+                    )}
                 </div>
             )}
 

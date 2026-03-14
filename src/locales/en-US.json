@@ -959,6 +959,7 @@
     "statsUnread": "Unread",
     "statsTopDevice": "Most Active Device",
     "statsNoDevice": "None",
+    "statsMuted": "Muted",
     "muteDevice": "Mute device",
     "muteSuccess": "Muted high-frequency-block alerts for {{client}}",
     "unmuteDevice": "Unmute",
