@@ -651,7 +651,17 @@
     "backupDownload": "下载备份",
     "backupInProgress": "备份中...",
     "backupSuccess": "备份文件已下载",
-    "backupError": "备份失败: {{msg}}"
+    "backupError": "备份失败: {{msg}}",
+    "aclTitle": "DNS 访问控制（ACL）",
+    "aclDesc": "控制哪些客户端 IP 可以查询此 DNS 服务器。为空则允许所有来源。",
+    "aclAllowedNetworks": "允许的网络（Allowed）",
+    "aclAllowedNetworksDesc": "允许查询的 IP 或 CIDR，每行一条。设置后只有列表内的地址可以查询。",
+    "aclDeniedNetworks": "拒绝的网络（Denied）",
+    "aclDeniedNetworksDesc": "始终拒绝的 IP 或 CIDR，每行一条。优先于允许列表。",
+    "aclPlaceholder": "示例：\n192.168.1.0/24\n10.0.0.0/8\n172.16.0.1",
+    "aclSaved": "ACL 规则已更新",
+    "aclSaveError": "ACL 更新失败: {{msg}}",
+    "aclEmptyHint": "当前允许所有 IP 查询（无限制）"
   },
   "users": {
     "title": "用户管理",

@@ -19,7 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3, Download } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3, Download, Lock } from 'lucide-react';
 
 function SettingRow({
   label,
@@ -239,6 +240,10 @@ export default function SettingsPage() {
   const [testingUpstream, setTestingUpstream] = useState<string | null>(null);
   const [testResults, setTestResults] = useState<Record<string, HealthCheckResult>>({});
 
+  // ACL state (textarea: one CIDR per line)
+  const [aclAllowed, setAclAllowed] = useState('');
+  const [aclDenied, setAclDenied] = useState('');
+
   // Sync form when settings load
   useEffect(() => {
     if (settings) {
@@ -250,6 +255,8 @@ export default function SettingsPage() {
         parental_control_enabled: settings.parental_control_enabled,
         upstream_strategy: settings.upstream_strategy ?? 'priority',
       });
+      setAclAllowed((settings.acl_allowed_networks ?? []).join('\n'));
+      setAclDenied((settings.acl_denied_networks ?? []).join('\n'));
     }
   }, [settings]);
 
@@ -261,6 +268,24 @@ export default function SettingsPage() {
     },
     onError: (e: Error) => toast.error(t('settings.saveError', { msg: e.message })),
   });
+
+  const aclMutation = useMutation({
+    mutationFn: (payload: UpdateDnsSettingsPayload) => settingsApi.updateDns(payload),
+    onSuccess: () => {
+      toast.success(t('settings.aclSaved'));
+      refetch();
+    },
+    onError: (e: Error) => toast.error(t('settings.aclSaveError', { msg: e.message })),
+  });
+
+  const handleSaveAcl = () => {
+    const parseCidrs = (text: string) =>
+      text.split('\n').map(s => s.trim()).filter(Boolean);
+    aclMutation.mutate({
+      acl_allowed_networks: parseCidrs(aclAllowed),
+      acl_denied_networks: parseCidrs(aclDenied),
+    });
+  };
 
   const createUpstreamMutation = useMutation({
     mutationFn: (req: CreateUpstreamRequest) => upstreamsApi.create(req),
@@ -612,6 +637,56 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </SettingRow>
+            </CardContent>
+          </Card>
+
+          {/* DNS ACL */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock size={16} />
+                {t('settings.aclTitle')}
+              </CardTitle>
+              <CardDescription>{t('settings.aclDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {settings && (settings.acl_allowed_networks ?? []).length === 0 && (settings.acl_denied_networks ?? []).length === 0 && (
+                <p className="text-xs text-muted-foreground italic">{t('settings.aclEmptyHint')}</p>
+              )}
+              <div className="space-y-2">
+                <Label>{t('settings.aclAllowedNetworks')}</Label>
+                <p className="text-xs text-muted-foreground">{t('settings.aclAllowedNetworksDesc')}</p>
+                <Textarea
+                  value={aclAllowed}
+                  onChange={(e) => setAclAllowed(e.target.value)}
+                  placeholder={t('settings.aclPlaceholder')}
+                  rows={4}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{t('settings.aclDeniedNetworks')}</Label>
+                <p className="text-xs text-muted-foreground">{t('settings.aclDeniedNetworksDesc')}</p>
+                <Textarea
+                  value={aclDenied}
+                  onChange={(e) => setAclDenied(e.target.value)}
+                  placeholder={t('settings.aclPlaceholder')}
+                  rows={4}
+                  className="font-mono text-sm"
+                />
+              </div>
+              <Button
+                onClick={handleSaveAcl}
+                disabled={aclMutation.isPending}
+                className="w-full"
+              >
+                {aclMutation.isPending ? (
+                  <RefreshCw size={14} className="mr-2 animate-spin" />
+                ) : (
+                  <Save size={14} className="mr-2" />
+                )}
+                {t('common.save')}
+              </Button>
             </CardContent>
           </Card>
 

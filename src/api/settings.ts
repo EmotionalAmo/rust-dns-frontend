@@ -14,6 +14,8 @@ export interface DnsSettingsRecord {
   safe_search_enabled: boolean;
   parental_control_enabled: boolean;
   upstream_strategy?: string;
+  acl_allowed_networks: string[];
+  acl_denied_networks: string[];
 }
 
 export interface UpdateDnsSettingsPayload {
@@ -24,6 +26,8 @@ export interface UpdateDnsSettingsPayload {
   safe_search_enabled?: boolean;
   parental_control_enabled?: boolean;
   upstream_strategy?: string;
+  acl_allowed_networks?: string[];
+  acl_denied_networks?: string[];
 }
 
 async function getDnsSettings(): Promise<DnsSettingsRecord> {

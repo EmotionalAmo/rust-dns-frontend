@@ -639,7 +639,17 @@
     "backupDownload": "Download Backup",
     "backupInProgress": "Backing up...",
     "backupSuccess": "Backup downloaded successfully",
-    "backupError": "Backup failed: {{msg}}"
+    "backupError": "Backup failed: {{msg}}",
+    "aclTitle": "DNS Access Control (ACL)",
+    "aclDesc": "Control which client IPs can query this DNS server. Empty lists allow all sources.",
+    "aclAllowedNetworks": "Allowed Networks",
+    "aclAllowedNetworksDesc": "IPs or CIDRs allowed to query. When set, only listed addresses can query.",
+    "aclDeniedNetworks": "Denied Networks",
+    "aclDeniedNetworksDesc": "IPs or CIDRs always refused. Takes priority over allowed list.",
+    "aclPlaceholder": "Example:\n192.168.1.0/24\n10.0.0.0/8\n172.16.0.1",
+    "aclSaved": "ACL rules updated",
+    "aclSaveError": "ACL update failed: {{msg}}",
+    "aclEmptyHint": "Currently allowing all IPs (no restriction)"
   },
   "users": {
     "title": "User Management",
