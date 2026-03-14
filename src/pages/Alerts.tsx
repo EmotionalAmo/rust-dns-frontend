@@ -1,17 +1,58 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { alertsApi } from '@/api/alerts';
 import { clientsApi } from '@/api/clients';
 import { quarantineDevice } from '@/lib/quarantine';
-import { Bell, BellRing, Check, Trash2, FileText, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Bell, BellRing, Check, Trash2, FileText, ShieldCheck, ShieldOff, VolumeX } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClientDetailSheet } from '@/components/ClientDetailSheet';
+
+const MUTED_DEVICES_KEY = 'dns-muted-devices';
+
+function useMutedDevices() {
+    const [mutedDevices, setMutedDevices] = useState<string[]>(() => {
+        try {
+            return JSON.parse(localStorage.getItem(MUTED_DEVICES_KEY) || '[]');
+        } catch {
+            return [];
+        }
+    });
+
+    const save = useCallback((devices: string[]) => {
+        setMutedDevices(devices);
+        localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(devices));
+    }, []);
+
+    const mute = useCallback((ip: string) => {
+        setMutedDevices((prev) => {
+            if (prev.includes(ip)) return prev;
+            const next = [...prev, ip];
+            localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(next));
+            return next;
+        });
+    }, []);
+
+    const unmute = useCallback((ip: string) => {
+        setMutedDevices((prev) => {
+            const next = prev.filter((d) => d !== ip);
+            localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(next));
+            return next;
+        });
+    }, []);
+
+    const unmuteAll = useCallback(() => {
+        save([]);
+    }, [save]);
+
+    return { mutedDevices, mute, unmute, unmuteAll };
+}
 
 export default function AlertsPage() {
     const { t } = useTranslation();
@@ -25,8 +66,10 @@ export default function AlertsPage() {
     const [registeredAlertIds, setRegisteredAlertIds] = useState<Set<string>>(new Set());
     const [quarantiningAlertIds, setQuarantiningAlertIds] = useState<Set<string>>(new Set());
     const [quarantinedAlertIds, setQuarantinedAlertIds] = useState<Set<string>>(new Set());
+    const [mutePopoverOpen, setMutePopoverOpen] = useState(false);
     const pageSize = 20;
     const queryClient = useQueryClient();
+    const { mutedDevices, mute, unmute, unmuteAll } = useMutedDevices();
 
     const alertTypeParam = filterType === 'all' ? undefined : filterType;
 
@@ -113,7 +156,25 @@ export default function AlertsPage() {
         );
     }
 
-    const alerts = data?.data || [];
+    const allAlerts = data?.data || [];
+    // 过滤被静音设备的 high_frequency_block 告警
+    const mutedCount = allAlerts.filter(
+        (a) => a.alert_type === 'high_frequency_block' && a.client_id && mutedDevices.includes(a.client_id)
+    ).length;
+    const alerts = allAlerts.filter(
+        (a) => !(a.alert_type === 'high_frequency_block' && a.client_id && mutedDevices.includes(a.client_id))
+    );
+
+    const handleMuteDevice = (ip: string) => {
+        mute(ip);
+        toast.success(t('alerts.muteSuccess', { client: ip }), {
+            duration: 5000,
+            action: {
+                label: t('alerts.muteUndo'),
+                onClick: () => unmute(ip),
+            },
+        });
+    };
 
     // Collect unique alert types from current page for the filter dropdown
     // We fetch all types from all pages by using a separate unfilterd query key
@@ -273,6 +334,49 @@ export default function AlertsPage() {
             )}
 
             <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+                {mutedCount > 0 && (
+                    <div className="flex items-center justify-between bg-muted/30 border-b border-border/40 text-sm text-muted-foreground px-4 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                            <VolumeX className="h-3.5 w-3.5" />
+                            <span>{t('alerts.mutedBar', { count: mutedCount })}</span>
+                        </div>
+                        <Popover open={mutePopoverOpen} onOpenChange={setMutePopoverOpen}>
+                            <PopoverTrigger asChild>
+                                <button className="text-xs text-primary hover:text-primary/80 flex items-center gap-1">
+                                    {t('alerts.manageMuted')}
+                                </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-64 p-0" align="end">
+                                <div className="p-3 border-b border-border/40">
+                                    <p className="text-xs font-medium text-muted-foreground">{t('alerts.mutedDevicesTitle')}</p>
+                                </div>
+                                <div className="divide-y divide-border/40">
+                                    {mutedDevices.map((ip) => (
+                                        <div key={ip} className="flex items-center justify-between px-3 py-2">
+                                            <span className="text-sm font-mono">{ip}</span>
+                                            <button
+                                                onClick={() => { unmute(ip); toast.success(t('alerts.unmutedSuccess', { client: ip })); }}
+                                                className="text-xs text-primary hover:text-primary/80"
+                                            >
+                                                {t('alerts.unmuteDevice')}
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                {mutedDevices.length > 1 && (
+                                    <div className="p-2 border-t border-border/40">
+                                        <button
+                                            onClick={() => { unmuteAll(); setMutePopoverOpen(false); }}
+                                            className="w-full text-xs text-center text-muted-foreground hover:text-foreground py-1"
+                                        >
+                                            {t('alerts.unmuteAll')}
+                                        </button>
+                                    </div>
+                                )}
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                )}
                 {alerts.length === 0 ? (
                     <div className="p-12 text-center flex flex-col items-center">
                         <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
@@ -328,6 +432,13 @@ export default function AlertsPage() {
                                                 <FileText className="h-3 w-3" />
                                                 {t('alerts.viewQueryLogs', { client: alert.client_id })}
                                             </Link>
+                                            <button
+                                                onClick={() => handleMuteDevice(alert.client_id!)}
+                                                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border rounded px-2 py-1 hover:bg-muted/50 transition-colors"
+                                            >
+                                                <VolumeX className="h-3 w-3" />
+                                                {t('alerts.muteDevice')}
+                                            </button>
                                         </div>
                                     )}
                                     {alert.alert_type === 'anomaly_detection' && (

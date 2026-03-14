@@ -958,7 +958,16 @@
     "statsTotal": "Total Alerts",
     "statsUnread": "Unread",
     "statsTopDevice": "Most Active Device",
-    "statsNoDevice": "None"
+    "statsNoDevice": "None",
+    "muteDevice": "Mute device",
+    "muteSuccess": "Muted high-frequency-block alerts for {{client}}",
+    "unmuteDevice": "Unmute",
+    "unmutedSuccess": "Unmuted {{client}}",
+    "mutedBar": "{{count}} alerts muted",
+    "manageMuted": "Manage muted devices",
+    "mutedDevicesTitle": "Muted devices (high-frequency-block)",
+    "unmuteAll": "Unmute all",
+    "muteUndo": "Undo"
   },
   "clientDetail": {
     "title": "Device Details",

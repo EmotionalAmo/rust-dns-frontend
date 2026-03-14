@@ -970,7 +970,16 @@
     "statsTotal": "总告警",
     "statsUnread": "未读",
     "statsTopDevice": "最活跃设备",
-    "statsNoDevice": "无"
+    "statsNoDevice": "无",
+    "muteDevice": "静音此设备",
+    "muteSuccess": "已静音 {{client}} 的频繁拦截告警",
+    "unmuteDevice": "取消静音",
+    "unmutedSuccess": "已取消静音 {{client}}",
+    "mutedBar": "{{count}} 条告警已被静音",
+    "manageMuted": "管理静音设备",
+    "mutedDevicesTitle": "静音的设备（频繁拦截）",
+    "unmuteAll": "全部取消静音",
+    "muteUndo": "撤销"
   },
   "clientDetail": {
     "title": "设备详情",
