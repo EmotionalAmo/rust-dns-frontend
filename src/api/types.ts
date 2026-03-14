@@ -96,22 +96,32 @@ export interface CreateRewriteRequest {
   ttl?: number;
 }
 
-// Query Log Types
+// Query Log Types — matches backend query_log table columns
 export interface QueryLog {
-  id: string;
-  domain: string;
-  query_type: string;
-  action: 'blocked' | 'allowed';
-  client_ip?: string;
-  rule_id?: string;
-  timestamp: string;
+  id: number;
+  time: string;
+  client_ip: string;
+  client_name: string | null;
+  question: string;
+  qtype: string;
+  answer: string | null;
+  status: 'blocked' | 'allowed' | 'cached';
+  reason: string | null;
+  elapsed_ns: number | null;
+  upstream_ns: number | null;
+  upstream: string | null;
 }
 
 export interface QueryLogParams {
   limit?: number;
   offset?: number;
+  cursor?: number;
   domain?: string;
-  action?: 'blocked' | 'allowed';
+  status?: 'blocked' | 'allowed';
+  client?: string;
+  upstream?: string;
+  qtype?: string;
+  time_range?: string;
 }
 
 // Client Types
