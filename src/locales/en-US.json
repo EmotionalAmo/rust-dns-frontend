@@ -335,7 +335,17 @@
     "inlineAddPlaceholder": "Type domain and press Enter",
     "inlineCommentPlaceholder": "Note (optional)",
     "clickToDisable": "Click to disable",
-    "clickToEnable": "Click to enable"
+    "clickToEnable": "Click to enable",
+    "temporary": "Temporary Rule",
+    "expires": "Expires At",
+    "expiresIn": "{{time}} left",
+    "expired": "Expired",
+    "permanent": "Permanent",
+    "1h": "1 hour",
+    "2h": "2 hours",
+    "6h": "6 hours",
+    "24h": "24 hours",
+    "clearExpiry": "Clear expiry (permanent)"
   },
   "filters": {
     "title": "Filter Lists",

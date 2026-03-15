@@ -18,6 +18,7 @@ export interface UpdateRuleRequest {
   rule?: string;
   comment?: string;
   is_enabled?: boolean;
+  expires_at?: string | null;
 }
 
 export interface ImportRulesResponse {

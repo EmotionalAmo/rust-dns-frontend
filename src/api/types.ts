@@ -47,7 +47,7 @@ export interface TopClientEntry {
   block_rate: number;
 }
 
-// Rules Types — matches backend: {id, rule, comment, is_enabled, created_by, created_at}
+// Rules Types — matches backend: {id, rule, comment, is_enabled, created_by, created_at, expires_at}
 export interface Rule {
   id: string;
   rule: string;
@@ -55,11 +55,13 @@ export interface Rule {
   is_enabled: boolean;
   created_by: string;
   created_at: string;
+  expires_at?: string | null;
 }
 
 export interface CreateRuleRequest {
   rule: string;
   comment?: string;
+  expires_at?: string | null;
 }
 
 // Filter Lists Types — matches backend: {id, name, url, is_enabled, rule_count, last_updated, created_at, update_interval_hours}

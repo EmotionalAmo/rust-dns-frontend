@@ -59,6 +59,7 @@ import {
   Upload,
   Search,
   Wrench,
+  Clock,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -77,9 +78,64 @@ function inferRuleType(rule: string): 'block' | 'allow' {
   return rule.trim().startsWith('@@') ? 'allow' : 'block';
 }
 
+// 计算相对时间字符串，如 "2h 15m" / "1d 3h" / null（已过期）
+function formatTimeRemaining(expiresAt: string): string | null {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  if (diff <= 0) return null;
+  const totalSeconds = Math.floor(diff / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function ExpiryBadge({ expiresAt }: { expiresAt?: string | null }) {
+  const { t } = useTranslation();
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    if (!expiresAt) return;
+    const timer = setInterval(() => forceUpdate((n) => n + 1), 60000);
+    return () => clearInterval(timer);
+  }, [expiresAt]);
+
+  if (!expiresAt) return null;
+
+  const remaining = formatTimeRemaining(expiresAt);
+  if (remaining === null) {
+    return (
+      <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50 dark:bg-red-950/20 text-xs">
+        <Clock size={10} className="mr-1" />{t('rules.expired')}
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 dark:bg-orange-950/20 text-xs">
+      <Clock size={10} className="mr-1" />{t('rules.expiresIn', { time: remaining })}
+    </Badge>
+  );
+}
+
+// 快速选择临时规则的选项（小时数，0 = 永久）
+const EXPIRY_OPTIONS = [
+  { label: 'rules.permanent', hours: 0 },
+  { label: 'rules.1h', hours: 1 },
+  { label: 'rules.2h', hours: 2 },
+  { label: 'rules.6h', hours: 6 },
+  { label: 'rules.24h', hours: 24 },
+] as const;
+
+function calcExpiresAt(hours: number): string | null {
+  if (hours === 0) return null;
+  return new Date(Date.now() + hours * 3600000).toISOString();
+}
+
 interface CreateRuleFormData {
   rule: string;
   comment: string;
+  expires_at: string | null;
 }
 
 type CreateMode = 'simple' | 'expert';
@@ -95,6 +151,7 @@ interface EditRuleFormData {
   rule: string;
   comment: string;
   is_enabled: boolean;
+  expires_at: string | null;
 }
 
 function CreateRuleDialog({
@@ -112,24 +169,27 @@ function CreateRuleDialog({
   const [formData, setFormData] = useState<CreateRuleFormData>({
     rule: '',
     comment: '',
+    expires_at: null,
   });
   const [simpleAction, setSimpleAction] = useState<RuleAction>('block');
   const [simpleDomain, setSimpleDomain] = useState('');
   const [simpleComment, setSimpleComment] = useState('');
+  const [expiryHours, setExpiryHours] = useState(0);
 
   const handleClose = (val: boolean) => {
     if (!val) {
-      setFormData({ rule: '', comment: '' });
+      setFormData({ rule: '', comment: '', expires_at: null });
       setSimpleDomain('');
       setSimpleComment('');
       setSimpleAction('block');
       setMode('simple');
+      setExpiryHours(0);
     }
     onOpenChange(val);
   };
 
   const createMutation = useMutation({
-    mutationFn: (payload: { rule: string; comment?: string }) =>
+    mutationFn: (payload: { rule: string; comment?: string; expires_at?: string | null }) =>
       rulesApi.createRule(payload),
     onSuccess: () => {
       toast.success(t('rules.createSuccess'));
@@ -144,6 +204,7 @@ function CreateRuleDialog({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const expiresAt = calcExpiresAt(expiryHours);
     if (mode === 'simple') {
       const domain = simpleDomain.trim();
       if (!domain) {
@@ -151,7 +212,7 @@ function CreateRuleDialog({
         return;
       }
       const rule = buildSimpleRule(simpleAction, domain);
-      createMutation.mutate({ rule, comment: simpleComment.trim() || undefined });
+      createMutation.mutate({ rule, comment: simpleComment.trim() || undefined, expires_at: expiresAt });
     } else {
       if (!formData.rule.trim()) {
         toast.error(t('rules.ruleRequired'));
@@ -160,6 +221,7 @@ function CreateRuleDialog({
       createMutation.mutate({
         rule: formData.rule.trim(),
         comment: formData.comment.trim() || undefined,
+        expires_at: expiresAt,
       });
     }
   };
@@ -276,6 +338,29 @@ function CreateRuleDialog({
             </TabsContent>
           </Tabs>
 
+          {/* 临时规则选项 */}
+          <div className="pt-2 pb-1 border-t mt-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock size={12} />{t('rules.temporary')}:
+              </span>
+              {EXPIRY_OPTIONS.map(({ label, hours }) => (
+                <button
+                  key={hours}
+                  type="button"
+                  onClick={() => setExpiryHours(hours)}
+                  className={`rounded border px-2 py-0.5 text-xs font-medium transition-colors ${
+                    expiryHours === hours
+                      ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400'
+                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t(label)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <DialogFooter>
             <Button
               type="button"
@@ -312,15 +397,22 @@ function EditRuleDialogContent({
     rule: rule.rule,
     comment: rule.comment || '',
     is_enabled: rule.is_enabled,
+    expires_at: rule.expires_at ?? null,
   }));
+  const [editExpiryHours, setEditExpiryHours] = useState<number>(-1); // -1 = keep existing
 
   const updateMutation = useMutation({
-    mutationFn: () =>
-      rulesApi.updateRule(rule.id, {
+    mutationFn: () => {
+      const expiresAt = editExpiryHours === -1
+        ? formData.expires_at
+        : calcExpiresAt(editExpiryHours);
+      return rulesApi.updateRule(rule.id, {
         rule: formData.rule.trim(),
         comment: formData.comment.trim() || undefined,
         is_enabled: formData.is_enabled,
-      }),
+        expires_at: expiresAt,
+      });
+    },
     onSuccess: () => {
       toast.success(t('rules.updateSuccess'));
       queryClient.invalidateQueries({ queryKey: ['rules'] });
@@ -382,6 +474,42 @@ function EditRuleDialogContent({
               }
             />
             <Label htmlFor="is_enabled">{t('rules.enableRule')}</Label>
+          </div>
+          {/* 到期时间编辑 */}
+          <div className="space-y-2 border-t pt-3">
+            <Label className="flex items-center gap-1 text-sm">
+              <Clock size={12} />{t('rules.expires')}
+              {formData.expires_at && editExpiryHours === -1 && (
+                <ExpiryBadge expiresAt={formData.expires_at} />
+              )}
+            </Label>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => { setEditExpiryHours(0); }}
+                className={`rounded border px-2 py-0.5 text-xs font-medium transition-colors ${
+                  editExpiryHours === 0
+                    ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400'
+                    : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {t('rules.clearExpiry')}
+              </button>
+              {EXPIRY_OPTIONS.filter(o => o.hours > 0).map(({ label, hours }) => (
+                <button
+                  key={hours}
+                  type="button"
+                  onClick={() => setEditExpiryHours(hours)}
+                  className={`rounded border px-2 py-0.5 text-xs font-medium transition-colors ${
+                    editExpiryHours === hours
+                      ? 'border-orange-400 bg-orange-50 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400'
+                      : 'border-border bg-background text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  {t(label)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         <DialogFooter>
@@ -1275,7 +1403,10 @@ export default function RulesPage() {
                             )}
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
-                            {rule.comment || '-'}
+                            <div className="flex flex-col gap-1">
+                              <span>{rule.comment || '-'}</span>
+                              {rule.expires_at && <ExpiryBadge expiresAt={rule.expires_at} />}
+                            </div>
                           </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {formatDate(rule.created_at)}

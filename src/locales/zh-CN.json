@@ -346,7 +346,17 @@
     "inlineAddPlaceholder": "输入域名后按 Enter",
     "inlineCommentPlaceholder": "备注（可选）",
     "clickToDisable": "点击禁用",
-    "clickToEnable": "点击启用"
+    "clickToEnable": "点击启用",
+    "temporary": "临时规则",
+    "expires": "到期时间",
+    "expiresIn": "剩余 {{time}}",
+    "expired": "已过期",
+    "permanent": "永久",
+    "1h": "1 小时",
+    "2h": "2 小时",
+    "6h": "6 小时",
+    "24h": "24 小时",
+    "clearExpiry": "清除到期时间（永久）"
   },
   "filters": {
     "title": "过滤列表",
