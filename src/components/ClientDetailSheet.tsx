@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { Monitor, ExternalLink, Shield, ShieldOff, Loader2, MapPin } from 'lucide-react';
@@ -36,6 +37,7 @@ interface ClientDetailSheetProps {
 export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetProps) {
     const { t } = useTranslation();
     const [hours, setHours] = useState(24);
+    const qc = useQueryClient();
 
     const { data: clients, isLoading: clientsLoading } = useQuery({
         queryKey: ['clients', 'list'],
@@ -50,6 +52,24 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
     });
 
     const client = clients?.find((c) => c.identifiers.includes(ip ?? ''));
+
+    const toggleFilterMutation = useMutation({
+        mutationFn: ({ id, c }: { id: string; c: typeof client & object }) => {
+            return clientsApi.update(id, {
+                name: c!.name,
+                identifiers: c!.identifiers,
+                filter_enabled: !c!.filter_enabled,
+                ...(c!.upstreams?.length ? { upstreams: c!.upstreams } : {}),
+                ...(c!.tags?.length ? { tags: c!.tags } : {}),
+            });
+        },
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: ['clients'] });
+        },
+        onError: (e: Error) => {
+            toast.error(t('clients.updateError', { msg: e.message }));
+        },
+    });
 
     const { data: geoData } = useQuery({
         queryKey: ['ip-geo', ip],
@@ -128,8 +148,18 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
                             <div className="flex flex-wrap gap-2">
                                 {client ? (
                                     <>
-                                        <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm">
-                                            {client.filter_enabled ? (
+                                        <button
+                                            onClick={() => toggleFilterMutation.mutate({ id: client.id, c: client })}
+                                            disabled={toggleFilterMutation.isPending}
+                                            title={t('clientDetail.filterToggleTip')}
+                                            className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm cursor-pointer hover:bg-muted/70 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                                        >
+                                            {toggleFilterMutation.isPending ? (
+                                                <>
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                                                    <span className="text-muted-foreground">{client.filter_enabled ? t('clientDetail.filterEnabled') : t('clientDetail.filterDisabled')}</span>
+                                                </>
+                                            ) : client.filter_enabled ? (
                                                 <>
                                                     <Shield className="h-3.5 w-3.5 text-green-500" />
                                                     <span className="text-green-700 dark:text-green-400">{t('clientDetail.filterEnabled')}</span>
@@ -140,7 +170,7 @@ export function ClientDetailSheet({ ip, open, onOpenChange }: ClientDetailSheetP
                                                     <span className="text-orange-700 dark:text-orange-400">{t('clientDetail.filterDisabled')}</span>
                                                 </>
                                             )}
-                                        </div>
+                                        </button>
                                         <div className="flex items-center gap-1.5 rounded-md border border-border/50 bg-muted/40 px-3 py-1.5 text-sm font-mono text-xs text-muted-foreground">
                                             {ip}
                                         </div>

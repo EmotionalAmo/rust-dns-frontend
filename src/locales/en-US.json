@@ -992,6 +992,7 @@
     "unregistered": "Unregistered",
     "filterEnabled": "Filtering Enabled",
     "filterDisabled": "Filtering Disabled",
+    "filterToggleTip": "Click to toggle filtering",
     "recentQueries": "Recent Queries",
     "viewAllLogs": "View All Logs",
     "noQueries": "No queries found",

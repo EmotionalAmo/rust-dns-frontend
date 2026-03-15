@@ -1004,6 +1004,7 @@
     "unregistered": "未注册",
     "filterEnabled": "已开启过滤",
     "filterDisabled": "过滤已关闭",
+    "filterToggleTip": "点击切换过滤状态",
     "recentQueries": "最近查询",
     "viewAllLogs": "查看全部日志",
     "noQueries": "暂无查询记录",
