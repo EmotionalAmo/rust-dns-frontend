@@ -521,7 +521,11 @@
     "importSkipCount": "跳过 {{count}} 条（已存在）",
     "importConfirm": "导入选中的 {{count}} 条",
     "importSuccess": "成功导入 {{count}} 条重写规则",
-    "importFormatHint": "支持格式：IP 域名 或 IP 域名 # 注释，# 开头的行忽略"
+    "importFormatHint": "支持格式：IP 域名 或 IP 域名 # 注释，# 开头的行忽略",
+    "exportBtn": "导出",
+    "exportSuccess": "已导出 {{count}} 条规则",
+    "exportFailed": "导出失败",
+    "exportEmpty": "暂无规则可导出"
   },
   "queryLogs": {
     "title": "查询日志",

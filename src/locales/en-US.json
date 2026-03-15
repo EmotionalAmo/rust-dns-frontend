@@ -510,7 +510,11 @@
     "importSkipCount": "{{count}} skipped (already exist)",
     "importConfirm": "Import {{count}} selected",
     "importSuccess": "Successfully imported {{count}} rewrite rules",
-    "importFormatHint": "Format: IP domain or IP domain # comment, lines starting with # are ignored"
+    "importFormatHint": "Format: IP domain or IP domain # comment, lines starting with # are ignored",
+    "exportBtn": "Export",
+    "exportSuccess": "Exported {{count}} rules",
+    "exportFailed": "Export failed",
+    "exportEmpty": "No rules to export"
   },
   "queryLogs": {
     "title": "Query Logs",
