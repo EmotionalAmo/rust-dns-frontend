@@ -75,7 +75,7 @@ export const rulesApi = {
     return response.data;
   },
 
-  async exportRules(format: 'csv' | 'json'): Promise<Blob> {
+  async exportRules(format: 'csv' | 'json' | 'txt'): Promise<Blob> {
     const response = await apiClient.get(`/api/v1/rules/export?format=${format}`, {
       responseType: 'blob',
     });

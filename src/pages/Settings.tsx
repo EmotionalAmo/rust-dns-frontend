@@ -20,7 +20,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3, Download, Lock } from 'lucide-react';
+import { RefreshCw, Save, Settings as SettingsIcon, Shield, Server, Plus, Trash2, Zap, Activity, BarChart3, Download, Lock, Globe, Copy } from 'lucide-react';
 
 function SettingRow({
   label,
@@ -541,6 +541,38 @@ export default function SettingsPage() {
               </SettingRow>
             </CardContent>
           </Card>
+          {/* DoH Endpoint */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe size={18} />
+                {t('settings.dohTitle')}
+              </CardTitle>
+              <CardDescription>{t('settings.dohDesc')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground mb-1 block">{t('settings.dohEndpoint')}</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono break-all select-all">
+                    {`${window.location.protocol}//${window.location.host}/dns-query`}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.protocol}//${window.location.host}/dns-query`);
+                      toast.success(t('common.copied'));
+                    }}
+                  >
+                    <Copy size={14} />
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">{t('settings.dohHint')}</p>
+            </CardContent>
+          </Card>
+
           {/* 数据备份 */}
           <Card>
             <CardHeader>

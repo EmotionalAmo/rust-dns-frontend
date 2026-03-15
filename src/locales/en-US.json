@@ -59,7 +59,8 @@
     "success": "Success",
     "failed": "Failed",
     "unknownError": "Unknown error",
-    "loadError": "Load failed"
+    "loadError": "Load failed",
+    "copied": "Copied"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -649,7 +650,11 @@
     "aclPlaceholder": "Example:\n192.168.1.0/24\n10.0.0.0/8\n172.16.0.1",
     "aclSaved": "ACL rules updated",
     "aclSaveError": "ACL update failed: {{msg}}",
-    "aclEmptyHint": "Currently allowing all IPs (no restriction)"
+    "aclEmptyHint": "Currently allowing all IPs (no restriction)",
+    "dohTitle": "DNS over HTTPS (DoH)",
+    "dohDesc": "Use this DNS filter directly from your devices over HTTPS",
+    "dohEndpoint": "DoH Endpoint",
+    "dohHint": "Enter this URL in your browser or system DoH settings to route DNS queries through this server. Use HTTP on local networks; configure HTTPS for public deployments."
   },
   "users": {
     "title": "User Management",

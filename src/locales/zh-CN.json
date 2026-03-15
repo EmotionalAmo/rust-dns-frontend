@@ -59,7 +59,8 @@
     "success": "成功",
     "failed": "失败",
     "unknownError": "未知错误",
-    "loadError": "加载失败"
+    "loadError": "加载失败",
+    "copied": "已复制"
   },
   "nav": {
     "dashboard": "仪表盘",
@@ -661,7 +662,11 @@
     "aclPlaceholder": "示例：\n192.168.1.0/24\n10.0.0.0/8\n172.16.0.1",
     "aclSaved": "ACL 规则已更新",
     "aclSaveError": "ACL 更新失败: {{msg}}",
-    "aclEmptyHint": "当前允许所有 IP 查询（无限制）"
+    "aclEmptyHint": "当前允许所有 IP 查询（无限制）",
+    "dohTitle": "DNS over HTTPS (DoH)",
+    "dohDesc": "让你的设备直接通过 HTTPS 使用此 DNS 过滤器",
+    "dohEndpoint": "DoH 端点",
+    "dohHint": "将此 URL 填入浏览器或系统的 DoH 设置中，即可通过本服务器过滤 DNS 请求。建议在本地网络内使用 HTTP，公网部署请配置 HTTPS。"
   },
   "users": {
     "title": "用户管理",

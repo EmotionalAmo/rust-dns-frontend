@@ -824,7 +824,7 @@ export default function RulesPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
+  const [exportFormat, setExportFormat] = useState<'csv' | 'json' | 'txt'>('txt');
   const [isExporting, setIsExporting] = useState(false);
   const toggleMutationRef = useRef<{ isPending: boolean }>({ isPending: false });
 
@@ -1022,13 +1022,14 @@ export default function RulesPage() {
             <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
           </Button>
           <div className="h-6 w-px bg-border" />
-          <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as 'csv' | 'json')}>
+          <Select value={exportFormat} onValueChange={(val) => setExportFormat(val as 'csv' | 'json' | 'txt')}>
             <SelectTrigger className="h-8 w-24">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="csv">CSV</SelectItem>
               <SelectItem value="json">JSON</SelectItem>
+              <SelectItem value="txt">TXT</SelectItem>
             </SelectContent>
           </Select>
           <Button
