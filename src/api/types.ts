@@ -86,13 +86,14 @@ export interface CreateFilterRequest {
   update_interval_hours?: number;
 }
 
-// DNS Rewrites Types — matches backend: {id, domain, answer, created_by, created_at}
+// DNS Rewrites Types — matches backend: {id, domain, answer, created_by, created_at, hit_count}
 export interface Rewrite {
   id: string;
   domain: string;
   answer: string;
   created_by: string;
   created_at: string;
+  hit_count?: number;
 }
 
 export interface CreateRewriteRequest {

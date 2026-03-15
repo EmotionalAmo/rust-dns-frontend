@@ -463,6 +463,7 @@
     "tableCount": "{{count}} 条规则 ({{matched}} 匹配)",
     "colDomain": "域名",
     "colTargetIP": "目标 IP",
+    "colHits": "命中次数",
     "colStatus": "状态",
     "colCreatedAt": "创建时间",
     "colActions": "操作",

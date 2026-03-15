@@ -888,6 +888,7 @@ export default function RewritesPage() {
                     </TableHead>
                     <TableHead>{t('rewrites.colDomain')}</TableHead>
                     <TableHead>{t('rewrites.colTargetIP')}</TableHead>
+                    <TableHead className="w-20 text-right">{t('rewrites.colHits')}</TableHead>
                     <TableHead>{t('rewrites.colCreatedAt')}</TableHead>
                     <TableHead className="w-32">{t('rewrites.colActions')}</TableHead>
                   </TableRow>
@@ -936,6 +937,11 @@ export default function RewritesPage() {
                               </span>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={`text-sm font-mono ${(rewrite.hit_count ?? 0) > 0 ? 'text-green-600 dark:text-green-400 font-medium' : 'text-muted-foreground'}`}>
+                            {(rewrite.hit_count ?? 0).toLocaleString()}
+                          </span>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">

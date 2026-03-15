@@ -452,6 +452,7 @@
     "tableCount": "{{count}} rules ({{matched}} matched)",
     "colDomain": "Domain",
     "colTargetIP": "Target IP",
+    "colHits": "Hits",
     "colStatus": "Status",
     "colCreatedAt": "Created At",
     "colActions": "Actions",
