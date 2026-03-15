@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rewritesApi } from '@/api';
@@ -50,6 +50,8 @@ import {
   Terminal,
   Upload,
   Download,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type { Rewrite, CreateRewriteRequest } from '@/api/types';
 
@@ -57,6 +59,8 @@ import type { Rewrite, CreateRewriteRequest } from '@/api/types';
  * Rewrites 页面
  * 管理 DNS 重写规则（域名 -> IP 映射）
  */
+
+const PER_PAGE = 50;
 
 // 常用本地服务 IP
 const LOCAL_SERVICE_IPS = [
@@ -582,24 +586,34 @@ export default function RewritesPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingRewrite, setEditingRewrite] = useState<Rewrite | null>(null);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
 
+  // debounce 搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   // 查询重写规则列表
   const { data: rewritesData, isLoading, error, refetch } = useQuery({
-    queryKey: ['rewrites'],
-    queryFn: () => rewritesApi.listRewrites(),
+    queryKey: ['rewrites', page, debouncedSearch],
+    queryFn: () => rewritesApi.listRewrites({ page, per_page: PER_PAGE, search: debouncedSearch || undefined }),
+    placeholderData: (prev) => prev,
   });
   const rewrites = rewritesData?.data ?? [];
-
-  // 过滤重写规则
-  const filteredRewrites = rewrites.filter((rewrite) =>
-    rewrite.domain.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    rewrite.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const total = rewritesData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  // 服务端已过滤，filteredRewrites 就是当前页数据
+  const filteredRewrites = rewrites;
 
   // 删除重写规则
   const deleteMutation = useMutation({
@@ -615,7 +629,7 @@ export default function RewritesPage() {
 
   // 全选/取消全选
   const handleSelectAll = () => {
-    if (selectedIds.size === filteredRewrites.length) {
+    if (selectedIds.size === filteredRewrites.length && filteredRewrites.length > 0) {
       setSelectedIds(new Set());
     } else {
       setSelectedIds(new Set(filteredRewrites.map(r => r.id)));
@@ -657,8 +671,19 @@ export default function RewritesPage() {
     if (exporting) return;
     setExporting(true);
     try {
-      const res = await rewritesApi.listRewrites({ page: 1, per_page: 9999 });
-      const all = res.data ?? [];
+      // Fetch all pages
+      const firstRes = await rewritesApi.listRewrites({ page: 1, per_page: 200 });
+      const allTotal = firstRes.total ?? 0;
+      let all = firstRes.data ?? [];
+      if (allTotal > 200) {
+        const pages = Math.ceil(allTotal / 200);
+        const rest = await Promise.all(
+          Array.from({ length: pages - 1 }, (_, i) =>
+            rewritesApi.listRewrites({ page: i + 2, per_page: 200 })
+          )
+        );
+        all = [...all, ...rest.flatMap(r => r.data ?? [])];
+      }
       if (all.length === 0) {
         toast.info(t('rewrites.exportEmpty'));
         return;
@@ -690,9 +715,9 @@ export default function RewritesPage() {
   };
 
   // 计算统计
-  const enabledRewrites = rewrites.length;
+  const enabledRewrites = total;
   const localIps = rewrites.filter(r => r.answer.startsWith('192.168.') || r.answer.startsWith('10.') || r.answer.startsWith('127.')).length;
-  const customIps = rewrites.length - localIps;
+  const customIps = total - localIps;
 
   return (
     <div className="space-y-6">
@@ -704,7 +729,7 @@ export default function RewritesPage() {
             <Route className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{rewrites.length}</div>
+            <div className="text-2xl font-bold">{total}</div>
             <p className="text-xs text-muted-foreground">{t('rewrites.enabledCount', { count: enabledRewrites })}</p>
           </CardContent>
         </Card>
@@ -794,9 +819,7 @@ export default function RewritesPage() {
             <div>
               <CardTitle>{t('rewrites.tableTitle')}</CardTitle>
               <CardDescription>
-                {searchQuery
-                  ? t('rewrites.tableCount', { count: rewrites.length, matched: filteredRewrites.length })
-                  : t('rewrites.tableCount', { count: rewrites.length, matched: rewrites.length })}
+                {t('rewrites.tableCount', { count: total, matched: total })}
               </CardDescription>
             </div>
           </div>
@@ -957,6 +980,48 @@ export default function RewritesPage() {
                   })}
                 </TableBody>
               </Table>
+            </div>
+          )}
+          {/* 分页控件 */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4">
+              <p className="text-sm text-muted-foreground">
+                {t('common.pageInfo', { page, total: totalPages, count: total })}
+              </p>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(1); setSelectedIds(new Set()); }}
+                  disabled={page <= 1 || isLoading}
+                >
+                  {t('common.firstPage')}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(p => p - 1); setSelectedIds(new Set()); }}
+                  disabled={page <= 1 || isLoading}
+                >
+                  <ChevronLeft size={16} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(p => p + 1); setSelectedIds(new Set()); }}
+                  disabled={page >= totalPages || isLoading}
+                >
+                  <ChevronRight size={16} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(totalPages); setSelectedIds(new Set()); }}
+                  disabled={page >= totalPages || isLoading}
+                >
+                  {t('common.lastPage')}
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
