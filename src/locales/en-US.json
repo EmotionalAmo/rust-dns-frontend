@@ -807,6 +807,7 @@
     "ruleSearchPlaceholder": "Search rule or comment...",
     "customRules": "Custom Rules",
     "noAvailableRules": "No available rules",
+    "showingFirst": "Showing first {{count}} of {{total}}, search to narrow down",
     "customRule": "Custom Rule",
     "rewrites": "DNS Rewrites",
     "noAvailableRewrites": "No available rewrites",

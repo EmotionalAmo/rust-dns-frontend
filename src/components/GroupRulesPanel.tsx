@@ -1,7 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from '@tanstack/react-query';
 import { type GroupRule, type ClientGroup } from '@/api/clientGroups';
-import { type Rule, type Rewrite } from '@/api/types';
+import { type Rewrite } from '@/api/types';
+import { rulesApi } from '@/api/rules';
+import { rewritesApi } from '@/api/rewrites';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -32,8 +35,6 @@ interface GroupRulesPanelProps {
   loading?: boolean;
   onBindRule: (ruleId: string, ruleType: string, priority: number) => Promise<void>;
   onUnbindRule: (ruleId: string, ruleType: string) => Promise<void>;
-  availableRules?: Rule[];
-  availableRewrites?: Rewrite[];
 }
 
 export function GroupRulesPanel({
@@ -42,8 +43,6 @@ export function GroupRulesPanel({
   loading = false,
   onBindRule,
   onUnbindRule,
-  availableRules = [],
-  availableRewrites = [],
 }: GroupRulesPanelProps) {
   const { t } = useTranslation();
   const [showDeleteDialog, setShowDeleteDialog] = useState<{
@@ -54,22 +53,37 @@ export function GroupRulesPanel({
   const [selectedRewrites, setSelectedRewrites] = useState<Set<string>>(new Set());
   const [bindLoading, setBindLoading] = useState(false);
   const [ruleSearch, setRuleSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const filteredRules = useMemo(() => {
-    if (!ruleSearch.trim()) return availableRules;
-    const q = ruleSearch.toLowerCase();
-    return availableRules.filter(
-      (r) => r.rule.toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q)
-    );
-  }, [availableRules, ruleSearch]);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(ruleSearch), 300);
+    return () => clearTimeout(timer);
+  }, [ruleSearch]);
+
+  const { data: rulesQueryData, isLoading: rulesQueryLoading } = useQuery({
+    queryKey: ['available-rules-for-binding', debouncedSearch],
+    queryFn: () => rulesApi.listRules({ per_page: 50, search: debouncedSearch || undefined }),
+    enabled: showAddDialog && !!group,
+  });
+
+  const { data: rewritesQueryData, isLoading: rewritesQueryLoading } = useQuery({
+    queryKey: ['available-rewrites-for-binding'],
+    queryFn: () => rewritesApi.listRewrites(),
+    enabled: showAddDialog && !!group,
+    staleTime: 30000,
+  });
+
+  const filteredRules = rulesQueryData?.data || [];
+  const rulesTotal = rulesQueryData?.total ?? 0;
 
   const filteredRewrites = useMemo(() => {
-    if (!ruleSearch.trim()) return availableRewrites;
+    const rewrites = rewritesQueryData || [];
+    if (!ruleSearch.trim()) return rewrites;
     const q = ruleSearch.toLowerCase();
-    return availableRewrites.filter(
-      (r) => r.domain.toLowerCase().includes(q) || (r.answer || '').toLowerCase().includes(q)
+    return rewrites.filter(
+      (r: Rewrite) => r.domain.toLowerCase().includes(q) || (r.answer || '').toLowerCase().includes(q)
     );
-  }, [availableRewrites, ruleSearch]);
+  }, [rewritesQueryData, ruleSearch]);
 
   if (!group) {
     return (
@@ -260,8 +274,17 @@ export function GroupRulesPanel({
           <div className="max-h-[55vh] overflow-y-auto space-y-6 pr-2">
 
             <div className="space-y-3">
-              <h3 className="font-medium">{t('clientGroups.customRules')}</h3>
-              {filteredRules.length === 0 ? (
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">{t('clientGroups.customRules')}</h3>
+                {rulesTotal > 50 && (
+                  <span className="text-xs text-muted-foreground">
+                    {t('clientGroups.showingFirst', { count: filteredRules.length, total: rulesTotal })}
+                  </span>
+                )}
+              </div>
+              {rulesQueryLoading ? (
+                <p className="text-sm text-muted-foreground">{t('clientGroups.loading')}</p>
+              ) : filteredRules.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRules')}</p>
               ) : (
                 <div className="space-y-2">
@@ -308,7 +331,9 @@ export function GroupRulesPanel({
 
             <div className="space-y-3">
               <h3 className="font-medium">{t('clientGroups.rewrites')}</h3>
-              {filteredRewrites.length === 0 ? (
+              {rewritesQueryLoading ? (
+                <p className="text-sm text-muted-foreground">{t('clientGroups.loading')}</p>
+              ) : filteredRewrites.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRewrites')}</p>
               ) : (
                 <div className="space-y-2">

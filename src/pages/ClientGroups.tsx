@@ -3,8 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientGroupsApi, type ClientGroup, type CreateClientGroupRequest, type UpdateClientGroupRequest, type ClientGroupMember, type PaginatedResponse } from '@/api/clientGroups';
 import { clientsApi, type ClientRecord } from '@/api/clients';
-import { rulesApi } from '@/api/rules';
-import { rewritesApi } from '@/api/rewrites';
 import { GroupTree } from '@/components/GroupTree';
 
 const QUARANTINE_GROUP_NAME = '隔离区';
@@ -136,22 +134,6 @@ export default function ClientGroupsPage() {
 
   const rules = [...(rulesDataCustom?.data || []), ...(rulesDataRewrite?.data || [])];
   const rulesLoading = rulesLoadingCustom || rulesLoadingRewrite;
-
-  // 查询可用的自定义规则
-  const { data: availableRulesData } = useQuery({
-    queryKey: ['rules'],
-    queryFn: () => rulesApi.listRules({ per_page: 1000 }),
-    enabled: activeTab === 'rules',
-  });
-  const availableRules = availableRulesData?.data || [];
-
-  // 查询可用的重写规则
-  const { data: availableRewritesData } = useQuery({
-    queryKey: ['rewrites'],
-    queryFn: () => rewritesApi.listRewrites(),
-    enabled: activeTab === 'rules',
-  });
-  const availableRewrites = availableRewritesData || [];
 
   const selectedGroup = groups.find((g) => g.id === selectedGroupId);
 
@@ -419,8 +401,6 @@ export default function ClientGroupsPage() {
                   onUnbindRule={async (ruleId, ruleType) => {
                     await unbindRuleMutation.mutateAsync({ rule_id: String(ruleId), rule_type: ruleType });
                   }}
-                  availableRules={availableRules}
-                  availableRewrites={availableRewrites}
                 />
               </TabsContent>
             </Tabs>
