@@ -568,6 +568,7 @@ function BulkImportDialog({
   const [text, setText] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [importProgress, setImportProgress] = useState<{ done: number; total: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const parseRules = (raw: string): string[] => {
@@ -596,24 +597,60 @@ function BulkImportDialog({
     onOpenChange(val);
   };
 
+  const readFileAsText = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string ?? '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file);
+    });
+  };
+
   const handleImport = async () => {
     if (isImporting) return;
-    let file: File;
+
+    let allRules: string[];
     if (tab === 'paste') {
       if (validRules.length === 0) return;
-      file = new File([text], 'rules.txt', { type: 'text/plain' });
+      allRules = validRules;
     } else {
       if (!selectedFile) return;
-      file = selectedFile;
+      const content = await readFileAsText(selectedFile);
+      allRules = parseRules(content);
+      if (allRules.length === 0) {
+        toast.error(t('rules.importError'));
+        return;
+      }
     }
+
+    const CHUNK_SIZE = 200;
+    const chunks: string[][] = [];
+    for (let i = 0; i < allRules.length; i += CHUNK_SIZE) {
+      chunks.push(allRules.slice(i, i + CHUNK_SIZE));
+    }
+
     setIsImporting(true);
+    setImportProgress({ done: 0, total: allRules.length });
+
+    let totalImported = 0;
+    let totalSkipped = 0;
+    let processedCount = 0;
+
     try {
-      const result = await rulesApi.importRulesFile(file);
+      for (const chunk of chunks) {
+        const chunkFile = new File([chunk.join('\n')], 'rules.txt', { type: 'text/plain' });
+        const result = await rulesApi.importRulesFile(chunkFile);
+        totalImported += result.imported;
+        totalSkipped += result.skipped;
+        processedCount += chunk.length;
+        setImportProgress({ done: processedCount, total: allRules.length });
+      }
+
       queryClient.invalidateQueries({ queryKey: ['rules'] });
-      if (result.skipped > 0) {
-        toast.success(t('rules.importResultWithSkipped', { imported: result.imported, skipped: result.skipped }));
+      if (totalSkipped > 0) {
+        toast.success(t('rules.importResultWithSkipped', { imported: totalImported, skipped: totalSkipped }));
       } else {
-        toast.success(t('rules.importSuccess', { count: result.imported }));
+        toast.success(t('rules.importSuccess', { count: totalImported }));
       }
       setText('');
       setSelectedFile(null);
@@ -623,6 +660,7 @@ function BulkImportDialog({
       toast.error(t('rules.importError'));
     } finally {
       setIsImporting(false);
+      setImportProgress(null);
     }
   };
 
@@ -676,6 +714,20 @@ function BulkImportDialog({
             />
           </TabsContent>
         </Tabs>
+        {isImporting && importProgress && (
+          <div className="space-y-1 mt-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{t('rules.importProgress', { done: importProgress.done, total: importProgress.total })}</span>
+              <span>{Math.round((importProgress.done / importProgress.total) * 100)}%</span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-primary h-2 rounded-full transition-all duration-300"
+                style={{ width: `${Math.round((importProgress.done / importProgress.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
         <DialogFooter>
           <Button
             type="button"

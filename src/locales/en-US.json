@@ -310,7 +310,7 @@
     "importFileSubmit": "Import File",
     "importFileHint": "Click to select or drag and drop a file",
     "importFileLimit": "Max 5 MB · Supports text and JSON formats",
-    "importProgress": "Importing {{current}}/{{total}}...",
+    "importProgress": "Processing {{done}} / {{total}} rules",
     "importSuccess": "Successfully imported {{count}} rules",
     "importResultWithSkipped": "Imported {{imported}}, skipped {{skipped}} duplicates",
     "importError": "Import failed, please check the file format",
