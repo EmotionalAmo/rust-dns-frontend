@@ -4,6 +4,7 @@ import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { LatencyTrendChart } from '@/components/dashboard/LatencyTrendChart';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
+import { DayComparisonCard } from '@/components/dashboard/DayComparisonCard';
 import { Activity, Shield, Database, Filter, Server, Settings, TrendingUp, TrendingDown, Minus, List, Wifi, Eye, Users, Globe, Percent, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DashboardStats } from '@/api/';
@@ -160,6 +161,9 @@ export function StatsOverview({
           </CardContent>
         </Card>
       )}
+
+      {/* Today vs Yesterday Comparison */}
+      <DayComparisonCard stats={stats} isLoading={isLoading} hours={hours} />
 
       {/* Stats Cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">

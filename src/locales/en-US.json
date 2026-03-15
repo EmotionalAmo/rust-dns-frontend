@@ -236,7 +236,16 @@
     "sectionNetworkOverview": "Network Overview",
     "sectionQueryStats": "Query Statistics",
     "sectionTopLists": "Top Lists",
-    "sectionUpstreamAnalysis": "Upstream Analysis"
+    "sectionUpstreamAnalysis": "Upstream Analysis",
+    "comparison": {
+      "title": "Current vs Previous Period",
+      "period24h": "Today (last 24h) vs previous 24h",
+      "period7d": "This week (last 7d) vs previous 7 days",
+      "period30d": "This month (last 30d) vs previous 30 days",
+      "current": "Current",
+      "previous": "Previous",
+      "change": "Change"
+    }
   },
   "rules": {
     "title": "Rules",

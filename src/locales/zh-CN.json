@@ -236,7 +236,16 @@
     "sectionNetworkOverview": "网络概览",
     "sectionQueryStats": "查询统计",
     "sectionTopLists": "Top 榜单",
-    "sectionUpstreamAnalysis": "上游分析"
+    "sectionUpstreamAnalysis": "上游分析",
+    "comparison": {
+      "title": "今日 vs 上一周期",
+      "period24h": "今日（过去 24h）vs 上一个 24h",
+      "period7d": "本周（过去 7 天）vs 上一个 7 天",
+      "period30d": "本月（过去 30 天）vs 上一个 30 天",
+      "current": "当前",
+      "previous": "上一期",
+      "change": "变化"
+    }
   },
   "rules": {
     "title": "规则列表",

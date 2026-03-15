@@ -33,6 +33,9 @@ export interface DashboardStats {
   last_week_block_rate: number;
   clients: number;
   qps: number;
+  // Yesterday comparison (previous same-length window)
+  yesterday_total_queries?: number;
+  yesterday_blocked_queries?: number;
 }
 
 export interface TopDomainEntry {
