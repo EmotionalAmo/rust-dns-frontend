@@ -685,7 +685,11 @@
     "dohTitle": "DNS over HTTPS (DoH)",
     "dohDesc": "让你的设备直接通过 HTTPS 使用此 DNS 过滤器",
     "dohEndpoint": "DoH 端点",
-    "dohHint": "将此 URL 填入浏览器或系统的 DoH 设置中，即可通过本服务器过滤 DNS 请求。建议在本地网络内使用 HTTP，公网部署请配置 HTTPS。"
+    "dohHint": "将此 URL 填入浏览器或系统的 DoH 设置中，即可通过本服务器过滤 DNS 请求。建议在本地网络内使用 HTTP，公网部署请配置 HTTPS。",
+    "notificationTitle": "通知设置",
+    "notificationDesc": "配置到期提醒的提示方式",
+    "expirySound": "到期提醒声音",
+    "expirySoundDesc": "临时规则即将到期时播放提示音"
   },
   "users": {
     "title": "用户管理",

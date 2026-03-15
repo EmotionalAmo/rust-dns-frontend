@@ -3,9 +3,50 @@ import { rulesApi, type ExpiringRule } from '../api/rules';
 
 const POLL_INTERVAL_MS = 60 * 1000; // 每 60 秒轮询一次
 const EXPIRING_MINUTES = 5;
+const SOUND_PREF_KEY = 'expiring-rules-sound-enabled';
 
 // 记录已通知的规则 id，避免重复推送浏览器通知
 const notifiedIds = new Set<string>();
+
+// 记录已播放声音的规则 id，避免重复播放
+const soundPlayedIds = new Set<string>();
+
+function isSoundEnabled(): boolean {
+  const v = localStorage.getItem(SOUND_PREF_KEY);
+  // 默认开启（未设置时为 true）
+  return v === null ? true : v === 'true';
+}
+
+function playExpiringSound() {
+  try {
+    const ctx = new AudioContext();
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    const startTime = ctx.currentTime;
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      const t = startTime + i * 0.15;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+
+      osc.start(t);
+      osc.stop(t + 0.25);
+    });
+
+    // 播放完毕后关闭 context，避免资源泄漏
+    setTimeout(() => ctx.close(), 1000);
+  } catch {
+    // 浏览器禁止自动播放时静默失败
+  }
+}
 
 function getInitialPermission(): NotificationPermission | 'unsupported' {
   if (!('Notification' in window)) return 'unsupported';
@@ -48,6 +89,14 @@ export function useExpiringRules() {
       setExpiringRules(rules);
       if (rules.length > 0) {
         sendBrowserNotification(rules);
+        // 仅对新出现的规则播放声音
+        if (isSoundEnabled()) {
+          const newSoundRules = rules.filter((r) => !soundPlayedIds.has(r.id));
+          if (newSoundRules.length > 0) {
+            newSoundRules.forEach((r) => soundPlayedIds.add(r.id));
+            playExpiringSound();
+          }
+        }
       }
     } catch {
       // 静默失败，不影响主功能
