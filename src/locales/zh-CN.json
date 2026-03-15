@@ -510,7 +510,18 @@
     "exampleLocal": "本地开发环境",
     "exampleNas": "NAS 设备",
     "examplePihole": "Pi-hole 广告过滤",
-    "exampleHomeAssistant": "智能家居中枢"
+    "exampleHomeAssistant": "智能家居中枢",
+    "importBtn": "导入",
+    "importTitle": "从 hosts 文件导入",
+    "importDesc": "粘贴 /etc/hosts 格式的内容，解析后批量创建 DNS 重写规则。",
+    "importPlaceholder": "192.168.1.100  nas.local\n192.168.1.1    router.local\n127.0.0.1      myapp.local  # 可选注释",
+    "importPreviewTitle": "预览（共解析 {{count}} 条）",
+    "importExisting": "已存在",
+    "importSelectedCount": "已选中 {{count}} 条",
+    "importSkipCount": "跳过 {{count}} 条（已存在）",
+    "importConfirm": "导入选中的 {{count}} 条",
+    "importSuccess": "成功导入 {{count}} 条重写规则",
+    "importFormatHint": "支持格式：IP 域名 或 IP 域名 # 注释，# 开头的行忽略"
   },
   "queryLogs": {
     "title": "查询日志",

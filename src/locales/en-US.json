@@ -499,7 +499,18 @@
     "exampleLocal": "Local dev environment",
     "exampleNas": "NAS device",
     "examplePihole": "Pi-hole ad filter",
-    "exampleHomeAssistant": "Home automation hub"
+    "exampleHomeAssistant": "Home automation hub",
+    "importBtn": "Import",
+    "importTitle": "Import from hosts file",
+    "importDesc": "Paste /etc/hosts format content to bulk create DNS rewrite rules.",
+    "importPlaceholder": "192.168.1.100  nas.local\n192.168.1.1    router.local\n127.0.0.1      myapp.local  # optional comment",
+    "importPreviewTitle": "Preview ({{count}} entries parsed)",
+    "importExisting": "Already exists",
+    "importSelectedCount": "{{count}} selected",
+    "importSkipCount": "{{count}} skipped (already exist)",
+    "importConfirm": "Import {{count}} selected",
+    "importSuccess": "Successfully imported {{count}} rewrite rules",
+    "importFormatHint": "Format: IP domain or IP domain # comment, lines starting with # are ignored"
   },
   "queryLogs": {
     "title": "Query Logs",

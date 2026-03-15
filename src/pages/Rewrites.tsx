@@ -32,6 +32,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { formatDateTimeShort } from '@/lib/datetime';
 import { ValidatedInput } from '@/components/ValidatedInput';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -47,6 +48,7 @@ import {
   Clock,
   Copy,
   Terminal,
+  Upload,
 } from 'lucide-react';
 import type { Rewrite, CreateRewriteRequest } from '@/api/types';
 
@@ -351,6 +353,230 @@ function DeleteConfirmDialog({
   );
 }
 
+interface ParsedHostEntry {
+  ip: string;
+  domain: string;
+  exists: boolean;
+  selected: boolean;
+}
+
+function parseHostsContent(content: string, existingDomains: Set<string>): ParsedHostEntry[] {
+  const entries: ParsedHostEntry[] = [];
+  const seen = new Set<string>();
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    // Strip inline comment
+    const withoutComment = trimmed.replace(/#.*$/, '').trim();
+    const parts = withoutComment.split(/\s+/);
+    if (parts.length < 2) continue;
+
+    const ip = parts[0];
+    const domain = parts[1].toLowerCase();
+
+    // Basic IP validation
+    const isIPv4 = /^\d{1,3}(\.\d{1,3}){3}$/.test(ip);
+    const isIPv6 = /^[0-9a-fA-F:]+$/.test(ip) && ip.includes(':');
+    if (!isIPv4 && !isIPv6) continue;
+
+    // Deduplicate within parsed list
+    const key = `${ip}|${domain}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    const exists = existingDomains.has(domain);
+    entries.push({ ip, domain, exists, selected: !exists });
+  }
+
+  return entries;
+}
+
+function ImportDialog({
+  open,
+  onOpenChange,
+  existingRewrites,
+  onSuccess,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  existingRewrites: Rewrite[];
+  onSuccess: () => void;
+}) {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [hostsText, setHostsText] = useState('');
+  const [entries, setEntries] = useState<ParsedHostEntry[]>([]);
+  const [importing, setImporting] = useState(false);
+
+  const existingDomains = new Set(existingRewrites.map(r => r.domain.toLowerCase()));
+
+  const handleParse = (text: string) => {
+    setHostsText(text);
+    const parsed = parseHostsContent(text, existingDomains);
+    setEntries(parsed);
+  };
+
+  const handleToggle = (index: number) => {
+    setEntries(prev =>
+      prev.map((e, i) => (i === index ? { ...e, selected: !e.selected } : e))
+    );
+  };
+
+  const selectedEntries = entries.filter(e => e.selected);
+  const skippedCount = entries.filter(e => e.exists).length;
+
+  const handleImport = async () => {
+    if (selectedEntries.length === 0) return;
+    setImporting(true);
+    try {
+      await Promise.all(
+        selectedEntries.map(e =>
+          rewritesApi.createRewrite({ domain: e.domain, answer: e.ip })
+        )
+      );
+      toast.success(t('rewrites.importSuccess', { count: selectedEntries.length }));
+      queryClient.invalidateQueries({ queryKey: ['rewrites'] });
+      onOpenChange(false);
+      setHostsText('');
+      setEntries([]);
+      onSuccess();
+    } catch (err) {
+      const error = err as Error;
+      toast.error(error.message || t('common.operationFailed'));
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleClose = (open: boolean) => {
+    if (!open) {
+      setHostsText('');
+      setEntries([]);
+    }
+    onOpenChange(open);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>{t('rewrites.importTitle')}</DialogTitle>
+          <DialogDescription>{t('rewrites.importDesc')}</DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto space-y-4 py-4">
+          {/* Textarea */}
+          <div className="space-y-2">
+            <Textarea
+              rows={6}
+              placeholder={t('rewrites.importPlaceholder')}
+              value={hostsText}
+              onChange={e => handleParse(e.target.value)}
+              className="font-mono text-sm"
+            />
+            <p className="text-xs text-muted-foreground">{t('rewrites.importFormatHint')}</p>
+          </div>
+
+          {/* Format hint example */}
+          <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground font-mono space-y-0.5">
+            <div className="text-foreground font-semibold mb-1 font-sans not-italic"># 示例格式</div>
+            <div>192.168.1.100&nbsp;&nbsp;nas.local</div>
+            <div>192.168.1.1&nbsp;&nbsp;&nbsp;&nbsp;router.local</div>
+            <div>127.0.0.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;myapp.local&nbsp;&nbsp;# optional comment</div>
+          </div>
+
+          {/* Preview table */}
+          {entries.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                {t('rewrites.importPreviewTitle', { count: entries.length })}
+              </p>
+              <div className="rounded-md border overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>{t('rewrites.colTargetIP')}</TableHead>
+                      <TableHead>{t('rewrites.colDomain')}</TableHead>
+                      <TableHead className="w-24"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {entries.map((entry, index) => (
+                      <TableRow
+                        key={index}
+                        className={entry.exists ? 'opacity-50' : ''}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={entry.selected}
+                            disabled={entry.exists}
+                            onCheckedChange={() => handleToggle(index)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+                            {entry.ip}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+                            {entry.domain}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          {entry.exists && (
+                            <span className="text-xs text-muted-foreground">
+                              {t('rewrites.importExisting')}
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="flex gap-4 text-sm text-muted-foreground">
+                <span>{t('rewrites.importSelectedCount', { count: selectedEntries.length })}</span>
+                {skippedCount > 0 && (
+                  <span>{t('rewrites.importSkipCount', { count: skippedCount })}</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => handleClose(false)}
+            disabled={importing}
+          >
+            {t('common.cancel')}
+          </Button>
+          <Button
+            onClick={handleImport}
+            disabled={importing || selectedEntries.length === 0}
+          >
+            {importing ? (
+              <>
+                <RefreshCw size={16} className="mr-2 animate-spin" />
+                {t('common.importing')}
+              </>
+            ) : (
+              <>
+                <Upload size={16} className="mr-1" />
+                {t('rewrites.importConfirm', { count: selectedEntries.length })}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function RewritesPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -359,6 +585,7 @@ export default function RewritesPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingRewrite, setEditingRewrite] = useState<Rewrite | null>(null);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // 查询重写规则列表
   const { data: rewritesData, isLoading, error, refetch } = useQuery({
@@ -499,6 +726,11 @@ export default function RewritesPage() {
               {t('rewrites.deleteSelected', { count: selectedIds.size })}
             </Button>
           )}
+          {/* 导入按钮 */}
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <Upload size={16} className="mr-1" />
+            {t('rewrites.importBtn')}
+          </Button>
           {/* 创建按钮 */}
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus size={16} className="mr-1" />
@@ -705,6 +937,14 @@ export default function RewritesPage() {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
         rewriteIds={Array.from(selectedIds)}
+      />
+
+      {/* 批量导入对话框 */}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        existingRewrites={rewrites}
+        onSuccess={() => setImportDialogOpen(false)}
       />
     </div>
   );
