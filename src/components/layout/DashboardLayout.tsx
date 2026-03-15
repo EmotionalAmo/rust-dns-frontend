@@ -31,6 +31,7 @@ import {
   Search,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
+import { ExpiringRulesAlert } from '../ExpiringRulesAlert';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -276,6 +277,7 @@ export function DashboardLayout({ title }: DashboardLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <ExpiringRulesAlert />
           <Outlet />
         </main>
       </div>

@@ -1,6 +1,15 @@
 import apiClient from './client';
 import type { Rule, CreateRuleRequest } from './types';
 
+export interface ExpiringRule extends Rule {
+  expires_at: string; // guaranteed non-null for expiring rules
+}
+
+export interface ExpiringRulesResponse {
+  data: ExpiringRule[];
+  minutes: number;
+}
+
 export interface ListRulesParams {
   page?: number;
   per_page?: number;
@@ -88,6 +97,21 @@ export const rulesApi = {
     formData.append('file', file);
     const response = await apiClient.post<ImportRulesResponse>('/api/v1/rules/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  async getExpiringRules(minutes = 5): Promise<ExpiringRule[]> {
+    const response = await apiClient.get<ExpiringRulesResponse>(
+      `/api/v1/rules/expiring?minutes=${minutes}`
+    );
+    return response.data.data;
+  },
+
+  async extendRule(id: string, hours = 1): Promise<Rule> {
+    const newExpiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+    const response = await apiClient.put<Rule>(`/api/v1/rules/${id}`, {
+      expires_at: newExpiresAt,
     });
     return response.data;
   },
