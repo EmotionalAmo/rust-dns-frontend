@@ -65,18 +65,30 @@ export async function listQueryLogs(params: QueryLogListParams = {}): Promise<Qu
 
 export interface ExportParams {
   format: 'csv' | 'json';
-  start_time?: string;
-  end_time?: string;
+  fields?: string[];
+  limit?: number;
+  filters?: import('./queryLogAdvanced').Filter[];
+  time_range?: string;
 }
 
 /**
- * Export query logs
+ * Export query logs with auth token (via axios, not direct URL)
  */
 export async function exportQueryLogs(params: ExportParams): Promise<Blob> {
   const query = new URLSearchParams();
   query.set('format', params.format);
-  if (params.start_time) query.set('start_time', params.start_time);
-  if (params.end_time) query.set('end_time', params.end_time);
+  if (params.fields && params.fields.length > 0) {
+    query.set('fields', params.fields.join(','));
+  }
+  if (params.limit !== undefined) {
+    query.set('limit', String(params.limit));
+  }
+  if (params.filters && params.filters.length > 0) {
+    query.set('filters_json', JSON.stringify(params.filters));
+  }
+  if (params.time_range && params.time_range !== 'all') {
+    query.set('time_range', params.time_range);
+  }
 
   const response = await apiClient.get(`/api/v1/query-log/export?${query.toString()}`, {
     responseType: 'blob',

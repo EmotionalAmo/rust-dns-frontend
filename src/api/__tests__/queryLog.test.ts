@@ -41,12 +41,13 @@ describe('queryLog api', () => {
     const { exportQueryLogs } = await import('../queryLog');
     const result = await exportQueryLogs({
       format: 'csv',
-      start_time: '2026-02-25T00:00:00Z',
-      end_time: '2026-02-26T00:00:00Z',
+      fields: ['time', 'question', 'status'],
+      limit: 10000,
+      time_range: '24h',
     });
 
     expect(mockGet).toHaveBeenCalledWith(
-      '/api/v1/query-log/export?format=csv&start_time=2026-02-25T00%3A00%3A00Z&end_time=2026-02-26T00%3A00%3A00Z',
+      '/api/v1/query-log/export?format=csv&fields=time%2Cquestion%2Cstatus&limit=10000&time_range=24h',
       { responseType: 'blob' }
     );
     expect(result).toBe(fakeBlob);

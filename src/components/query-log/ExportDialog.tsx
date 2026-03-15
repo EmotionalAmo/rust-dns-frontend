@@ -4,13 +4,14 @@
 // Design Principle: Graphic - Clear visual hierarchy + intentional choices
 
 import { useState } from 'react';
-import { Download, FileSpreadsheet, FileJson, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { Download, FileSpreadsheet, FileJson, ChevronDown, ChevronUp, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { Filter } from '@/components/query-log/FilterRow';
 import { cn } from '@/lib/utils';
+import { queryLogApi } from '@/api/queryLog';
+import { toast } from 'sonner';
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCo
     AVAILABLE_FIELDS.filter(f => f.default).map(f => f.key)
   );
   const [isFieldsExpanded, setIsFieldsExpanded] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleFieldToggle = (field: string, checked: boolean) => {
     if (checked) {
@@ -65,36 +67,33 @@ export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCo
     setSelectedFields(['time', 'question']); // Keep minimum required fields
   };
 
-  const handleExport = () => {
-    // Build export URL
-    const baseUrl = '/api/v1/query-log/export';
-    const params = new URLSearchParams({
-      format: format,
-      fields: selectedFields.join(','),
-      limit: '10000',
-    });
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const blob = await queryLogApi.export({
+        format,
+        fields: selectedFields,
+        limit: 10000,
+        filters: filters.length > 0 ? filters : undefined,
+        time_range: time_range && time_range !== 'all' ? time_range : undefined,
+      });
 
-    // Include filters if any
-    if (filters.length > 0) {
-      params.append('filters_json', JSON.stringify(filters));
+      const filename = `query-logs-${new Date().toISOString().slice(0, 10)}.${format}`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      onClose();
+    } catch {
+      toast.error('导出失败，请稍后重试');
+    } finally {
+      setIsExporting(false);
     }
-
-    // Include time_range if set
-    if (time_range && time_range !== 'all') {
-      params.append('time_range', time_range);
-    }
-
-    const url = `${baseUrl}?${params.toString()}`;
-
-    // Trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `query-logs-${new Date().toISOString().slice(0, 10)}.${format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    onClose();
   };
 
   const formatLabel = format === 'csv' ? 'CSV (表格)' : 'JSON (数据)';
@@ -284,16 +283,25 @@ export function ExportDialog({ isOpen, onClose, filters, time_range, estimatedCo
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isExporting}>
             取消
           </Button>
           <Button
             onClick={handleExport}
-            disabled={selectedFields.length === 0}
+            disabled={selectedFields.length === 0 || isExporting}
             className="gap-2"
           >
-            <Download size={16} />
-            导出 {formatLabel}
+            {isExporting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                导出中...
+              </>
+            ) : (
+              <>
+                <Download size={16} />
+                导出 {formatLabel}
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
