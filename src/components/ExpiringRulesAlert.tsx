@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useExpiringRules } from '../hooks/useExpiringRules';
 import { Button } from './ui/button';
 
@@ -11,7 +12,15 @@ function formatTimeLeft(expiresAt: string): string {
 }
 
 export function ExpiringRulesAlert() {
-  const { expiringRules, extendRule, isLoading } = useExpiringRules();
+  const { expiringRules, extendRule, isLoading, notificationPermission, requestPermission } =
+    useExpiringRules();
+
+  // 每秒 tick，驱动 formatTimeLeft 重新计算
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   if (expiringRules.length === 0) return null;
 
@@ -36,9 +45,21 @@ export function ExpiringRulesAlert() {
           </svg>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-            {expiringRules.length} 条临时规则即将到期（5 分钟内）
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+              {expiringRules.length} 条临时规则即将到期（5 分钟内）
+            </p>
+            {notificationPermission === 'default' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 h-7 text-xs border-amber-400 text-amber-800 hover:bg-amber-200 dark:border-amber-600 dark:text-amber-200 dark:hover:bg-amber-800"
+                onClick={requestPermission}
+              >
+                启用通知
+              </Button>
+            )}
+          </div>
           <div className="mt-2 space-y-2">
             {expiringRules.map((rule) => (
               <div

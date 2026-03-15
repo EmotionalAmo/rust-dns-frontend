@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { rulesApi, type ExpiringRule } from '../api/rules';
 
 const POLL_INTERVAL_MS = 60 * 1000; // 每 60 秒轮询一次
@@ -7,12 +7,15 @@ const EXPIRING_MINUTES = 5;
 // 记录已通知的规则 id，避免重复推送浏览器通知
 const notifiedIds = new Set<string>();
 
-async function requestNotificationPermission(): Promise<boolean> {
-  if (!('Notification' in window)) return false;
-  if (Notification.permission === 'granted') return true;
-  if (Notification.permission === 'denied') return false;
-  const result = await Notification.requestPermission();
-  return result === 'granted';
+function getInitialPermission(): NotificationPermission | 'unsupported' {
+  if (!('Notification' in window)) return 'unsupported';
+  return Notification.permission;
+}
+
+async function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (!('Notification' in window)) return 'denied';
+  if (Notification.permission !== 'default') return Notification.permission;
+  return Notification.requestPermission();
 }
 
 function sendBrowserNotification(rules: ExpiringRule[]) {
@@ -35,7 +38,9 @@ function sendBrowserNotification(rules: ExpiringRule[]) {
 export function useExpiringRules() {
   const [expiringRules, setExpiringRules] = useState<ExpiringRule[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const permissionRequestedRef = useRef(false);
+  const [notificationPermission, setNotificationPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >(getInitialPermission);
 
   const fetchExpiringRules = useCallback(async () => {
     try {
@@ -62,18 +67,23 @@ export function useExpiringRules() {
     }
   }, []);
 
-  useEffect(() => {
-    // 只在首次挂载时请求通知权限
-    if (!permissionRequestedRef.current) {
-      permissionRequestedRef.current = true;
-      requestNotificationPermission();
+  const requestPermission = useCallback(async () => {
+    const result = await requestNotificationPermission();
+    setNotificationPermission(result);
+    if (result === 'granted') {
+      new Notification('通知已启用', {
+        body: '你将在规则即将到期时收到浏览器通知',
+        icon: '/favicon.ico',
+      });
     }
+  }, []);
 
+  useEffect(() => {
     // 立即执行一次，然后定时轮询
     fetchExpiringRules();
     const timer = setInterval(fetchExpiringRules, POLL_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [fetchExpiringRules]);
 
-  return { expiringRules, extendRule, isLoading };
+  return { expiringRules, extendRule, isLoading, notificationPermission, requestPermission };
 }
