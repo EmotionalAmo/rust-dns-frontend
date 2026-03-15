@@ -71,6 +71,7 @@ import { formatDateTimeShort } from '@/lib/datetime';
 import { sandboxApi, type SandboxResponse } from '@/api/sandbox';
 import { domainCheckApi, type DomainCheckResult } from '@/api/domainCheck';
 import { ruleStatsApi } from '@/api/ruleStats';
+import { RuleHitsDialog } from '@/components/RuleHitsDialog';
 
 const PER_PAGE = 50;
 
@@ -952,6 +953,7 @@ export default function RulesPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [hitsDialogRule, setHitsDialogRule] = useState<{ id: string; rule: string } | null>(null);
   const [exportFormat, setExportFormat] = useState<'csv' | 'json' | 'txt'>('txt');
   const [isExporting, setIsExporting] = useState(false);
   const toggleMutationRef = useRef<{ isPending: boolean }>({ isPending: false });
@@ -1422,9 +1424,14 @@ export default function RulesPage() {
                               }
                               const isAllowRule = rule.rule.trim().startsWith('@@');
                               return (
-                                <span className={`text-sm font-medium tabular-nums ${isAllowRule ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
+                                <button
+                                  type="button"
+                                  className={`text-sm font-medium tabular-nums underline-offset-2 hover:underline cursor-pointer ${isAllowRule ? 'text-blue-600 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}
+                                  onClick={() => setHitsDialogRule({ id: rule.id, rule: rule.rule })}
+                                  title="查看命中详情"
+                                >
                                   {hits.toLocaleString()}
-                                </span>
+                                </button>
                               );
                             })()}
                           </TableCell>
@@ -1566,6 +1573,12 @@ export default function RulesPage() {
       <SandboxDialog
         open={sandboxDialogOpen}
         onOpenChange={setSandboxDialogOpen}
+      />
+
+      <RuleHitsDialog
+        ruleId={hitsDialogRule?.id ?? null}
+        ruleName={hitsDialogRule?.rule ?? ''}
+        onClose={() => setHitsDialogRule(null)}
       />
     </div>
   );
