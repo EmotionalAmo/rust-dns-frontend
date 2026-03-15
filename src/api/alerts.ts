@@ -9,6 +9,12 @@ export interface Alert {
     created_at: string;
 }
 
+export interface AlertMute {
+    alert_type: string;
+    muted_until: string | null;
+    created_at: string;
+}
+
 export interface FetchAlertsParams {
     page?: number;
     page_size?: number;
@@ -43,5 +49,17 @@ export const alertsApi = {
     deleteAlert: async (id: string) => {
         const { data } = await apiClient.delete(`/api/v1/alerts/${id}`);
         return data;
+    },
+    getMutes: async (): Promise<{ data: AlertMute[] }> => {
+        const { data } = await apiClient.get('/api/v1/alerts/mutes');
+        return data;
+    },
+    upsertMute: async (alertType: string, mutedUntil?: string | null): Promise<void> => {
+        await apiClient.put(`/api/v1/alerts/mutes/${encodeURIComponent(alertType)}`, {
+            muted_until: mutedUntil ?? null,
+        });
+    },
+    deleteMute: async (alertType: string): Promise<void> => {
+        await apiClient.delete(`/api/v1/alerts/mutes/${encodeURIComponent(alertType)}`);
     },
 };

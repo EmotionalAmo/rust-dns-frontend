@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
@@ -14,45 +14,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ClientDetailSheet } from '@/components/ClientDetailSheet';
 
-const MUTED_DEVICES_KEY = 'dns-muted-devices';
-
-function useMutedDevices() {
-    const [mutedDevices, setMutedDevices] = useState<string[]>(() => {
-        try {
-            return JSON.parse(localStorage.getItem(MUTED_DEVICES_KEY) || '[]');
-        } catch {
-            return [];
-        }
-    });
-
-    const save = useCallback((devices: string[]) => {
-        setMutedDevices(devices);
-        localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(devices));
-    }, []);
-
-    const mute = useCallback((ip: string) => {
-        setMutedDevices((prev) => {
-            if (prev.includes(ip)) return prev;
-            const next = [...prev, ip];
-            localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(next));
-            return next;
-        });
-    }, []);
-
-    const unmute = useCallback((ip: string) => {
-        setMutedDevices((prev) => {
-            const next = prev.filter((d) => d !== ip);
-            localStorage.setItem(MUTED_DEVICES_KEY, JSON.stringify(next));
-            return next;
-        });
-    }, []);
-
-    const unmuteAll = useCallback(() => {
-        save([]);
-    }, [save]);
-
-    return { mutedDevices, mute, unmute, unmuteAll };
-}
 
 export default function AlertsPage() {
     const { t } = useTranslation();
@@ -69,7 +30,6 @@ export default function AlertsPage() {
     const [mutePopoverOpen, setMutePopoverOpen] = useState(false);
     const pageSize = 20;
     const queryClient = useQueryClient();
-    const { mutedDevices, mute, unmute, unmuteAll } = useMutedDevices();
 
     const alertTypeParam = filterType === 'all' ? undefined : filterType;
 
@@ -101,6 +61,27 @@ export default function AlertsPage() {
         onSuccess: () => {
             toast.success(t('alerts.deleteSuccess'));
             queryClient.invalidateQueries({ queryKey: ['alerts'] });
+        },
+    });
+
+    const { data: mutesData } = useQuery({
+        queryKey: ['alerts', 'mutes'],
+        queryFn: alertsApi.getMutes,
+        refetchInterval: 30000,
+    });
+    const mutedTypes = new Set((mutesData?.data || []).map(m => m.alert_type));
+
+    const muteMutation = useMutation({
+        mutationFn: (alertType: string) => alertsApi.upsertMute(alertType, null),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['alerts', 'mutes'] });
+        },
+    });
+
+    const unmuteMutation = useMutation({
+        mutationFn: (alertType: string) => alertsApi.deleteMute(alertType),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['alerts', 'mutes'] });
         },
     });
 
@@ -157,21 +138,20 @@ export default function AlertsPage() {
     }
 
     const allAlerts = data?.data || [];
-    // 过滤被静音设备的 high_frequency_block 告警
-    const mutedCount = allAlerts.filter(
-        (a) => a.alert_type === 'high_frequency_block' && a.client_id && mutedDevices.includes(a.client_id)
-    ).length;
-    const alerts = allAlerts.filter(
-        (a) => !(a.alert_type === 'high_frequency_block' && a.client_id && mutedDevices.includes(a.client_id))
-    );
+    // 按被静音的 alert_type 过滤
+    const mutedCount = mutedTypes.size;
+    const alerts = allAlerts.filter(a => !mutedTypes.has(a.alert_type));
 
-    const handleMuteDevice = (ip: string) => {
-        mute(ip);
-        toast.success(t('alerts.muteSuccess', { client: ip }), {
-            duration: 5000,
-            action: {
-                label: t('alerts.muteUndo'),
-                onClick: () => unmute(ip),
+    const handleMuteAlertType = (alertType: string) => {
+        muteMutation.mutate(alertType, {
+            onSuccess: () => {
+                toast.success(t('alerts.muteSuccess', { alertType }), {
+                    duration: 5000,
+                    action: {
+                        label: t('alerts.muteUndo'),
+                        onClick: () => unmuteMutation.mutate(alertType),
+                    },
+                });
             },
         });
     };
@@ -336,6 +316,7 @@ export default function AlertsPage() {
                         <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg px-4 py-3">
                             <p className="text-xs text-amber-600 dark:text-amber-400 mb-1">{t('alerts.statsMuted')}</p>
                             <p className="text-2xl font-bold tabular-nums text-amber-600 dark:text-amber-400">{mutedCount}</p>
+                            <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mt-0.5">{t('alerts.statsMutedSuffix')}</p>
                         </div>
                     )}
                 </div>
@@ -359,11 +340,14 @@ export default function AlertsPage() {
                                     <p className="text-xs font-medium text-muted-foreground">{t('alerts.mutedDevicesTitle')}</p>
                                 </div>
                                 <div className="divide-y divide-border/40">
-                                    {mutedDevices.map((ip) => (
-                                        <div key={ip} className="flex items-center justify-between px-3 py-2">
-                                            <span className="text-sm font-mono">{ip}</span>
+                                    {Array.from(mutedTypes).map((alertType) => (
+                                        <div key={alertType} className="flex items-center justify-between px-3 py-2">
+                                            <span className="text-sm font-mono uppercase tracking-wider">{alertType}</span>
                                             <button
-                                                onClick={() => { unmute(ip); toast.success(t('alerts.unmutedSuccess', { client: ip })); }}
+                                                onClick={() => {
+                                                    unmuteMutation.mutate(alertType);
+                                                    toast.success(t('alerts.unmutedSuccess', { alertType }));
+                                                }}
                                                 className="text-xs text-primary hover:text-primary/80"
                                             >
                                                 {t('alerts.unmuteDevice')}
@@ -371,10 +355,13 @@ export default function AlertsPage() {
                                         </div>
                                     ))}
                                 </div>
-                                {mutedDevices.length > 1 && (
+                                {mutedTypes.size > 1 && (
                                     <div className="p-2 border-t border-border/40">
                                         <button
-                                            onClick={() => { unmuteAll(); setMutePopoverOpen(false); }}
+                                            onClick={() => {
+                                                Array.from(mutedTypes).forEach(alertType => unmuteMutation.mutate(alertType));
+                                                setMutePopoverOpen(false);
+                                            }}
                                             className="w-full text-xs text-center text-muted-foreground hover:text-foreground py-1"
                                         >
                                             {t('alerts.unmuteAll')}
@@ -440,13 +427,21 @@ export default function AlertsPage() {
                                                 <FileText className="h-3 w-3" />
                                                 {t('alerts.viewQueryLogs', { client: alert.client_id })}
                                             </Link>
-                                            <button
-                                                onClick={() => handleMuteDevice(alert.client_id!)}
-                                                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border rounded px-2 py-1 hover:bg-muted/50 transition-colors"
-                                            >
-                                                <VolumeX className="h-3 w-3" />
-                                                {t('alerts.muteDevice')}
-                                            </button>
+                                            {mutedTypes.has(alert.alert_type) ? (
+                                                <span className="inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 border border-amber-300 dark:border-amber-700 rounded px-2 py-1 bg-amber-50 dark:bg-amber-950/30">
+                                                    <VolumeX className="h-3 w-3" />
+                                                    {t('alerts.muteDevice')}
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    onClick={() => handleMuteAlertType(alert.alert_type)}
+                                                    disabled={muteMutation.isPending}
+                                                    className="inline-flex items-center gap-1.5 text-xs text-muted-foreground border border-border rounded px-2 py-1 hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                                >
+                                                    <VolumeX className="h-3 w-3" />
+                                                    {t('alerts.muteDevice')}
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                     {alert.alert_type === 'anomaly_detection' && (
