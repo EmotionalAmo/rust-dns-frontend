@@ -677,7 +677,7 @@
     "statusActive": "活跃",
     "statusDisabled": "禁用",
     "emptyState": "暂无用户",
-    "loadError": "加载失败",
+    "loadError": "加载用户列表失败，请稍后重试",
     "roleSuperAdmin": "超级管理员",
     "roleAdmin": "管理员",
     "roleOperator": "操作员",

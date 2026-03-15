@@ -249,15 +249,19 @@ export default function UsersPage() {
             <div className="flex justify-center py-12">
               <RefreshCw size={32} className="animate-spin text-muted-foreground" />
             </div>
-          ) : error ? (
-            <div className="flex flex-col items-center py-12 gap-3">
-              <p className="text-muted-foreground">{t('users.loadError')}</p>
-              <Button variant="outline" onClick={() => refetch()}>{t('common.retry')}</Button>
-            </div>
-          ) : users.length === 0 ? (
+          ) : users.length === 0 && !error ? (
             <div className="flex flex-col items-center py-12 gap-4">
               <Users size={48} className="text-muted-foreground" />
               <p className="text-muted-foreground">{t('users.emptyState')}</p>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center py-12 gap-3">
+              <Users size={40} className="text-muted-foreground/50" />
+              <div className="text-center space-y-1">
+                <p className="text-muted-foreground">{t('users.loadError')}</p>
+                <p className="text-xs text-muted-foreground/60">{(error as Error).message}</p>
+              </div>
+              <Button variant="outline" onClick={() => refetch()}>{t('common.retry')}</Button>
             </div>
           ) : (
             <div className="rounded-md border">

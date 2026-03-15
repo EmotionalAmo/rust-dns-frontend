@@ -386,11 +386,6 @@ export default function UpstreamsPage() {
             <div className="flex justify-center py-12">
               <RefreshCw size={32} className="animate-spin text-muted-foreground" />
             </div>
-          ) : error ? (
-            <div className="flex flex-col items-center py-12 gap-3">
-              <p className="text-muted-foreground">{t('upstreams.loadError')}</p>
-              <Button variant="outline" onClick={() => refetch()}>{t('common.retry')}</Button>
-            </div>
           ) : upstreams.length === 0 ? (
             <div className="flex flex-col items-center py-12 gap-4">
               <Server size={48} className="text-muted-foreground" />
@@ -401,6 +396,11 @@ export default function UpstreamsPage() {
               <Button onClick={() => { setEditing(null); setDialogOpen(true); }}>
                 <Plus size={16} className="mr-1" />{t('upstreams.addUpstream')}
               </Button>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center py-12 gap-3">
+              <p className="text-muted-foreground">{t('upstreams.loadError')}</p>
+              <Button variant="outline" onClick={() => refetch()}>{t('common.retry')}</Button>
             </div>
           ) : (
             <div className="rounded-md border overflow-x-auto">

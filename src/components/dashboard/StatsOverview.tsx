@@ -4,7 +4,7 @@ import { QueryTrendChart } from '@/components/dashboard/QueryTrendChart';
 import { LatencyTrendChart } from '@/components/dashboard/LatencyTrendChart';
 import { NetworkHealthCard } from '@/components/dashboard/NetworkHealthCard';
 import { LatencyStatsCard } from '@/components/dashboard/LatencyStatsCard';
-import { Activity, Shield, Database, Filter, Server, Settings, TrendingUp, TrendingDown, Minus, List, Wifi, Eye, Users, Globe } from 'lucide-react';
+import { Activity, Shield, Database, Filter, Server, Settings, TrendingUp, TrendingDown, Minus, List, Wifi, Eye, Users, Globe, Percent, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DashboardStats } from '@/api/';
 import type { DnsUpstream } from '@/api/upstreams';
@@ -271,7 +271,7 @@ export function StatsOverview({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-muted-foreground" />
+                    <Percent className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{t('dashboard.cacheHitRate')}</span>
                   </div>
                   {isLoading ? (
@@ -307,7 +307,7 @@ export function StatsOverview({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-muted-foreground" />
+                    <Zap className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">{t('dashboard.qps')}</span>
                   </div>
                   {isLoading ? (

@@ -665,7 +665,7 @@
     "statusActive": "Active",
     "statusDisabled": "Disabled",
     "emptyState": "No users",
-    "loadError": "Load failed",
+    "loadError": "Failed to load users, please try again",
     "roleSuperAdmin": "Super Admin",
     "roleAdmin": "Admin",
     "roleOperator": "Operator",
