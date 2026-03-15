@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type GroupRule, type ClientGroup } from '@/api/clientGroups';
 import { type Rule, type Rewrite } from '@/api/types';
@@ -23,7 +23,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { Trash2, Plus, Filter, ArrowRightCircle } from 'lucide-react';
+import { Trash2, Plus, Filter, ArrowRightCircle, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 interface GroupRulesPanelProps {
   group: ClientGroup | null;
@@ -52,6 +53,23 @@ export function GroupRulesPanel({
   const [selectedRules, setSelectedRules] = useState<Set<string>>(new Set());
   const [selectedRewrites, setSelectedRewrites] = useState<Set<string>>(new Set());
   const [bindLoading, setBindLoading] = useState(false);
+  const [ruleSearch, setRuleSearch] = useState('');
+
+  const filteredRules = useMemo(() => {
+    if (!ruleSearch.trim()) return availableRules;
+    const q = ruleSearch.toLowerCase();
+    return availableRules.filter(
+      (r) => r.rule.toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q)
+    );
+  }, [availableRules, ruleSearch]);
+
+  const filteredRewrites = useMemo(() => {
+    if (!ruleSearch.trim()) return availableRewrites;
+    const q = ruleSearch.toLowerCase();
+    return availableRewrites.filter(
+      (r) => r.domain.toLowerCase().includes(q) || (r.answer || '').toLowerCase().includes(q)
+    );
+  }, [availableRewrites, ruleSearch]);
 
   if (!group) {
     return (
@@ -78,6 +96,7 @@ export function GroupRulesPanel({
       setSelectedRules(new Set());
       setSelectedRewrites(new Set());
       setShowAddDialog(false);
+      setRuleSearch('');
     } catch (error) {
       console.error('绑定规则失败:', error);
     } finally {
@@ -221,7 +240,7 @@ export function GroupRulesPanel({
       </AlertDialog>
 
       {/* 添加规则对话框 */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      <Dialog open={showAddDialog} onOpenChange={(open) => { setShowAddDialog(open); if (!open) setRuleSearch(''); }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t('clientGroups.addRuleTitle')}</DialogTitle>
@@ -229,15 +248,24 @@ export function GroupRulesPanel({
               {t('clientGroups.addRuleDesc')}
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-[60vh] overflow-y-auto space-y-6 pr-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              className="pl-9"
+              placeholder={t('clientGroups.ruleSearchPlaceholder')}
+              value={ruleSearch}
+              onChange={(e) => setRuleSearch(e.target.value)}
+            />
+          </div>
+          <div className="max-h-[55vh] overflow-y-auto space-y-6 pr-2">
 
             <div className="space-y-3">
               <h3 className="font-medium">{t('clientGroups.customRules')}</h3>
-              {availableRules.length === 0 ? (
+              {filteredRules.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRules')}</p>
               ) : (
                 <div className="space-y-2">
-                  {availableRules.map((filter) => (
+                  {filteredRules.map((filter) => (
                     <label
                       key={filter.id}
                       className={cn(
@@ -280,11 +308,11 @@ export function GroupRulesPanel({
 
             <div className="space-y-3">
               <h3 className="font-medium">{t('clientGroups.rewrites')}</h3>
-              {availableRewrites.length === 0 ? (
+              {filteredRewrites.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t('clientGroups.noAvailableRewrites')}</p>
               ) : (
                 <div className="space-y-2">
-                  {availableRewrites.map((rewrite) => (
+                  {filteredRewrites.map((rewrite) => (
                     <label
                       key={rewrite.id}
                       className={cn(
