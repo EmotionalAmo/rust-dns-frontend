@@ -1,8 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { type GroupRule, type ClientGroup } from '@/api/clientGroups';
-import { type Rewrite } from '@/api/types';
 import { rulesApi } from '@/api/rules';
 import { rewritesApi } from '@/api/rewrites';
 import { Button } from '@/components/ui/button';
@@ -67,8 +66,8 @@ export function GroupRulesPanel({
   });
 
   const { data: rewritesQueryData, isLoading: rewritesQueryLoading } = useQuery({
-    queryKey: ['available-rewrites-for-binding'],
-    queryFn: () => rewritesApi.listRewrites(),
+    queryKey: ['available-rewrites-for-binding', debouncedSearch],
+    queryFn: () => rewritesApi.listRewrites({ per_page: 50, search: debouncedSearch || undefined }),
     enabled: showAddDialog && !!group,
     staleTime: 30000,
   });
@@ -76,14 +75,8 @@ export function GroupRulesPanel({
   const filteredRules = rulesQueryData?.data || [];
   const rulesTotal = rulesQueryData?.total ?? 0;
 
-  const filteredRewrites = useMemo(() => {
-    const rewrites = rewritesQueryData || [];
-    if (!ruleSearch.trim()) return rewrites;
-    const q = ruleSearch.toLowerCase();
-    return rewrites.filter(
-      (r: Rewrite) => r.domain.toLowerCase().includes(q) || (r.answer || '').toLowerCase().includes(q)
-    );
-  }, [rewritesQueryData, ruleSearch]);
+  const filteredRewrites = rewritesQueryData?.data || [];
+  const rewritesTotal = rewritesQueryData?.total ?? 0;
 
   if (!group) {
     return (
@@ -330,7 +323,14 @@ export function GroupRulesPanel({
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-medium">{t('clientGroups.rewrites')}</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-medium">{t('clientGroups.rewrites')}</h3>
+                {rewritesTotal > 50 && (
+                  <span className="text-xs text-muted-foreground">
+                    {t('clientGroups.showingFirst', { count: filteredRewrites.length, total: rewritesTotal })}
+                  </span>
+                )}
+              </div>
               {rewritesQueryLoading ? (
                 <p className="text-sm text-muted-foreground">{t('clientGroups.loading')}</p>
               ) : filteredRewrites.length === 0 ? (

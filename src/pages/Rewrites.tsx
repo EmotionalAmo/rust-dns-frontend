@@ -361,10 +361,11 @@ export default function RewritesPage() {
   const [editingRewrite, setEditingRewrite] = useState<Rewrite | null>(null);
 
   // 查询重写规则列表
-  const { data: rewrites = [], isLoading, error, refetch } = useQuery({
+  const { data: rewritesData, isLoading, error, refetch } = useQuery({
     queryKey: ['rewrites'],
-    queryFn: rewritesApi.listRewrites,
+    queryFn: () => rewritesApi.listRewrites(),
   });
+  const rewrites = rewritesData?.data ?? [];
 
   // 过滤重写规则
   const filteredRewrites = rewrites.filter((rewrite) =>

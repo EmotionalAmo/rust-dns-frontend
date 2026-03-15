@@ -1,17 +1,36 @@
 import apiClient from './client';
 import type { Rewrite, CreateRewriteRequest } from './types';
 
+export interface ListRewritesParams {
+  search?: string;
+  page?: number;
+  per_page?: number;
+}
+
+export interface ListRewritesResponse {
+  data: Rewrite[];
+  total: number;
+  page: number;
+  per_page: number;
+}
+
 /**
  * Rewrites API
  * 管理 DNS 重写规则（域名 -> IP 映射）
  */
 export const rewritesApi = {
   /**
-   * 获取所有 DNS 重写规则
+   * 获取 DNS 重写规则列表，支持分页和搜索
    */
-  async listRewrites(): Promise<Rewrite[]> {
-    const response = await apiClient.get<{ data: Rewrite[]; total: number }>('/api/v1/rewrites');
-    return response.data.data;
+  async listRewrites(params?: ListRewritesParams): Promise<ListRewritesResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set('search', params.search);
+    if (params?.page !== undefined) searchParams.set('page', String(params.page));
+    if (params?.per_page !== undefined) searchParams.set('per_page', String(params.per_page));
+    const query = searchParams.toString();
+    const url = query ? `/api/v1/rewrites?${query}` : '/api/v1/rewrites';
+    const response = await apiClient.get<ListRewritesResponse>(url);
+    return response.data;
   },
 
   /**
